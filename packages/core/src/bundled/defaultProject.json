@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "projectId": "default-tier-list",
+  "title": "Sample Tier List",
+  "description": "A sample tier list to get started",
+  "tiers": [
+    {
+      "id": "S",
+      "label": "S Tier",
+      "color": "#ff7f7f",
+      "order": 0,
+      "locked": false,
+      "itemIds": ["item_alpha", "item_omega"]
+    },
+    {
+      "id": "A",
+      "label": "A Tier",
+      "color": "#ffbf7f",
+      "order": 1,
+      "locked": false,
+      "itemIds": ["item_beta", "item_sigma"]
+    },
+    {
+      "id": "B",
+      "label": "B Tier",
+      "color": "#ffdf7f",
+      "order": 2,
+      "locked": false,
+      "itemIds": ["item_gamma"]
+    },
+    {
+      "id": "C",
+      "label": "C Tier",
+      "color": "#ffff7f",
+      "order": 3,
+      "locked": false,
+      "itemIds": []
+    },
+    {
+      "id": "D",
+      "label": "D Tier",
+      "color": "#bfff7f",
+      "order": 4,
+      "locked": false,
+      "itemIds": []
+    },
+    {
+      "id": "F",
+      "label": "F Tier",
+      "color": "#7fbfff",
+      "order": 5,
+      "locked": false,
+      "itemIds": []
+    },
+    {
+      "id": "unranked",
+      "label": "Unranked",
+      "order": 6,
+      "locked": false,
+      "itemIds": ["item_delta", "item_epsilon"]
+    }
+  ],
+  "items": {
+    "item_alpha": {
+      "id": "item_alpha",
+      "title": "Alpha",
+      "subtitle": "Season 1"
+    },
+    "item_beta": {
+      "id": "item_beta",
+      "title": "Beta",
+      "subtitle": "Season 2"
+    },
+    "item_gamma": {
+      "id": "item_gamma",
+      "title": "Gamma",
+      "subtitle": "Season 3"
+    },
+    "item_delta": {
+      "id": "item_delta",
+      "title": "Delta",
+      "subtitle": "Season 4"
+    },
+    "item_epsilon": {
+      "id": "item_epsilon",
+      "title": "Epsilon",
+      "subtitle": "Season 5"
+    },
+    "item_sigma": {
+      "id": "item_sigma",
+      "title": "Sigma",
+      "subtitle": "Season 1"
+    },
+    "item_omega": {
+      "id": "item_omega",
+      "title": "Omega",
+      "subtitle": "Final"
+    }
+  },
+  "storage": {
+    "mode": "local"
+  },
+  "settings": {
+    "theme": "default",
+    "showUnranked": true
+  },
+  "audit": {
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-15T00:00:00.000Z",
+    "createdBy": "system",
+    "updatedBy": "system"
+  }
+}

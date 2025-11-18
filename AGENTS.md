@@ -16,7 +16,29 @@ Changes will automatically propagate through the symlinks.
 When working with Apple platforms (iOS, macOS, tvOS, visionOS) or Apple APIs (SwiftUI, UIKit, Focus, HIG), consult authoritative Apple documentation via apple-docs MCP tools before other sources.
 ```
 
+- When working with JavaScript/TypeScript, React, React Native, Vite, Redux Toolkit, Tailwind CSS, or related web tooling, consult **Context7 MCP library docs** (React, React Native, Redux Toolkit, Vite, Tailwind, DnD Kit, Jest, Playwright, etc.) before generic web search.
+
 - Target tvOS-first SwiftUI app (iOS/iPadOS/macOS 26+) using Swift 6 strict concurrency. Keep `.enableUpcomingFeature("StrictConcurrency")` and Xcode `-default-isolation MainActor` flags intact.
+
+## React / TypeScript Migration Phase
+
+- A phased **full React rewrite** is in progress (see `docs/migration/TIERCADE_REACT_MIGRATION_PLAN.md`):
+  - Phase 1: React/TypeScript web app (`apps/web` + `packages/core|state|ui|theme`).
+  - Phase 2+: React Native clients (`apps/native`) for iOS/iPadOS/tvOS (and optionally Android/macOS).
+- During this migration:
+  - Keep existing Swift/tvOS behavior as the **behavioral reference** for core tiering features (TiercadeCore + AppState).
+  - Treat TypeScript/React packages as the new implementation targets:
+    - `packages/core` – port of TiercadeCore logic (no React/DOM).
+    - `packages/state` – Redux Toolkit store + slices mirroring Swift `AppState`.
+    - `packages/ui` – shared React UI components (web-first initially).
+    - `packages/theme` – design tokens for React/RN, aligned with `Tiercade/Design`.
+- When editing React/TS code:
+  - Follow the monorepo and porting guides:
+    - `docs/migration/REACT_MONOREPO_ARCHITECTURE.md`
+    - `docs/migration/TIERCADECORE_TYPESCRIPT_PORTING_GUIDE.md`
+    - `docs/migration/WEB_APP_UI_SPEC.md`
+    - `docs/migration/LLM_PHASE1_IMPLEMENTATION_CHECKLIST.md`
+  - Prefer **faithful ports** of existing Swift behavior before introducing new patterns.
 
 ## Apple Intelligence Prototype Scope (Read Me First)
 
@@ -29,6 +51,7 @@ When working with Apple platforms (iOS, macOS, tvOS, visionOS) or Apple APIs (Sw
 - Winning-method handoff: The final product will be re-architected using the best-performing approach discovered here. Treat current algorithms, prompts, and testers as disposable scaffolding.
 - Feature-gated: Keep advanced generation behind compile-time flags and DEBUG defaults. Maintain platform gating (macOS/iOS only) and keep tvOS UI independent.
 - Agent guidance: If you are an LLM modifying this repo, prefer improving test coverage, diagnostics, and documentation over deepening prototype coupling with production surfaces. Avoid migrating experimental code into main app flows.
+- **Migration constraint:** During the React/TypeScript migration, **LLM/AI features are frozen** across all new React apps (web and React Native). See `docs/migration/LLM_FEATURE_FREEZE_PLAN.md`. Do not add new AI/LLM calls or UI in React, and do not expand Apple Intelligence features beyond their existing Swift prototype scope.
 
 ## Architecture snapshot
 

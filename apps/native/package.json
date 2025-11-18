@@ -1,0 +1,30 @@
+{
+  "name": "@tiercade/native",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "~52.0.0",
+    "expo-status-bar": "~2.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.0",
+    "react-native-safe-area-context": "~4.12.0",
+    "react-native-screens": "~4.9.0",
+    "@react-navigation/native": "^7.0.0",
+    "@react-navigation/native-stack": "^7.0.0",
+    "react-redux": "^9.1.2",
+    "@tiercade/core": "0.0.0",
+    "@tiercade/state": "0.0.0",
+    "@tiercade/theme": "0.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "typescript": "^5.6.0"
+  }
+}

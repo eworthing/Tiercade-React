@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Tiercade",
+    "slug": "tiercade",
+    "version": "0.0.0",
+    "orientation": "default",
+    "jsEngine": "hermes",
+    "platforms": ["ios", "android", "web"],
+    "updates": {
+      "enabled": true
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#020617"
+      }
+    }
+  }
+}
+
