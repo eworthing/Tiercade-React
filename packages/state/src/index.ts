@@ -6,3 +6,4 @@ export * from "./undoRedoSlice";
 export * from "./headToHeadThunks";
 export * from "./projectThunks";
 export * from "./undoRedoThunks";
+export * from "./persistenceMiddleware";

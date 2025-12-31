@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import type { Items } from "@tiercade/core";
+import React, { useMemo, useState } from "react";
+import type { Items, Item } from "@tiercade/core";
 import {
   DndContext,
   closestCenter,
@@ -7,12 +7,15 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent
+  DragOverlay,
+  type DragStartEvent,
+  type DragEndEvent,
+  type Announcements,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-  sortableKeyboardCoordinates
+  sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { TierRow } from "./TierRow";
 
@@ -22,6 +25,9 @@ export interface TierBoardProps {
   onMoveItem?: (itemId: string, targetTierName: string) => void;
   tierColors?: Record<string, string>;
   tierLabels?: Record<string, string>;
+  selectedItems?: string[];
+  onItemClick?: (item: Item) => void;
+  onItemDoubleClick?: (item: Item) => void;
 }
 
 export const TierBoard: React.FC<TierBoardProps> = ({
@@ -29,34 +35,91 @@ export const TierBoard: React.FC<TierBoardProps> = ({
   tierOrder,
   onMoveItem,
   tierColors = {},
-  tierLabels = {}
+  tierLabels = {},
+  selectedItems = [],
+  onItemClick,
+  onItemDoubleClick,
 }) => {
+  const [activeItem, setActiveItem] = useState<Item | null>(null);
   const orderedIds = useMemo(() => [...tierOrder, "unranked"], [tierOrder]);
 
+  // All items flattened for finding during drag
+  const allItems = useMemo(() => {
+    return Object.values(tiers).flat();
+  }, [tiers]);
+
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement to start drag (prevents accidental drags on click)
+      },
+    }),
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates
+      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
+  // Accessibility announcements for screen readers
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => {
+      const item = allItems.find((i) => i.id === active.id);
+      return `Picked up ${item?.name ?? active.id}. Use arrow keys to move between tiers.`;
+    },
+    onDragOver: ({ over }) => {
+      if (!over) return "";
+      const tierName = tierLabels[String(over.id)] ?? over.id;
+      return `Over ${tierName} tier`;
+    },
+    onDragEnd: ({ active, over }) => {
+      const item = allItems.find((i) => i.id === active.id);
+      if (!over) return `Cancelled dragging ${item?.name ?? active.id}`;
+      const tierName = tierLabels[String(over.data.current?.tierId ?? over.id)] ?? over.id;
+      return `Dropped ${item?.name ?? active.id} in ${tierName} tier`;
+    },
+    onDragCancel: ({ active }) => {
+      const item = allItems.find((i) => i.id === active.id);
+      return `Cancelled dragging ${item?.name ?? active.id}`;
+    },
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const item = allItems.find((i) => i.id === event.active.id);
+    setActiveItem(item ?? null);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveItem(null);
+
     if (!onMoveItem) return;
     const { active, over } = event;
     if (!over || active.id === over.id) return;
+
     const activeId = String(active.id);
     const overTier = String(over.data.current?.tierId ?? over.id);
     onMoveItem(activeId, overTier);
+  };
+
+  const handleDragCancel = () => {
+    setActiveItem(null);
   };
 
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+      accessibility={{
+        announcements,
+        screenReaderInstructions: {
+          draggable:
+            "To pick up an item, press Space or Enter. Use arrow keys to move between tiers. Press Space or Enter again to drop the item, or press Escape to cancel.",
+        },
+      }}
     >
       <SortableContext items={orderedIds} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-tier-gap" role="list" data-tier-board>
           {orderedIds.map((tierId) => (
             <TierRow
               key={tierId}
@@ -64,10 +127,62 @@ export const TierBoard: React.FC<TierBoardProps> = ({
               items={tiers[tierId] ?? []}
               tierColor={tierColors[tierId]}
               tierLabel={tierLabels[tierId]}
+              selectedItems={selectedItems}
+              onItemClick={onItemClick}
+              onItemDoubleClick={onItemDoubleClick}
             />
           ))}
         </div>
       </SortableContext>
+
+      {/* Drag Overlay - Shows a preview of the dragged item */}
+      <DragOverlay dropAnimation={{
+        duration: 200,
+        easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+      }}>
+        {activeItem ? (
+          <DragPreview item={activeItem} />
+        ) : null}
+      </DragOverlay>
     </DndContext>
+  );
+};
+
+interface DragPreviewProps {
+  item: Item;
+}
+
+const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
+  const hasImage = !!item.imageUrl;
+
+  return (
+    <div
+      className={`
+        flex flex-col items-center justify-center
+        rounded-card bg-surface-raised border border-accent shadow-modal
+        cursor-grabbing scale-105
+        ${hasImage ? "w-24 h-24" : "px-4 py-3"}
+      `}
+    >
+      {hasImage ? (
+        <>
+          <img
+            src={item.imageUrl}
+            alt={item.name ?? item.id}
+            className="w-full h-full object-cover rounded-card"
+            draggable={false}
+          />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card">
+            <p className="text-2xs text-white text-center truncate font-medium">
+              {item.name ?? item.id}
+            </p>
+          </div>
+        </>
+      ) : (
+        <span className="text-sm text-text font-medium">
+          {item.name ?? item.id}
+        </span>
+      )}
+    </div>
   );
 };
