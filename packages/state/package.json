@@ -5,7 +5,6 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "dependencies": {
-    "@reduxjs/toolkit": "^2.2.0"
+    "@reduxjs/toolkit": "^2.11.2"
   }
 }
-
