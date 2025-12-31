@@ -17,15 +17,37 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed";
+  // GPU-accelerated base styles with spring transitions
+  const baseStyles = `
+    inline-flex items-center justify-center font-medium rounded-button
+    transition-all duration-200 ease-spring
+    transform-gpu will-change-transform
+    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+    hover:scale-[1.02] active:scale-[0.98]
+  `;
 
   const variants = {
-    primary: "bg-accent text-white hover:bg-accent-hover active:bg-blue-600",
-    secondary:
-      "bg-surface-raised border border-border text-text hover:bg-slate-700 active:bg-slate-600",
-    ghost: "text-text-muted hover:text-text hover:bg-surface-raised active:bg-slate-700",
-    danger: "bg-danger text-white hover:bg-danger-soft active:bg-red-700",
+    primary: `
+      bg-accent text-white
+      hover:bg-accent-hover hover:shadow-glow-accent
+      active:bg-blue-600 active:shadow-inner-sm
+    `,
+    secondary: `
+      bg-surface-raised border border-border text-text
+      hover:bg-slate-700 hover:border-text-subtle hover:shadow-card-hover
+      active:bg-slate-600 active:shadow-inner-sm
+    `,
+    ghost: `
+      text-text-muted
+      hover:text-text hover:bg-surface-raised
+      active:bg-slate-700 active:shadow-inner-sm
+    `,
+    danger: `
+      bg-danger text-white
+      hover:bg-danger-soft hover:shadow-glow-danger
+      active:bg-red-700 active:shadow-inner-sm
+    `,
   };
 
   const sizes = {
@@ -82,7 +104,7 @@ export const IconButton: React.FC<
     <Button
       {...props}
       size={size}
-      className={`${sizes[size]} ${className}`}
+      className={`${sizes[size]} rounded-full ${className}`}
       aria-label={label}
       title={label}
     >
@@ -90,3 +112,22 @@ export const IconButton: React.FC<
     </Button>
   );
 };
+
+// Glass-style button for overlays
+export const GlassButton: React.FC<ButtonProps> = ({
+  className = "",
+  children,
+  ...props
+}) => (
+  <Button
+    {...props}
+    variant="ghost"
+    className={`
+      bg-surface-glass backdrop-blur-md border border-border-subtle
+      hover:bg-surface-raised/80 hover:border-border
+      ${className}
+    `}
+  >
+    {children}
+  </Button>
+);

@@ -24,13 +24,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={`
-            w-full px-3 py-2 rounded-lg
+            w-full px-3 py-2 rounded-button
             bg-surface-raised border
             text-text placeholder:text-text-subtle
-            transition-colors
-            focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+            transition-all duration-200 ease-spring
+            focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface focus:border-transparent
+            focus:shadow-glow-accent
+            hover:border-text-subtle
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? "border-danger" : "border-border"}
+            ${error ? "border-danger focus:ring-danger focus:shadow-glow-danger" : "border-border"}
             ${className}
           `}
           aria-invalid={error ? "true" : "false"}
@@ -78,13 +80,15 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={`
-            w-full px-3 py-2 rounded-lg
+            w-full px-3 py-2 rounded-button
             bg-surface-raised border
             text-text placeholder:text-text-subtle
-            transition-colors resize-none
-            focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+            transition-all duration-200 ease-spring resize-none
+            focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface focus:border-transparent
+            focus:shadow-glow-accent
+            hover:border-text-subtle
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? "border-danger" : "border-border"}
+            ${error ? "border-danger focus:ring-danger focus:shadow-glow-danger" : "border-border"}
             ${className}
           `}
           aria-invalid={error ? "true" : "false"}

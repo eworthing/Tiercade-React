@@ -40,8 +40,8 @@ export const TierRow: React.FC<TierRowProps> = ({
       aria-label={`${label} tier, ${items.length} items`}
       className={`
         flex items-stretch gap-3 rounded-tier border min-h-[80px]
-        transition-colors duration-150
-        ${isOver ? "border-accent bg-accent/10" : "border-border"}
+        transition-all duration-300 ease-spring transform-gpu
+        ${isOver ? "border-accent bg-accent/10 scale-[1.01] shadow-glow-accent" : "border-border"}
         ${isUnranked ? "bg-surface-soft/50" : ""}
       `}
       style={{
@@ -113,10 +113,13 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
     data: { tierId, item },
   });
 
+  // Spring-based transform with GPU acceleration
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isDragging
+      ? "box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1)"
+      : `${transition}, box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+    willChange: isDragging ? "transform" : "auto",
   };
 
   const hasImage = !!item.imageUrl;
@@ -147,12 +150,14 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         group relative flex flex-col items-center justify-center
         cursor-grab active:cursor-grabbing
         rounded-card bg-surface-raised border shadow-card
-        hover:shadow-card-hover hover:border-text-subtle
-        transition-all duration-150
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent
+        transform-gpu
+        hover:shadow-card-hover hover:border-text-subtle hover:scale-[1.03]
+        active:scale-[0.98]
+        transition-all duration-200 ease-spring
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface
         ${hasImage ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
-        ${isSelected ? "ring-2 ring-accent border-accent" : "border-border"}
-        ${isDragging ? "scale-105 shadow-modal z-10" : ""}
+        ${isSelected ? "ring-2 ring-accent border-accent shadow-glow-accent" : "border-border"}
+        ${isDragging ? "scale-110 shadow-modal z-50 rotate-2" : ""}
       `}
     >
       {hasImage ? (
@@ -178,11 +183,11 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         </span>
       )}
 
-      {/* Selection indicator */}
+      {/* Selection indicator with pop animation */}
       {isSelected && (
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center">
+        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-glow-accent animate-pop">
           <svg
-            className="w-2.5 h-2.5 text-white"
+            className="w-3 h-3 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

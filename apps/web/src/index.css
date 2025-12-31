@@ -2,9 +2,142 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-  height: 100%;
+/* Base layer for smooth animations and 60fps performance */
+@layer base {
+  /* Smooth scrolling with reduced motion support */
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Full height layout */
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  /* Better focus outlines for accessibility */
+  :focus-visible {
+    outline: 2px solid theme("colors.accent.DEFAULT");
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus outline when using mouse */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Smooth scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme("colors.border.DEFAULT") transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: theme("colors.border.DEFAULT");
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: theme("colors.text.subtle");
+  }
+
+  /* Selection styling */
+  ::selection {
+    background-color: theme("colors.accent.DEFAULT");
+    color: white;
+  }
 }
 
+/* Component layer for reusable patterns */
+@layer components {
+  /* GPU-accelerated animation helper */
+  .animate-gpu {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  /* Glass morphism card */
+  .glass-card {
+    background: theme("colors.surface.glass");
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid theme("colors.border.subtle");
+  }
+
+  /* Pressed state helper */
+  .press-effect {
+    transition: transform 100ms ease-out;
+  }
+
+  .press-effect:active {
+    transform: scale(0.97);
+  }
+
+  /* Stagger animation delay utilities */
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
+  .stagger-5 { animation-delay: 250ms; }
+}
+
+/* Utility layer for additional helpers */
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Prevent text selection during drag */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Momentum scrolling for touch devices */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hardware acceleration hint */
+  .gpu {
+    transform: translateZ(0);
+  }
+}

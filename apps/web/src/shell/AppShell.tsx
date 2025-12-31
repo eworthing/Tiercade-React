@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, Suspense } from "react";
+import React, { useEffect, useState, useCallback, Suspense, useRef } from "react";
 import { NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { TierBoardPage } from "../pages/TierBoardPage";
 import { HeadToHeadPage } from "../pages/HeadToHeadPage";
@@ -20,6 +20,20 @@ export const AppShell: React.FC = () => {
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(projectName);
+
+  // Page transition state
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const prevPathRef = useRef(location.pathname);
+
+  // Trigger page transition animation
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => setIsTransitioning(false), 300);
+      prevPathRef.current = location.pathname;
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
 
   // Sync edited name when project name changes
   useEffect(() => {
@@ -85,14 +99,14 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-text">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-surface-soft/80 backdrop-blur-sm">
+      {/* Header with glass effect */}
+      <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-soft/70 backdrop-blur-lg">
         <div className="mx-auto max-w-6xl flex items-center gap-4 px-4 py-3">
           {/* Logo & Project Name */}
           <div className="flex items-center gap-3">
             <NavLink
               to="/"
-              className="flex items-center gap-2 text-text font-semibold hover:text-accent transition-colors"
+              className="flex items-center gap-2 text-text font-semibold hover:text-accent transition-all duration-200 hover:scale-105 active:scale-95"
             >
               <svg
                 className="w-6 h-6 text-accent"
@@ -232,17 +246,24 @@ export const AppShell: React.FC = () => {
         </nav>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content with page transitions */}
       <main className="flex-1 mx-auto max-w-6xl w-full px-4 py-6">
         <PageErrorBoundary>
           <Suspense fallback={<PageSkeleton />}>
-            <Routes>
-              <Route path="/" element={<TierBoardPage />} />
-              <Route path="/head-to-head" element={<HeadToHeadPage />} />
-              <Route path="/themes" element={<ThemesPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="/import-export" element={<ImportExportPage />} />
-            </Routes>
+            <div
+              className={`
+                transform-gpu transition-all duration-300 ease-spring
+                ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}
+              `}
+            >
+              <Routes>
+                <Route path="/" element={<TierBoardPage />} />
+                <Route path="/head-to-head" element={<HeadToHeadPage />} />
+                <Route path="/themes" element={<ThemesPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/import-export" element={<ImportExportPage />} />
+              </Routes>
+            </div>
           </Suspense>
         </PageErrorBoundary>
       </main>
@@ -255,7 +276,7 @@ export const AppShell: React.FC = () => {
   );
 };
 
-// Navigation item component
+// Navigation item component with spring animation
 const NavItem: React.FC<{
   to: string;
   end?: boolean;
@@ -265,9 +286,12 @@ const NavItem: React.FC<{
     to={to}
     end={end}
     className={({ isActive }) =>
-      `px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+      `px-3 py-1.5 rounded-lg text-sm font-medium
+      transform-gpu transition-all duration-200 ease-spring
+      hover:scale-[1.03] active:scale-[0.97]
+      ${
         isActive
-          ? "bg-accent text-white"
+          ? "bg-accent text-white shadow-glow-accent"
           : "text-text-muted hover:text-text hover:bg-surface-raised"
       }`
     }
@@ -276,14 +300,21 @@ const NavItem: React.FC<{
   </NavLink>
 );
 
-// Loading skeleton for pages
+// Enhanced loading skeleton with shimmer effect
 const PageSkeleton: React.FC = () => (
-  <div className="animate-pulse space-y-4">
-    <div className="h-8 bg-surface-raised rounded w-48" />
+  <div className="space-y-4">
+    {/* Title skeleton */}
+    <div className="h-8 w-48 rounded-lg bg-gradient-to-r from-surface-raised via-surface-soft to-surface-raised bg-[length:200%_100%] animate-shimmer" />
+
+    {/* Content skeletons with stagger */}
     <div className="space-y-3">
-      <div className="h-20 bg-surface-raised rounded" />
-      <div className="h-20 bg-surface-raised rounded" />
-      <div className="h-20 bg-surface-raised rounded" />
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="h-20 rounded-tier bg-gradient-to-r from-surface-raised via-surface-soft to-surface-raised bg-[length:200%_100%] animate-shimmer"
+          style={{ animationDelay: `${i * 100}ms` }}
+        />
+      ))}
     </div>
   </div>
 );
