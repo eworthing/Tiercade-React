@@ -63,18 +63,23 @@ export const TierRow: React.FC<TierRowProps> = ({
         </div>
       </header>
 
-      {/* Items Container */}
-      <div className="flex-1 flex flex-wrap content-start gap-2 py-2 pr-3">
+      {/* Items Container with staggered animations */}
+      <div className="flex-1 flex flex-wrap content-start gap-2 py-2 pr-3 perspective-container">
         {items.length === 0 ? (
-          <div className="flex items-center justify-center w-full h-full min-h-[60px] text-text-subtle text-xs">
-            {isOver ? "Drop here" : "Drag items here"}
+          <div className="flex items-center justify-center w-full h-full min-h-[60px] text-text-subtle text-xs animate-pulse-soft">
+            {isOver ? (
+              <span className="text-accent font-medium animate-bounce-in">Drop here</span>
+            ) : (
+              "Drag items here"
+            )}
           </div>
         ) : (
-          items.map((item) => (
+          items.map((item, index) => (
             <SortableTierItem
               key={item.id}
               item={item}
               tierId={tierId}
+              index={index}
               isSelected={selectedItems.includes(item.id)}
               onClick={onItemClick}
               onDoubleClick={onItemDoubleClick}
@@ -88,6 +93,7 @@ export const TierRow: React.FC<TierRowProps> = ({
 
 interface SortableTierItemProps {
   item: Item;
+  index?: number;
   tierId: string;
   isSelected?: boolean;
   onClick?: (item: Item) => void;
@@ -97,6 +103,7 @@ interface SortableTierItemProps {
 const SortableTierItem: React.FC<SortableTierItemProps> = ({
   item,
   tierId,
+  index = 0,
   isSelected = false,
   onClick,
   onDoubleClick,
@@ -113,13 +120,20 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
     data: { tierId, item },
   });
 
-  // Spring-based transform with GPU acceleration
+  // 3D perspective transform with GPU acceleration
+  const baseTransform = CSS.Transform.toString(transform);
+  const dragTransform = isDragging
+    ? `${baseTransform} perspective(1000px) rotateX(3deg) rotateY(-3deg)`
+    : baseTransform;
+
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: dragTransform,
     transition: isDragging
       ? "box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1)"
       : `${transition}, box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
     willChange: isDragging ? "transform" : "auto",
+    // Stagger animation delay
+    animationDelay: `${index * 30}ms`,
   };
 
   const hasImage = !!item.imageUrl;
@@ -155,9 +169,10 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         active:scale-[0.98]
         transition-all duration-200 ease-spring
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface
+        opacity-0 animate-stagger-scale
         ${hasImage ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
         ${isSelected ? "ring-2 ring-accent border-accent shadow-glow-accent" : "border-border"}
-        ${isDragging ? "scale-110 shadow-modal z-50 rotate-2" : ""}
+        ${isDragging ? "scale-110 shadow-card-lifted z-50" : ""}
       `}
     >
       {hasImage ? (

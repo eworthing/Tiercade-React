@@ -99,8 +99,10 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-text">
-      {/* Header with glass effect */}
-      <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-soft/70 backdrop-blur-lg">
+      {/* Header with gradient accent and glass effect */}
+      <header className="sticky top-0 z-40 border-b border-border-subtle/50 bg-surface-soft/70 backdrop-blur-xl noise-overlay relative">
+        {/* Gradient accent line at top */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-accent opacity-80" />
         <div className="mx-auto max-w-6xl flex items-center gap-4 px-4 py-3">
           {/* Logo & Project Name */}
           <div className="flex items-center gap-3">
@@ -163,15 +165,15 @@ export const AppShell: React.FC = () => {
             )}
           </div>
 
-          {/* Navigation */}
+          {/* Navigation with staggered entrance */}
           <nav className="hidden md:flex items-center gap-1 ml-6" role="navigation">
-            <NavItem to="/" end>
+            <NavItem to="/" end index={0}>
               Board
             </NavItem>
-            <NavItem to="/head-to-head">Head-to-Head</NavItem>
-            <NavItem to="/themes">Themes</NavItem>
-            <NavItem to="/analytics">Analytics</NavItem>
-            <NavItem to="/import-export">Import/Export</NavItem>
+            <NavItem to="/head-to-head" index={1}>Head-to-Head</NavItem>
+            <NavItem to="/themes" index={2}>Themes</NavItem>
+            <NavItem to="/analytics" index={3}>Analytics</NavItem>
+            <NavItem to="/import-export" index={4}>Import/Export</NavItem>
           </nav>
 
           {/* Mobile nav dropdown would go here */}
@@ -234,15 +236,15 @@ export const AppShell: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile navigation */}
+        {/* Mobile navigation with stagger */}
         <nav className="md:hidden flex items-center gap-1 px-4 pb-3 overflow-x-auto">
-          <NavItem to="/" end>
+          <NavItem to="/" end index={0}>
             Board
           </NavItem>
-          <NavItem to="/head-to-head">H2H</NavItem>
-          <NavItem to="/themes">Themes</NavItem>
-          <NavItem to="/analytics">Stats</NavItem>
-          <NavItem to="/import-export">I/O</NavItem>
+          <NavItem to="/head-to-head" index={1}>H2H</NavItem>
+          <NavItem to="/themes" index={2}>Themes</NavItem>
+          <NavItem to="/analytics" index={3}>Stats</NavItem>
+          <NavItem to="/import-export" index={4}>I/O</NavItem>
         </nav>
       </header>
 
@@ -276,12 +278,13 @@ export const AppShell: React.FC = () => {
   );
 };
 
-// Navigation item component with spring animation
+// Navigation item component with gradient active state
 const NavItem: React.FC<{
   to: string;
   end?: boolean;
   children: React.ReactNode;
-}> = ({ to, end, children }) => (
+  index?: number;
+}> = ({ to, end, children, index = 0 }) => (
   <NavLink
     to={to}
     end={end}
@@ -289,12 +292,14 @@ const NavItem: React.FC<{
       `px-3 py-1.5 rounded-lg text-sm font-medium
       transform-gpu transition-all duration-200 ease-spring
       hover:scale-[1.03] active:scale-[0.97]
+      opacity-0 animate-stagger-fade
       ${
         isActive
-          ? "bg-accent text-white shadow-glow-accent"
-          : "text-text-muted hover:text-text hover:bg-surface-raised"
+          ? "btn-gradient text-white shadow-glow-gradient"
+          : "text-text-muted hover:text-text hover:bg-surface-raised/80"
       }`
     }
+    style={{ animationDelay: `${index * 50}ms` }}
   >
     {children}
   </NavLink>

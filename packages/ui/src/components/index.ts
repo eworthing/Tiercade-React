@@ -3,3 +3,6 @@ export * from "./Input";
 export * from "./Modal";
 export * from "./Toast";
 export * from "./ImageUpload";
+export * from "./Confetti";
+export * from "./EmptyState";
+export * from "./Tooltip";

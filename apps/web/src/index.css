@@ -35,6 +35,14 @@
     height: 100%;
   }
 
+  /* Premium body styling with subtle gradient */
+  body {
+    background:
+      radial-gradient(ellipse at top, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+      #020617;
+  }
+
   /* Better focus outlines for accessibility */
   :focus-visible {
     outline: 2px solid theme("colors.accent.DEFAULT");
@@ -96,6 +104,58 @@
     border: 1px solid theme("colors.border.subtle");
   }
 
+  /* Noise texture overlay */
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    border-radius: inherit;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gradient border */
+  .border-gradient {
+    position: relative;
+    background: theme("colors.surface.soft");
+    border-radius: inherit;
+  }
+
+  .border-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+    border-radius: inherit;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Gradient button */
+  .btn-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background-position: 100% 50%;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+  }
+
   /* Pressed state helper */
   .press-effect {
     transition: transform 100ms ease-out;
@@ -111,6 +171,54 @@
   .stagger-3 { animation-delay: 150ms; }
   .stagger-4 { animation-delay: 200ms; }
   .stagger-5 { animation-delay: 250ms; }
+  .stagger-6 { animation-delay: 300ms; }
+  .stagger-7 { animation-delay: 350ms; }
+  .stagger-8 { animation-delay: 400ms; }
+
+  /* Perspective container for 3D effects */
+  .perspective-container {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+
+  /* 3D tilt on hover */
+  .tilt-3d {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .tilt-3d:hover {
+    transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) scale(1.02);
+  }
+
+  /* Floating animation */
+  .floating {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Success celebration container */
+  .celebration-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9999;
+  }
+
+  /* Confetti particle */
+  .confetti-particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    animation: confetti 1s ease-out forwards;
+  }
+
+  /* Sparkle effect */
+  .sparkle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    animation: sparkle 700ms ease-out forwards;
+  }
 }
 
 /* Utility layer for additional helpers */
@@ -139,5 +247,76 @@
   /* Hardware acceleration hint */
   .gpu {
     transform: translateZ(0);
+  }
+
+  /* Gradient border utilities */
+  .gradient-border-accent {
+    border-image: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef) 1;
+  }
+
+  /* Glow utilities */
+  .glow-sm {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+
+  .glow-md {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  .glow-lg {
+    filter: drop-shadow(0 0 16px currentColor);
+  }
+
+  /* Animate on scroll utility */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Backdrop blur fallback for older browsers */
+  @supports not (backdrop-filter: blur(12px)) {
+    .backdrop-blur-lg {
+      background-color: rgba(15, 23, 42, 0.95);
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .border-subtle {
+      border-color: theme("colors.border.DEFAULT");
+    }
+  }
+}
+
+/* Confetti animation keyframes */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Sparkle burst animation */
+@keyframes sparkle-burst {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5) rotate(180deg);
+    opacity: 0;
   }
 }
