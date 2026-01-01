@@ -1,7 +1,7 @@
 // TypeScript port of TiercadeCore Models.swift
 // Source of truth: TiercadeCore/Sources/TiercadeCore/Models/Models.swift
 
-export type MediaType = "image" | "gif" | "video";
+export type MediaType = "image" | "gif" | "video" | "audio";
 
 export interface Item {
   id: string;
@@ -12,6 +12,7 @@ export interface Item {
   description?: string;
   imageUrl?: string;
   videoUrl?: string;
+  audioUrl?: string;
   mediaType?: MediaType;
 }
 

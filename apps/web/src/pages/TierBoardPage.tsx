@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { TierBoard, Button, Modal, useToast } from "@tiercade/ui";
+import { TierBoard, Button, Modal, useToast, type FileDropResult } from "@tiercade/ui";
 import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
@@ -12,6 +12,8 @@ import {
   deleteItems,
   loadProject,
   captureSnapshot,
+  addItemToTier,
+  updateItem,
 } from "@tiercade/state";
 import {
   DEFAULT_THEME_ID,
@@ -197,6 +199,63 @@ export const TierBoardPage: React.FC = () => {
   const handleItemDoubleClick = useCallback((item: Item) => {
     setEditingItem(item);
   }, []);
+
+  // Handle file drop onto a tier to create a new item
+  const handleFileDrop = useCallback(
+    (tierId: string, file: FileDropResult) => {
+      dispatch(captureSnapshot("Add Item from File"));
+
+      // Generate a unique ID
+      const id = `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+      // Build item based on media type
+      const item: Item = {
+        id,
+        name: file.fileName,
+        mediaType: file.mediaType,
+      };
+
+      if (file.mediaType === "video") {
+        item.videoUrl = file.dataUrl;
+      } else if (file.mediaType === "audio") {
+        item.audioUrl = file.dataUrl;
+      } else {
+        item.imageUrl = file.dataUrl;
+      }
+
+      dispatch(addItemToTier({ item, tierName: tierId }));
+      toast.success(`Added "${file.fileName}" to tier`);
+    },
+    [dispatch, toast]
+  );
+
+  // Handle file drop onto an existing item to update its media
+  const handleItemMediaDrop = useCallback(
+    (itemId: string, file: FileDropResult) => {
+      dispatch(captureSnapshot("Update Item Media"));
+
+      // Build updates based on media type
+      const updates: Partial<Item> = {
+        mediaType: file.mediaType,
+        // Clear other media types
+        imageUrl: undefined,
+        videoUrl: undefined,
+        audioUrl: undefined,
+      };
+
+      if (file.mediaType === "video") {
+        updates.videoUrl = file.dataUrl;
+      } else if (file.mediaType === "audio") {
+        updates.audioUrl = file.dataUrl;
+      } else {
+        updates.imageUrl = file.dataUrl;
+      }
+
+      dispatch(updateItem({ itemId, updates }));
+      toast.success("Updated item media");
+    },
+    [dispatch, toast]
+  );
 
   const handleExportPNG = useCallback(async () => {
     const tierBoard = document.querySelector("[data-tier-board]") as HTMLElement;
@@ -442,6 +501,8 @@ export const TierBoardPage: React.FC = () => {
         selectedItems={selection}
         onItemClick={handleItemClick}
         onItemDoubleClick={handleItemDoubleClick}
+        onFileDrop={handleFileDrop}
+        onItemMediaDrop={handleItemMediaDrop}
       />
 
       {/* Hint text */}
@@ -461,7 +522,7 @@ export const TierBoardPage: React.FC = () => {
 
       {totalItems > 0 && (
         <p className="text-center text-text-subtle text-xs">
-          Drag items between tiers • Double-click to edit • Click to select •{" "}
+          Drag items between tiers • Drop files to add • Double-click to edit •{" "}
           <button
             onClick={() => setShowKeyboardHelp(true)}
             className="underline hover:text-text-muted"

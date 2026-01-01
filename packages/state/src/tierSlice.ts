@@ -48,6 +48,14 @@ export const tierSlice = createSlice({
       const unranked = state.tiers["unranked"] ?? [];
       state.tiers["unranked"] = [...unranked, action.payload];
     },
+    addItemToTier(
+      state,
+      action: PayloadAction<{ item: Item; tierName: string }>
+    ) {
+      const { item, tierName } = action.payload;
+      const tier = state.tiers[tierName] ?? [];
+      state.tiers[tierName] = [...tier, item];
+    },
     updateItem(
       state,
       action: PayloadAction<{ itemId: string; updates: Partial<Item> }>
@@ -214,6 +222,7 @@ export const {
   toggleSelection,
   clearSelection,
   addItemToUnranked,
+  addItemToTier,
   updateItem,
   deleteItem,
   deleteItems,

@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { TierRow } from "./TierRow";
+import { TierRow, type FileDropResult } from "./TierRow";
 
 export interface TierBoardProps {
   tiers: Items;
@@ -28,6 +28,8 @@ export interface TierBoardProps {
   selectedItems?: string[];
   onItemClick?: (item: Item) => void;
   onItemDoubleClick?: (item: Item) => void;
+  onFileDrop?: (tierId: string, file: FileDropResult) => void;
+  onItemMediaDrop?: (itemId: string, file: FileDropResult) => void;
 }
 
 export const TierBoard: React.FC<TierBoardProps> = ({
@@ -39,6 +41,8 @@ export const TierBoard: React.FC<TierBoardProps> = ({
   selectedItems = [],
   onItemClick,
   onItemDoubleClick,
+  onFileDrop,
+  onItemMediaDrop,
 }) => {
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const orderedIds = useMemo(() => [...tierOrder, "unranked"], [tierOrder]);
@@ -130,6 +134,8 @@ export const TierBoard: React.FC<TierBoardProps> = ({
               selectedItems={selectedItems}
               onItemClick={onItemClick}
               onItemDoubleClick={onItemDoubleClick}
+              onFileDrop={onFileDrop}
+              onItemMediaDrop={onItemMediaDrop}
             />
           ))}
         </div>
@@ -154,6 +160,9 @@ interface DragPreviewProps {
 
 const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
   const hasImage = !!item.imageUrl;
+  const hasVideo = !!item.videoUrl;
+  const hasAudio = !!item.audioUrl;
+  const hasMedia = hasImage || hasVideo || hasAudio;
 
   return (
     <div
@@ -161,10 +170,36 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
         flex flex-col items-center justify-center
         rounded-card bg-surface-raised border border-accent shadow-modal
         cursor-grabbing scale-105
-        ${hasImage ? "w-24 h-24" : "px-4 py-3"}
+        ${hasMedia ? "w-24 h-24" : "px-4 py-3"}
       `}
     >
-      {hasImage ? (
+      {hasVideo ? (
+        <>
+          <video
+            src={item.videoUrl}
+            className="w-full h-full object-cover rounded-card"
+            loop
+            muted
+            playsInline
+            autoPlay
+            draggable={false}
+          />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card">
+            <p className="text-2xs text-white text-center truncate font-medium">
+              {item.name ?? item.id}
+            </p>
+          </div>
+        </>
+      ) : hasAudio ? (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-2">
+          <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+          </svg>
+          <p className="text-2xs text-text-muted text-center truncate w-full font-medium">
+            {item.name ?? item.id}
+          </p>
+        </div>
+      ) : hasImage ? (
         <>
           <img
             src={item.imageUrl}
@@ -186,3 +221,5 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
     </div>
   );
 };
+
+export type { FileDropResult };
