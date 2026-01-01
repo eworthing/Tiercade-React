@@ -8,7 +8,15 @@ import { ImportExportPage } from "../pages/ImportExportPage";
 import { TemplatesPage } from "../pages/TemplatesPage";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { performUndo, performRedo, setProjectName } from "@tiercade/state";
+import {
+  performUndo,
+  performRedo,
+  setProjectName,
+  selectCanUndo,
+  selectCanRedo,
+  selectProjectName,
+  selectHasCompletedOnboarding,
+} from "@tiercade/state";
 import { IconButton } from "@tiercade/ui";
 import { PageErrorBoundary } from "../components/ErrorBoundary";
 import { OnboardingWizard } from "../components/OnboardingWizard";
@@ -17,12 +25,10 @@ import { PWAInstallPrompt } from "../components/PWAInstallPrompt";
 export const AppShell: React.FC = () => {
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const canUndo = useAppSelector((state) => state.undoRedo.past.length > 0);
-  const canRedo = useAppSelector((state) => state.undoRedo.future.length > 0);
-  const projectName = useAppSelector((state) => state.tier.projectName);
-  const hasCompletedOnboarding = useAppSelector(
-    (state) => state.onboarding.hasCompletedOnboarding
-  );
+  const canUndo = useAppSelector(selectCanUndo);
+  const canRedo = useAppSelector(selectCanRedo);
+  const projectName = useAppSelector(selectProjectName);
+  const hasCompletedOnboarding = useAppSelector(selectHasCompletedOnboarding);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(projectName);

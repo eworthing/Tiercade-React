@@ -4,10 +4,11 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { createPortal } from "react-dom";
 import { generateId } from "@tiercade/core";
-import { TOAST, STAGGER } from "@tiercade/theme";
+import { TOAST } from "@tiercade/theme";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
@@ -42,8 +43,24 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  // Track active timers for cleanup on unmount
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => clearTimeout(timer));
+      timersRef.current.clear();
+    };
+  }, []);
 
   const removeToast = useCallback((id: string) => {
+    // Clear the timer when toast is removed
+    const timer = timersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
@@ -55,9 +72,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       setToasts((prev) => [...prev, toast]);
 
       if (duration > 0) {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
+          timersRef.current.delete(id);
           removeToast(id);
         }, duration);
+        timersRef.current.set(id, timer);
       }
     },
     [removeToast]

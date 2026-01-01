@@ -1,5 +1,4 @@
-import React, { forwardRef } from "react";
-import { generateSimpleId } from "@tiercade/core";
+import React, { forwardRef, useId } from "react";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -9,7 +8,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, hint, className = "", id, ...props }, ref) => {
-    const inputId = id || generateSimpleId("input");
+    const generatedId = useId();
+    const inputId = id || generatedId;
 
     return (
       <div className="flex flex-col gap-1.5">
@@ -65,7 +65,8 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, hint, className = "", id, ...props }, ref) => {
-    const inputId = id || generateSimpleId("textarea");
+    const generatedId = useId();
+    const inputId = id || generatedId;
 
     return (
       <div className="flex flex-col gap-1.5">

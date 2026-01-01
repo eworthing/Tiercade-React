@@ -9,3 +9,4 @@ export * from "./headToHeadThunks";
 export * from "./projectThunks";
 export * from "./undoRedoThunks";
 export * from "./persistenceMiddleware";
+export * from "./selectors";
