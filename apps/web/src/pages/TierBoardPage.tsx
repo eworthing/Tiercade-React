@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { TierBoard, Button, Modal, useToast, SortFilterBar, type FileDropResult } from "@tiercade/ui";
+import { TierBoard, Button, Modal, useToast, SortFilterBar, PresentationControls, StreamingOverlay, type FileDropResult } from "@tiercade/ui";
 import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
@@ -18,7 +18,21 @@ import {
   setSearchFilter,
   toggleMediaTypeFilter,
   clearFilters,
+  // Presentation mode actions
+  togglePresentationMode,
+  setChromaKey,
+  setRevealMode,
+  revealItem,
+  setShowProgress,
+  setCelebrateSTier,
+  setItemScale,
+  drawNextItem,
+  shuffleQueue,
+  setItemQueue,
+  setWatermarkText,
+  setShowWatermark,
 } from "@tiercade/state";
+import type { ChromaKeyColor } from "@tiercade/state";
 import {
   DEFAULT_THEME_ID,
   findThemeById,
@@ -50,12 +64,29 @@ export const TierBoardPage: React.FC = () => {
   const sortMode = useAppSelector((state) => state.tier.sortMode);
   const filters = useAppSelector((state) => state.tier.filters);
 
+  // Presentation mode state
+  const isPresenting = useAppSelector((state) => state.presentation.isPresenting);
+  const chromaKey = useAppSelector((state) => state.presentation.chromaKey);
+  const revealMode = useAppSelector((state) => state.presentation.revealMode);
+  const revealedItems = useAppSelector((state) => state.presentation.revealedItems);
+  const showProgress = useAppSelector((state) => state.presentation.showProgress);
+  const celebrateSTier = useAppSelector((state) => state.presentation.celebrateSTier);
+  const itemScale = useAppSelector((state) => state.presentation.itemScale);
+  const itemQueue = useAppSelector((state) => state.presentation.itemQueue);
+  const currentQueueItem = useAppSelector((state) => state.presentation.currentQueueItem);
+  const watermarkText = useAppSelector((state) => state.presentation.watermarkText);
+  const showWatermark = useAppSelector((state) => state.presentation.showWatermark);
+  const showCurrentItem = useAppSelector((state) => state.presentation.showCurrentItem);
+
   // Modal states
   const [showAddItem, setShowAddItem] = useState(false);
   const [showTierSettings, setShowTierSettings] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showStreamingPanel, setShowStreamingPanel] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationTier, setCelebrationTier] = useState<string | null>(null);
 
   // Initialize default theme on first load
   useEffect(() => {
@@ -380,6 +411,121 @@ export const TierBoardPage: React.FC = () => {
     dispatch(clearFilters());
   }, [dispatch]);
 
+  // Presentation mode handlers
+  const handleTogglePresentation = useCallback(() => {
+    dispatch(togglePresentationMode());
+  }, [dispatch]);
+
+  const handleChromaKeyChange = useCallback(
+    (color: ChromaKeyColor) => {
+      dispatch(setChromaKey(color));
+    },
+    [dispatch]
+  );
+
+  const handleRevealModeChange = useCallback(
+    (enabled: boolean) => {
+      dispatch(setRevealMode(enabled));
+    },
+    [dispatch]
+  );
+
+  const handleItemReveal = useCallback(
+    (itemId: string) => {
+      dispatch(revealItem(itemId));
+    },
+    [dispatch]
+  );
+
+  const handleShowProgressChange = useCallback(
+    (show: boolean) => {
+      dispatch(setShowProgress(show));
+    },
+    [dispatch]
+  );
+
+  const handleCelebrateSTierChange = useCallback(
+    (celebrate: boolean) => {
+      dispatch(setCelebrateSTier(celebrate));
+    },
+    [dispatch]
+  );
+
+  const handleItemScaleChange = useCallback(
+    (scale: number) => {
+      dispatch(setItemScale(scale));
+    },
+    [dispatch]
+  );
+
+  const handleDrawNext = useCallback(() => {
+    dispatch(drawNextItem());
+  }, [dispatch]);
+
+  const handleShuffleQueue = useCallback(() => {
+    dispatch(shuffleQueue());
+  }, [dispatch]);
+
+  const handleStartQueue = useCallback(() => {
+    // Queue all unranked items
+    const unrankedItems = tiers["unranked"] ?? [];
+    const itemIds = unrankedItems.map((item) => item.id);
+    dispatch(setItemQueue(itemIds));
+  }, [dispatch, tiers]);
+
+  const handleWatermarkTextChange = useCallback(
+    (text: string) => {
+      dispatch(setWatermarkText(text));
+    },
+    [dispatch]
+  );
+
+  const handleShowWatermarkChange = useCallback(
+    (show: boolean) => {
+      dispatch(setShowWatermark(show));
+    },
+    [dispatch]
+  );
+
+  // Enhanced move handler for celebrations
+  const handleMoveItemWithCelebration = useCallback(
+    (itemId: string, targetTierName: string) => {
+      dispatch(moveItemBetweenTiersWithUndo(itemId, targetTierName));
+
+      // Trigger S-tier celebration
+      if (
+        isPresenting &&
+        celebrateSTier &&
+        (targetTierName === "S" || targetTierName === "s")
+      ) {
+        setCelebrationTier(targetTierName);
+        setShowCelebration(true);
+      }
+    },
+    [dispatch, isPresenting, celebrateSTier]
+  );
+
+  // Get current queue item as full Item object
+  const currentQueueItemObj = useMemo(() => {
+    if (!currentQueueItem) return null;
+    for (const items of Object.values(tiers)) {
+      const found = items.find((item) => item.id === currentQueueItem);
+      if (found) return found;
+    }
+    return null;
+  }, [currentQueueItem, tiers]);
+
+  // Count ranked items (not in unranked tier)
+  const rankedItemsCount = useMemo(() => {
+    let count = 0;
+    for (const [tierName, items] of Object.entries(tiers)) {
+      if (tierName !== "unranked") {
+        count += items.length;
+      }
+    }
+    return count;
+  }, [tiers]);
+
   // Empty state
   if (!tierOrder.length) {
     return (
@@ -409,8 +555,65 @@ export const TierBoardPage: React.FC = () => {
     );
   }
 
+  // Chroma key class based on setting
+  const chromaKeyClass = chromaKey !== "none" ? `chroma-${chromaKey}` : "";
+
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${isPresenting ? "min-h-screen" : ""} ${chromaKeyClass}`}>
+      {/* Streaming Overlay */}
+      <StreamingOverlay
+        isPresenting={isPresenting}
+        currentItem={currentQueueItemObj}
+        showCurrentItem={showCurrentItem}
+        totalItems={totalItems}
+        rankedItems={rankedItemsCount}
+        showProgress={showProgress}
+        watermarkText={watermarkText}
+        showWatermark={showWatermark}
+        queueRemaining={itemQueue.length}
+      />
+
+      {/* S-tier Celebration */}
+      {showCelebration && celebrationTier && (
+        <div className="fixed inset-0 pointer-events-none z-[100]">
+          <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-0 fade-in duration-300">
+            <div className="relative">
+              <div className="absolute inset-0 blur-3xl bg-yellow-500/30 rounded-full animate-pulse" />
+              <div className="text-6xl animate-bounce">⭐</div>
+            </div>
+          </div>
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-2xl"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `float ${1 + Math.random()}s ease-out forwards`,
+                animationDelay: `${Math.random() * 0.5}s`,
+              }}
+            >
+              {["⭐", "✨", "🌟"][Math.floor(Math.random() * 3)]}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Auto-dismiss celebration */}
+      {showCelebration && (
+        <div
+          style={{ display: "none" }}
+          ref={(el) => {
+            if (el) {
+              setTimeout(() => {
+                setShowCelebration(false);
+                setCelebrationTier(null);
+              }, 2000);
+            }
+          }}
+        />
+      )}
+
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
@@ -525,6 +728,30 @@ export const TierBoardPage: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Stream Mode Button */}
+          <Button
+            variant={isPresenting ? "primary" : "secondary"}
+            size="sm"
+            onClick={() => setShowStreamingPanel(true)}
+            icon={
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+            }
+          >
+            {isPresenting ? "Live" : "Stream"}
+          </Button>
         </div>
 
         <div className="flex items-center gap-4 text-sm text-text-muted">
@@ -564,7 +791,7 @@ export const TierBoardPage: React.FC = () => {
       <TierBoard
         tiers={processedTiers}
         tierOrder={tierOrder}
-        onMoveItem={handleMoveItem}
+        onMoveItem={handleMoveItemWithCelebration}
         tierColors={tierColors}
         tierLabels={tierLabels}
         selectedItems={selection}
@@ -572,6 +799,10 @@ export const TierBoardPage: React.FC = () => {
         onItemDoubleClick={handleItemDoubleClick}
         onFileDrop={handleFileDrop}
         onItemMediaDrop={handleItemMediaDrop}
+        itemScale={isPresenting ? itemScale : 1}
+        revealMode={isPresenting && revealMode}
+        revealedItems={revealedItems}
+        onItemReveal={handleItemReveal}
       />
 
       {/* Hint text */}
@@ -651,6 +882,38 @@ export const TierBoardPage: React.FC = () => {
             Tip: Use ⌘ on Mac or Ctrl on Windows/Linux
           </p>
         </div>
+      </Modal>
+
+      {/* Streaming Panel Modal */}
+      <Modal
+        open={showStreamingPanel}
+        onClose={() => setShowStreamingPanel(false)}
+        title="Stream Mode"
+        size="sm"
+      >
+        <PresentationControls
+          isPresenting={isPresenting}
+          chromaKey={chromaKey}
+          revealMode={revealMode}
+          showProgress={showProgress}
+          celebrateSTier={celebrateSTier}
+          itemScale={itemScale}
+          queueLength={itemQueue.length}
+          currentQueueItem={currentQueueItem}
+          watermarkText={watermarkText}
+          showWatermark={showWatermark}
+          onTogglePresentation={handleTogglePresentation}
+          onChromaKeyChange={handleChromaKeyChange}
+          onRevealModeChange={handleRevealModeChange}
+          onShowProgressChange={handleShowProgressChange}
+          onCelebrateSTierChange={handleCelebrateSTierChange}
+          onItemScaleChange={handleItemScaleChange}
+          onDrawNext={handleDrawNext}
+          onShuffleQueue={handleShuffleQueue}
+          onStartQueue={handleStartQueue}
+          onWatermarkTextChange={handleWatermarkTextChange}
+          onShowWatermarkChange={handleShowWatermarkChange}
+        />
       </Modal>
     </div>
   );

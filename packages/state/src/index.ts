@@ -4,6 +4,7 @@ export * from "./headToHeadSlice";
 export * from "./themeSlice";
 export * from "./undoRedoSlice";
 export * from "./onboardingSlice";
+export * from "./presentationSlice";
 export * from "./headToHeadThunks";
 export * from "./projectThunks";
 export * from "./undoRedoThunks";

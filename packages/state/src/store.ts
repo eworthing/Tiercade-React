@@ -4,6 +4,7 @@ import { headToHeadReducer } from "./headToHeadSlice";
 import { themeReducer, type ThemeState } from "./themeSlice";
 import { undoRedoReducer, type UndoRedoState } from "./undoRedoSlice";
 import { onboardingReducer } from "./onboardingSlice";
+import { presentationReducer } from "./presentationSlice";
 import { persistenceMiddleware, loadPersistedState } from "./persistenceMiddleware";
 
 // Load any persisted state from localStorage
@@ -33,6 +34,7 @@ export const store = configureStore({
     theme: themeReducer,
     undoRedo: undoRedoReducer,
     onboarding: onboardingReducer,
+    presentation: presentationReducer,
   },
   preloadedState: Object.keys(preloadedState).length > 0 ? preloadedState : undefined,
   middleware: (getDefaultMiddleware) =>

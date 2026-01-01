@@ -79,6 +79,14 @@ export interface TierRowProps {
   selectedItems?: string[];
   onFileDrop?: (tierId: string, file: FileDropResult) => void;
   onItemMediaDrop?: (itemId: string, file: FileDropResult) => void;
+  /** Item scale for presentation mode (1 = normal) */
+  itemScale?: number;
+  /** Whether reveal mode is active */
+  revealMode?: boolean;
+  /** IDs of items that have been revealed */
+  revealedItems?: string[];
+  /** Callback when an item is revealed */
+  onItemReveal?: (itemId: string) => void;
 }
 
 export const TierRow: React.FC<TierRowProps> = ({
@@ -91,6 +99,10 @@ export const TierRow: React.FC<TierRowProps> = ({
   selectedItems = [],
   onFileDrop,
   onItemMediaDrop,
+  itemScale = 1,
+  revealMode = false,
+  revealedItems = [],
+  onItemReveal,
 }) => {
   const label = tierLabel ?? (tierId === "unranked" ? "Unranked" : tierId);
   const bgColor = tierColor ?? "#1E293B"; // Default slate-800 fallback
@@ -195,6 +207,9 @@ export const TierRow: React.FC<TierRowProps> = ({
                 onClick={onItemClick}
                 onDoubleClick={onItemDoubleClick}
                 onMediaDrop={onItemMediaDrop}
+                scale={itemScale}
+                isRevealed={!revealMode || revealedItems.includes(item.id)}
+                onReveal={onItemReveal}
               />
             ))}
             {/* Drop zone indicator when dragging files over tier */}
@@ -220,6 +235,12 @@ interface SortableTierItemProps {
   onClick?: (item: Item) => void;
   onDoubleClick?: (item: Item) => void;
   onMediaDrop?: (itemId: string, file: FileDropResult) => void;
+  /** Scale factor for presentation mode */
+  scale?: number;
+  /** Whether this item has been revealed (in reveal mode) */
+  isRevealed?: boolean;
+  /** Callback when item is clicked to reveal */
+  onReveal?: (itemId: string) => void;
 }
 
 const SortableTierItem: React.FC<SortableTierItemProps> = ({
@@ -230,6 +251,9 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   onClick,
   onDoubleClick,
   onMediaDrop,
+  scale = 1,
+  isRevealed = true,
+  onReveal,
 }) => {
   const [isFileDragOver, setIsFileDragOver] = useState(false);
 
@@ -247,18 +271,20 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
 
   // 3D perspective transform with GPU acceleration
   const baseTransform = CSS.Transform.toString(transform);
+  const scaleTransform = scale !== 1 ? ` scale(${scale})` : "";
   const dragTransform = isDragging
-    ? `${baseTransform} perspective(1000px) rotateX(3deg) rotateY(-3deg)`
-    : baseTransform;
+    ? `${baseTransform} perspective(1000px) rotateX(3deg) rotateY(-3deg)${scaleTransform}`
+    : `${baseTransform || ""}${scaleTransform}`;
 
   const style: React.CSSProperties = {
-    transform: dragTransform,
+    transform: dragTransform || undefined,
     transition: isDragging
       ? "box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1)"
       : `${transition}, box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
     willChange: isDragging ? "transform" : "auto",
     // Stagger animation delay
     animationDelay: `${index * 30}ms`,
+    transformOrigin: "center center",
   };
 
   const hasImage = !!item.imageUrl;
@@ -271,7 +297,12 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     // Prevent triggering when dragging
     if (e.detail === 1) {
-      onClick?.(item);
+      // If not revealed, reveal it first
+      if (!isRevealed) {
+        onReveal?.(item.id);
+      } else {
+        onClick?.(item);
+      }
     }
   };
 
@@ -310,6 +341,41 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
       onMediaDrop(item.id, result);
     }
   }, [onMediaDrop, item.id]);
+
+  // Mystery card for unrevealed items
+  if (!isRevealed) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        role="option"
+        aria-selected={isSelected}
+        data-testid={`item-card-${item.id}`}
+        onClick={handleClick}
+        className="
+          relative w-20 h-20 sm:w-24 sm:h-24 rounded-card cursor-pointer
+          transition-all duration-300 hover:scale-105 group
+          opacity-0 animate-stagger-scale
+        "
+      >
+        {/* Mystery card back */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-indigo-800 rounded-card flex items-center justify-center overflow-hidden">
+          {/* Animated pattern */}
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2)_0%,transparent_50%)] animate-pulse" />
+          </div>
+          {/* Question mark */}
+          <span className="text-3xl font-bold text-white/90 group-hover:scale-110 transition-transform">
+            ?
+          </span>
+        </div>
+        {/* Glow effect on hover */}
+        <div className="absolute inset-0 rounded-card ring-2 ring-transparent group-hover:ring-purple-400/50 transition-all" />
+      </div>
+    );
+  }
 
   return (
     <div

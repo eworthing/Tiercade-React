@@ -30,6 +30,14 @@ export interface TierBoardProps {
   onItemDoubleClick?: (item: Item) => void;
   onFileDrop?: (tierId: string, file: FileDropResult) => void;
   onItemMediaDrop?: (itemId: string, file: FileDropResult) => void;
+  /** Item scale for presentation mode (1 = normal) */
+  itemScale?: number;
+  /** Whether reveal mode is active */
+  revealMode?: boolean;
+  /** IDs of items that have been revealed */
+  revealedItems?: string[];
+  /** Callback when an item is revealed */
+  onItemReveal?: (itemId: string) => void;
 }
 
 export const TierBoard: React.FC<TierBoardProps> = ({
@@ -43,6 +51,10 @@ export const TierBoard: React.FC<TierBoardProps> = ({
   onItemDoubleClick,
   onFileDrop,
   onItemMediaDrop,
+  itemScale = 1,
+  revealMode = false,
+  revealedItems = [],
+  onItemReveal,
 }) => {
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const orderedIds = useMemo(() => [...tierOrder, "unranked"], [tierOrder]);
@@ -136,6 +148,10 @@ export const TierBoard: React.FC<TierBoardProps> = ({
               onItemDoubleClick={onItemDoubleClick}
               onFileDrop={onFileDrop}
               onItemMediaDrop={onItemMediaDrop}
+              itemScale={itemScale}
+              revealMode={revealMode}
+              revealedItems={revealedItems}
+              onItemReveal={onItemReveal}
             />
           ))}
         </div>

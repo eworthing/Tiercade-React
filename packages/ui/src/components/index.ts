@@ -8,3 +8,5 @@ export * from "./Confetti";
 export * from "./EmptyState";
 export * from "./Tooltip";
 export * from "./SortFilterBar";
+export * from "./PresentationControls";
+export * from "./StreamingOverlay";

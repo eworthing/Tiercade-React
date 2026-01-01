@@ -564,4 +564,95 @@
       border-color: var(--color-border);
     }
   }
+
+  /* Presentation/Streaming mode utilities */
+  .chroma-green {
+    background-color: #00ff00 !important;
+  }
+
+  .chroma-magenta {
+    background-color: #ff00ff !important;
+  }
+
+  .chroma-blue {
+    background-color: #0000ff !important;
+  }
+
+  /* Presentation mode - hide chrome */
+  .presentation-mode {
+    /* Clean background for streaming */
+  }
+
+  .presentation-mode .hide-in-presentation {
+    display: none !important;
+  }
+
+  /* Item placement animation */
+  .item-placed {
+    animation: itemPlaced 400ms var(--ease-spring);
+  }
+
+  @keyframes itemPlaced {
+    0% { transform: scale(1.3); opacity: 0.5; }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* S-tier celebration burst */
+  .s-tier-burst {
+    animation: sTierBurst 800ms var(--ease-spring);
+  }
+
+  @keyframes sTierBurst {
+    0% { transform: scale(1); filter: brightness(1); }
+    25% { transform: scale(1.15); filter: brightness(1.3) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)); }
+    50% { transform: scale(1.05); filter: brightness(1.1); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+
+  /* F-tier drop animation */
+  .f-tier-drop {
+    animation: fTierDrop 500ms var(--ease-bounce);
+  }
+
+  @keyframes fTierDrop {
+    0% { transform: translateY(-20px) rotate(-5deg); opacity: 0; }
+    60% { transform: translateY(5px) rotate(2deg); }
+    100% { transform: translateY(0) rotate(0); opacity: 1; }
+  }
+
+  /* Mystery card shimmer */
+  .mystery-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mystery-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 25%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 75%
+    );
+    animation: shimmerMove 2s infinite;
+  }
+
+  @keyframes shimmerMove {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Large item mode for streaming */
+  .items-large .tier-item {
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .items-xlarge .tier-item {
+    width: 8rem;
+    height: 8rem;
+  }
 }
