@@ -1,63 +1,16 @@
-import React, { useState, useCallback } from "react";
-import type { Item, MediaType } from "@tiercade/core";
-import {
-  isAcceptedFileType,
-  isAcceptedImageType,
-  isAcceptedVideoType,
-  isAcceptedAudioType,
-  isValidFileSize,
-} from "@tiercade/core";
+import React, { useCallback } from "react";
+import type { Item } from "@tiercade/core";
 import { STAGGER } from "@tiercade/theme";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useFileDrag, type FileDropResult } from "../hooks";
 
-/**
- * Determine MediaType from MIME type
- */
-function getMediaTypeFromMime(mimeType: string): MediaType | null {
-  if (mimeType === "image/gif") return "gif";
-  if (isAcceptedImageType(mimeType)) return "image";
-  if (isAcceptedVideoType(mimeType)) return "video";
-  if (isAcceptedAudioType(mimeType)) return "audio";
-  return null;
-}
+/** Default tier background color when no theme color is provided */
+const DEFAULT_TIER_BACKGROUND = "#1E293B";
 
-/**
- * Process a dropped file and return data URL with metadata
- */
-async function processFile(file: File): Promise<{ dataUrl: string; mediaType: MediaType; fileName: string } | null> {
-  if (!isAcceptedFileType(file.type)) {
-    console.warn("Invalid file type:", file.type);
-    return null;
-  }
-
-  if (!isValidFileSize(file)) {
-    console.warn("File too large:", file.size);
-    return null;
-  }
-
-  const mediaType = getMediaTypeFromMime(file.type);
-  if (!mediaType) return null;
-
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      // Extract filename without extension for item name
-      const fileName = file.name.replace(/\.[^/.]+$/, "");
-      resolve({ dataUrl, mediaType, fileName });
-    };
-    reader.onerror = () => resolve(null);
-    reader.readAsDataURL(file);
-  });
-}
-
-export interface FileDropResult {
-  dataUrl: string;
-  mediaType: MediaType;
-  fileName: string;
-}
+// Re-export FileDropResult for consumers
+export type { FileDropResult };
 
 export interface TierRowProps {
   tierId: string;
@@ -95,47 +48,23 @@ export const TierRow: React.FC<TierRowProps> = ({
   onItemReveal,
 }) => {
   const label = tierLabel ?? (tierId === "unranked" ? "Unranked" : tierId);
-  const bgColor = tierColor ?? "#1E293B"; // Default slate-800 fallback
+  const bgColor = tierColor ?? DEFAULT_TIER_BACKGROUND;
   const isUnranked = tierId === "unranked";
-  const [isFileDragOver, setIsFileDragOver] = useState(false);
 
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
     id: tierId,
     data: { tierId },
   });
 
-  const handleFileDragOver = useCallback((e: React.DragEvent) => {
-    // Check if it's a file drag (not internal dnd-kit drag)
-    if (e.dataTransfer.types.includes("Files")) {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsFileDragOver(true);
-    }
-  }, []);
+  const handleFileDrop = useCallback(
+    (result: FileDropResult) => onFileDrop?.(tierId, result),
+    [onFileDrop, tierId]
+  );
 
-  const handleFileDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFileDragOver(false);
-  }, []);
-
-  const handleFileDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFileDragOver(false);
-
-    if (!onFileDrop) return;
-
-    const files = Array.from(e.dataTransfer.files);
-    const file = files[0]; // Only process first file
-
-    if (!file) return;
-
-    const result = await processFile(file);
-    if (result) {
-      onFileDrop(tierId, result);
-    }
-  }, [onFileDrop, tierId]);
+  const { isFileDragOver, dragProps } = useFileDrag({
+    onDrop: handleFileDrop,
+    enabled: !!onFileDrop,
+  });
 
   const showFileDrop = isFileDragOver && onFileDrop;
 
@@ -145,9 +74,7 @@ export const TierRow: React.FC<TierRowProps> = ({
       data-testid={`tier-row-${tierId}`}
       role="listbox"
       aria-label={`${label} tier, ${items.length} items`}
-      onDragOver={handleFileDragOver}
-      onDragLeave={handleFileDragLeave}
-      onDrop={handleFileDrop}
+      {...dragProps}
       className={`
         flex items-stretch gap-3 rounded-tier border min-h-[80px]
         transition-all duration-300 ease-spring transform-gpu
@@ -217,6 +144,115 @@ export const TierRow: React.FC<TierRowProps> = ({
   );
 };
 
+// ============================================================================
+// Item Media Content
+// Extracted to eliminate complex ternary chain and improve readability
+// ============================================================================
+
+interface ItemMediaContentProps {
+  item: Item;
+}
+
+/** Shared name overlay component for media items */
+const NameOverlay: React.FC<{ name: string }> = ({ name }) => (
+  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card opacity-0 group-hover:opacity-100 transition-opacity">
+    <p className="text-2xs text-white text-center truncate font-medium">{name}</p>
+  </div>
+);
+
+/** Media type badge component */
+const MediaBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white flex items-center gap-0.5">
+    {children}
+  </div>
+);
+
+/** Renders the appropriate media content based on item type */
+const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
+  const displayName = item.name ?? item.id;
+  const hasVideo = !!item.videoUrl;
+  const hasAudio = !!item.audioUrl;
+  const hasImage = !!item.imageUrl;
+  const isGif = item.mediaType === "gif";
+
+  if (hasVideo) {
+    return (
+      <>
+        <video
+          src={item.videoUrl}
+          className="w-full h-full object-cover rounded-card"
+          loop
+          muted
+          playsInline
+          autoPlay
+          draggable={false}
+        />
+        <MediaBadge>
+          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </MediaBadge>
+        <NameOverlay name={displayName} />
+      </>
+    );
+  }
+
+  if (hasAudio) {
+    return (
+      <>
+        <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-2">
+          <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+          </svg>
+          <p className="text-2xs text-text-muted text-center truncate w-full font-medium">
+            {displayName}
+          </p>
+        </div>
+        <MediaBadge>
+          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+          </svg>
+        </MediaBadge>
+        <audio src={item.audioUrl} className="hidden" />
+      </>
+    );
+  }
+
+  if (hasImage) {
+    return (
+      <>
+        <img
+          src={item.imageUrl}
+          alt={displayName}
+          className="w-full h-full object-cover rounded-card"
+          draggable={false}
+        />
+        {isGif && (
+          <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white font-medium">
+            GIF
+          </div>
+        )}
+        <NameOverlay name={displayName} />
+      </>
+    );
+  }
+
+  // Text-only fallback
+  return (
+    <span className="text-xs text-text text-center leading-tight">
+      {displayName}
+    </span>
+  );
+};
+
+NameOverlay.displayName = "NameOverlay";
+MediaBadge.displayName = "MediaBadge";
+ItemMediaContent.displayName = "ItemMediaContent";
+
+// ============================================================================
+// SortableTierItem Component
+// ============================================================================
+
 interface SortableTierItemProps {
   item: Item;
   index?: number;
@@ -245,8 +281,6 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   isRevealed = true,
   onReveal,
 }) => {
-  const [isFileDragOver, setIsFileDragOver] = useState(false);
-
   const {
     attributes,
     listeners,
@@ -257,6 +291,16 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   } = useSortable({
     id: item.id,
     data: { tierId, item },
+  });
+
+  const handleMediaDrop = useCallback(
+    (result: FileDropResult) => onMediaDrop?.(item.id, result),
+    [onMediaDrop, item.id]
+  );
+
+  const { isFileDragOver, dragProps } = useFileDrag({
+    onDrop: handleMediaDrop,
+    enabled: !!onMediaDrop,
   });
 
   // 3D perspective transform with GPU acceleration
@@ -276,12 +320,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
     transformOrigin: "center center",
   };
 
-  const hasImage = !!item.imageUrl;
-  const hasVideo = !!item.videoUrl;
-  const hasAudio = !!item.audioUrl;
-  const hasMedia = hasImage || hasVideo || hasAudio;
-  const isGif = item.mediaType === "gif";
-  const isAudio = item.mediaType === "audio";
+  const hasMedia = !!(item.imageUrl || item.videoUrl || item.audioUrl);
 
   const handleClick = (e: React.MouseEvent) => {
     // Prevent triggering when dragging
@@ -298,38 +337,6 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   const handleDoubleClick = () => {
     onDoubleClick?.(item);
   };
-
-  const handleFileDragOver = useCallback((e: React.DragEvent) => {
-    if (e.dataTransfer.types.includes("Files")) {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsFileDragOver(true);
-    }
-  }, []);
-
-  const handleFileDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFileDragOver(false);
-  }, []);
-
-  const handleFileDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFileDragOver(false);
-
-    if (!onMediaDrop) return;
-
-    const files = Array.from(e.dataTransfer.files);
-    const file = files[0];
-
-    if (!file) return;
-
-    const result = await processFile(file);
-    if (result) {
-      onMediaDrop(item.id, result);
-    }
-  }, [onMediaDrop, item.id]);
 
   // Mystery card for unrevealed items
   if (!isRevealed) {
@@ -372,14 +379,12 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
       style={style}
       {...attributes}
       {...listeners}
+      {...dragProps}
       role="option"
       aria-selected={isSelected}
       data-testid={`item-card-${item.id}`}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
-      onDragOver={handleFileDragOver}
-      onDragLeave={handleFileDragLeave}
-      onDrop={handleFileDrop}
       className={`
         group relative flex flex-col items-center justify-center
         cursor-grab active:cursor-grabbing
@@ -405,79 +410,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         </div>
       )}
 
-      {hasVideo ? (
-        <>
-          {/* Video */}
-          <video
-            src={item.videoUrl}
-            className="w-full h-full object-cover rounded-card"
-            loop
-            muted
-            playsInline
-            autoPlay
-            draggable={false}
-          />
-          {/* Video badge */}
-          <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white flex items-center gap-0.5">
-            <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-          {/* Name overlay on hover */}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card opacity-0 group-hover:opacity-100 transition-opacity">
-            <p className="text-2xs text-white text-center truncate font-medium">
-              {item.name ?? item.id}
-            </p>
-          </div>
-        </>
-      ) : hasAudio ? (
-        <>
-          {/* Audio visualization */}
-          <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-2">
-            <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
-            <p className="text-2xs text-text-muted text-center truncate w-full font-medium">
-              {item.name ?? item.id}
-            </p>
-          </div>
-          {/* Audio badge */}
-          <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white flex items-center gap-0.5">
-            <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-            </svg>
-          </div>
-          {/* Hidden audio element for potential playback */}
-          <audio src={item.audioUrl} className="hidden" />
-        </>
-      ) : hasImage ? (
-        <>
-          {/* Image */}
-          <img
-            src={item.imageUrl}
-            alt={item.name ?? item.id}
-            className="w-full h-full object-cover rounded-card"
-            draggable={false}
-          />
-          {/* GIF badge */}
-          {isGif && (
-            <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white font-medium">
-              GIF
-            </div>
-          )}
-          {/* Name overlay on hover */}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card opacity-0 group-hover:opacity-100 transition-opacity">
-            <p className="text-2xs text-white text-center truncate font-medium">
-              {item.name ?? item.id}
-            </p>
-          </div>
-        </>
-      ) : (
-        /* Text only */
-        <span className="text-xs text-text text-center leading-tight">
-          {item.name ?? item.id}
-        </span>
-      )}
+      <ItemMediaContent item={item} />
 
       {/* Selection indicator with pop animation */}
       {isSelected && !isFileDragOver && (

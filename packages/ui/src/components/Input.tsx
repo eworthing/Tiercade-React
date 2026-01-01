@@ -6,6 +6,19 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   hint?: string;
 }
 
+/**
+ * Get the appropriate aria-describedby value based on error/hint state
+ */
+function getAriaDescribedBy(
+  inputId: string,
+  error?: string,
+  hint?: string
+): string | undefined {
+  if (error) return `${inputId}-error`;
+  if (hint) return `${inputId}-hint`;
+  return undefined;
+}
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, hint, className = "", id, ...props }, ref) => {
     const generatedId = useId();
@@ -37,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ${className}
           `}
           aria-invalid={error ? "true" : "false"}
-          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+          aria-describedby={getAriaDescribedBy(inputId, error, hint)}
           {...props}
         />
         {error && (
@@ -94,7 +107,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             ${className}
           `}
           aria-invalid={error ? "true" : "false"}
-          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+          aria-describedby={getAriaDescribedBy(inputId, error, hint)}
           rows={3}
           {...props}
         />

@@ -3,6 +3,7 @@
 
 import type { Item, Items } from "./models";
 import { pickRandomPair } from "./randomUtils";
+import { compareStrings } from "./utils/comparison";
 
 export interface HeadToHeadRecord {
   wins: number;
@@ -751,24 +752,26 @@ export function orderedItems(
     const left = metrics[lhs.id];
     const right = metrics[rhs.id];
     if (!left || !right) {
-      return lhs.id < rhs.id ? -1 : lhs.id > rhs.id ? 1 : 0;
+      return compareStrings(lhs.id, rhs.id);
     }
+    // Sort by Wilson lower bound (descending)
     if (left.wilsonLB !== right.wilsonLB) {
       return left.wilsonLB > right.wilsonLB ? -1 : 1;
     }
+    // Then by comparison count (descending)
     if (left.comparisons !== right.comparisons) {
       return left.comparisons > right.comparisons ? -1 : 1;
     }
+    // Then by wins (descending)
     if (left.wins !== right.wins) {
       return left.wins > right.wins ? -1 : 1;
     }
+    // Then by name key (ascending)
     if (left.nameKey !== right.nameKey) {
-      return left.nameKey < right.nameKey ? -1 : 1;
+      return compareStrings(left.nameKey, right.nameKey);
     }
-    if (left.id !== right.id) {
-      return left.id < right.id ? -1 : 1;
-    }
-    return 0;
+    // Finally by ID (ascending)
+    return compareStrings(left.id, right.id);
   });
   return copy;
 }
@@ -1140,11 +1143,14 @@ export function frontierCandidatePairs(
 
   // Sort candidates by closeness, then by minComparisons, then by item IDs
   return candidates.sort((a, b) => {
+    // Primary: sort by closeness (ascending - closer pairs first)
     if (a.closeness !== b.closeness) return a.closeness - b.closeness;
+    // Secondary: sort by comparison count (ascending - less compared pairs first)
     if (a.minComparisons !== b.minComparisons) return a.minComparisons - b.minComparisons;
+    // Tertiary: sort by combined IDs for stability
     const leftIds = a.pair[0].id + a.pair[1].id;
     const rightIds = b.pair[0].id + b.pair[1].id;
-    return leftIds < rightIds ? -1 : leftIds > rightIds ? 1 : 0;
+    return compareStrings(leftIds, rightIds);
   });
 }
 

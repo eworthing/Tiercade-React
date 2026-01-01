@@ -16,3 +16,4 @@ export * from "./constants/fileUpload";
 
 // Utilities
 export * from "./utils/generateId";
+export * from "./utils/comparison";
