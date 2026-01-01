@@ -21,16 +21,17 @@ export function captureSnapshot(action: string): AppThunk {
  */
 export function performUndo(): AppThunk {
   return (dispatch, getState) => {
-    const snapshot = getState().undoRedo.past[getState().undoRedo.past.length - 1];
-    if (!snapshot) return;
+    // Check if we can undo before dispatching
+    if (getState().undoRedo.past.length === 0) return;
 
+    // The undo action pops from past and returns the snapshot
     const result = dispatch(undoAction());
+
+    // Use the returned payload (the popped snapshot) to restore state
+    // BUG FIX: Previously re-queried state.past which returned wrong snapshot
     if (result.payload) {
-      const prev = getState().undoRedo.past[getState().undoRedo.past.length - 1];
-      if (prev) {
-        dispatch(setTiers(prev.tiers));
-        dispatch(setTierOrder(prev.tierOrder));
-      }
+      dispatch(setTiers(result.payload.tiers));
+      dispatch(setTierOrder(result.payload.tierOrder));
     }
   };
 }
@@ -40,13 +41,16 @@ export function performUndo(): AppThunk {
  */
 export function performRedo(): AppThunk {
   return (dispatch, getState) => {
-    const snapshot = getState().undoRedo.future[getState().undoRedo.future.length - 1];
-    if (!snapshot) return;
+    // Check if we can redo before dispatching
+    if (getState().undoRedo.future.length === 0) return;
 
+    // The redo action pops from future and returns the snapshot
     const result = dispatch(redoAction());
+
+    // Use the returned payload (the popped snapshot) to restore state
     if (result.payload) {
-      dispatch(setTiers(snapshot.tiers));
-      dispatch(setTierOrder(snapshot.tierOrder));
+      dispatch(setTiers(result.payload.tiers));
+      dispatch(setTierOrder(result.payload.tierOrder));
     }
   };
 }

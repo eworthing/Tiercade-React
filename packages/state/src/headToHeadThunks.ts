@@ -9,7 +9,8 @@ import {
   setPhase,
   setArtifacts,
   setPairsQueue,
-  setCurrentPair
+  setCurrentPair,
+  setRecords
 } from "./headToHeadSlice";
 import { setTiers } from "./tierSlice";
 import { captureSnapshot } from "./undoRedoThunks";
@@ -80,12 +81,17 @@ export const voteCurrentPair =
     }
 
     const [a, b] = currentPair;
-    const winner =
-      winnerId === b.id
-        ? b
-        : winnerId === a.id
-        ? a
-        : a;
+
+    // Validate winnerId matches one of the items - don't silently default
+    let winner: typeof a;
+    if (winnerId === a.id) {
+      winner = a;
+    } else if (winnerId === b.id) {
+      winner = b;
+    } else {
+      console.error(`[HeadToHead] Invalid winner ID: ${winnerId}. Expected ${a.id} or ${b.id}`);
+      return;
+    }
 
     const records = new Map<string, HeadToHeadRecord>(
       Object.entries(recordsObj)
@@ -102,13 +108,11 @@ export const voteCurrentPair =
 
     // Advance queue
     const [next, ...rest] = pairsQueue;
-    dispatch(
-      setPairsQueue(rest ?? [])
-    );
+    dispatch(setPairsQueue(rest ?? []));
     dispatch(setCurrentPair(next ?? null));
 
-    // Persist updated records in state
-    state.headToHead.records = updatedRecordsObj;
+    // Persist updated records via Redux action (not direct mutation)
+    dispatch(setRecords(updatedRecordsObj));
   };
 
 /**
