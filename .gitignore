@@ -55,6 +55,14 @@ npm-debug.log*
 yarn-error.log*
 dist/
 
+# Expo / React Native
+.expo/
+apps/native/android/
+apps/native/ios/
+
+# Playwright reports (root level)
+playwright-report/
+
 # Environment files
 .env
 .env.*
