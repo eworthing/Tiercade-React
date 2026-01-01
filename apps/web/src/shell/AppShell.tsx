@@ -1,11 +1,15 @@
-import React, { useEffect, useState, useCallback, Suspense, useRef } from "react";
+import React, { useEffect, useState, useCallback, Suspense, useRef, lazy } from "react";
 import { NavLink, Route, Routes, useLocation } from "react-router-dom";
+
+// Eager load the main page for fast initial render
 import { TierBoardPage } from "../pages/TierBoardPage";
-import { HeadToHeadPage } from "../pages/HeadToHeadPage";
-import { ThemesPage } from "../pages/ThemesPage";
-import { AnalyticsPage } from "../pages/AnalyticsPage";
-import { ImportExportPage } from "../pages/ImportExportPage";
-import { TemplatesPage } from "../pages/TemplatesPage";
+
+// Lazy load secondary pages for code splitting
+const HeadToHeadPage = lazy(() => import("../pages/HeadToHeadPage").then(m => ({ default: m.HeadToHeadPage })));
+const ThemesPage = lazy(() => import("../pages/ThemesPage").then(m => ({ default: m.ThemesPage })));
+const AnalyticsPage = lazy(() => import("../pages/AnalyticsPage").then(m => ({ default: m.AnalyticsPage })));
+const ImportExportPage = lazy(() => import("../pages/ImportExportPage").then(m => ({ default: m.ImportExportPage })));
+const TemplatesPage = lazy(() => import("../pages/TemplatesPage").then(m => ({ default: m.TemplatesPage })));
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import {
