@@ -3,6 +3,7 @@ import { tierReducer, type TierState } from "./tierSlice";
 import { headToHeadReducer } from "./headToHeadSlice";
 import { themeReducer, type ThemeState } from "./themeSlice";
 import { undoRedoReducer } from "./undoRedoSlice";
+import { onboardingReducer } from "./onboardingSlice";
 import { persistenceMiddleware, loadPersistedState } from "./persistenceMiddleware";
 
 // Load any persisted state from localStorage
@@ -27,6 +28,7 @@ export const store = configureStore({
     headToHead: headToHeadReducer,
     theme: themeReducer,
     undoRedo: undoRedoReducer,
+    onboarding: onboardingReducer,
   },
   preloadedState: Object.keys(preloadedState).length > 0 ? preloadedState : undefined,
   middleware: (getDefaultMiddleware) =>

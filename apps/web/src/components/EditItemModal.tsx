@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Modal, Button, Input, ImageUpload, ConfirmDialog } from "@tiercade/ui";
+import { Modal, Button, Input, MediaUpload, ConfirmDialog, type MediaType } from "@tiercade/ui";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { updateItem, deleteItem, captureSnapshot } from "@tiercade/state";
 import type { Item } from "@tiercade/core";
@@ -17,7 +17,8 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const [name, setName] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<MediaType>("image");
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -25,10 +26,25 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
   useEffect(() => {
     if (item) {
       setName(item.name ?? "");
-      setImageUrl(item.imageUrl ?? null);
+      // Determine media type and URL from item
+      if (item.videoUrl) {
+        setMediaUrl(item.videoUrl);
+        setMediaType("video");
+      } else if (item.imageUrl) {
+        setMediaUrl(item.imageUrl);
+        setMediaType(item.mediaType === "gif" ? "gif" : "image");
+      } else {
+        setMediaUrl(null);
+        setMediaType("image");
+      }
       setError(null);
     }
   }, [item]);
+
+  const handleMediaChange = useCallback((url: string | null, type: MediaType) => {
+    setMediaUrl(url);
+    setMediaType(type);
+  }, []);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -43,10 +59,32 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
         return;
       }
 
+      // Build updates based on media type
+      const updates: Partial<Item> = {
+        name: trimmedName,
+        mediaType: mediaUrl ? mediaType : undefined,
+      };
+
+      if (mediaUrl) {
+        if (mediaType === "video") {
+          updates.videoUrl = mediaUrl;
+          updates.imageUrl = undefined;
+        } else {
+          updates.imageUrl = mediaUrl;
+          updates.videoUrl = undefined;
+        }
+      } else {
+        updates.imageUrl = undefined;
+        updates.videoUrl = undefined;
+        updates.mediaType = undefined;
+      }
+
       // Check if anything changed
+      const oldMediaUrl = item.videoUrl ?? item.imageUrl ?? null;
       const hasChanges =
         trimmedName !== (item.name ?? "") ||
-        imageUrl !== (item.imageUrl ?? null);
+        mediaUrl !== oldMediaUrl ||
+        mediaType !== (item.mediaType ?? "image");
 
       if (!hasChanges) {
         onClose();
@@ -60,16 +98,13 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
       dispatch(
         updateItem({
           itemId: item.id,
-          updates: {
-            name: trimmedName,
-            imageUrl: imageUrl ?? undefined,
-          },
+          updates,
         })
       );
 
       onClose();
     },
-    [dispatch, item, name, imageUrl, onClose]
+    [dispatch, item, name, mediaUrl, mediaType, onClose]
   );
 
   const handleDelete = useCallback(() => {
@@ -129,10 +164,13 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
             autoFocus
           />
 
-          <ImageUpload
-            value={imageUrl}
-            onChange={setImageUrl}
+          <MediaUpload
+            value={mediaUrl}
+            mediaType={mediaType}
+            onChange={handleMediaChange}
             maxSizeKB={500}
+            maxVideoSizeKB={5000}
+            allowVideo={true}
           />
 
           {/* Hidden submit button for form submission on Enter */}

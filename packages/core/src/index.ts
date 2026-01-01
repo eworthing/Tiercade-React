@@ -8,4 +8,5 @@ export * from "./sorting";
 export * from "./formatters";
 export * from "./modelResolver";
 export * from "./analytics";
+export * from "./templates";
 

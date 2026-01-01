@@ -137,6 +137,9 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   };
 
   const hasImage = !!item.imageUrl;
+  const hasVideo = !!item.videoUrl;
+  const hasMedia = hasImage || hasVideo;
+  const isGif = item.mediaType === "gif";
 
   const handleClick = (e: React.MouseEvent) => {
     // Prevent triggering when dragging
@@ -170,12 +173,37 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         transition-all duration-200 ease-spring
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface
         opacity-0 animate-stagger-scale
-        ${hasImage ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
+        ${hasMedia ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
         ${isSelected ? "ring-2 ring-accent border-accent shadow-glow-accent" : "border-border"}
         ${isDragging ? "scale-110 shadow-card-lifted z-50" : ""}
       `}
     >
-      {hasImage ? (
+      {hasVideo ? (
+        <>
+          {/* Video */}
+          <video
+            src={item.videoUrl}
+            className="w-full h-full object-cover rounded-card"
+            loop
+            muted
+            playsInline
+            autoPlay
+            draggable={false}
+          />
+          {/* Video badge */}
+          <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white flex items-center gap-0.5">
+            <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+          {/* Name overlay on hover */}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card opacity-0 group-hover:opacity-100 transition-opacity">
+            <p className="text-2xs text-white text-center truncate font-medium">
+              {item.name ?? item.id}
+            </p>
+          </div>
+        </>
+      ) : hasImage ? (
         <>
           {/* Image */}
           <img
@@ -184,6 +212,12 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
             className="w-full h-full object-cover rounded-card"
             draggable={false}
           />
+          {/* GIF badge */}
+          {isGif && (
+            <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white font-medium">
+              GIF
+            </div>
+          )}
           {/* Name overlay on hover */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card opacity-0 group-hover:opacity-100 transition-opacity">
             <p className="text-2xs text-white text-center truncate font-medium">

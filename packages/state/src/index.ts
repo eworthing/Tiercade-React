@@ -3,6 +3,7 @@ export * from "./tierSlice";
 export * from "./headToHeadSlice";
 export * from "./themeSlice";
 export * from "./undoRedoSlice";
+export * from "./onboardingSlice";
 export * from "./headToHeadThunks";
 export * from "./projectThunks";
 export * from "./undoRedoThunks";
