@@ -574,43 +574,12 @@ export const TierBoardPage: React.FC = () => {
         queueRemaining={itemQueue.length}
       />
 
-      {/* S-tier Celebration */}
+      {/* S-tier Celebration - uses CelebrationEffect component to avoid re-render issues */}
       {showCelebration && celebrationTier && (
-        <div className="fixed inset-0 pointer-events-none z-[100]">
-          <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-0 fade-in duration-300">
-            <div className="relative">
-              <div className="absolute inset-0 blur-3xl bg-yellow-500/30 rounded-full animate-pulse" />
-              <div className="text-6xl animate-bounce">⭐</div>
-            </div>
-          </div>
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-2xl"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${1 + Math.random()}s ease-out forwards`,
-                animationDelay: `${Math.random() * 0.5}s`,
-              }}
-            >
-              {["⭐", "✨", "🌟"][Math.floor(Math.random() * 3)]}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Auto-dismiss celebration */}
-      {showCelebration && (
-        <div
-          style={{ display: "none" }}
-          ref={(el) => {
-            if (el) {
-              setTimeout(() => {
-                setShowCelebration(false);
-                setCelebrationTier(null);
-              }, EFFECTS.CELEBRATION_DURATION);
-            }
+        <CelebrationEffect
+          onComplete={() => {
+            setShowCelebration(false);
+            setCelebrationTier(null);
           }}
         />
       )}
@@ -939,3 +908,50 @@ const ShortcutRow: React.FC<{ keys: string[]; description: string }> = ({
     </div>
   </div>
 );
+
+// Pre-computed particle positions to avoid Math.random() in render
+const CELEBRATION_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  left: `${(i * 5) % 100}%`,
+  top: `${((i * 7) + 10) % 100}%`,
+  duration: 1 + (i % 3) * 0.3,
+  delay: (i % 5) * 0.1,
+  emoji: ["⭐", "✨", "🌟"][i % 3],
+}));
+
+/** Celebration effect component - properly memoized to avoid re-render issues */
+const CelebrationEffect: React.FC<{ onComplete: () => void }> = React.memo(
+  ({ onComplete }) => {
+    useEffect(() => {
+      const timer = setTimeout(onComplete, EFFECTS.CELEBRATION_DURATION);
+      return () => clearTimeout(timer);
+    }, [onComplete]);
+
+    return (
+      <div className="fixed inset-0 pointer-events-none z-[100]">
+        <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-0 fade-in duration-300">
+          <div className="relative">
+            <div className="absolute inset-0 blur-3xl bg-yellow-500/30 rounded-full animate-pulse" />
+            <div className="text-6xl animate-bounce">⭐</div>
+          </div>
+        </div>
+        {CELEBRATION_PARTICLES.map((particle) => (
+          <div
+            key={particle.id}
+            className="absolute text-2xl"
+            style={{
+              left: particle.left,
+              top: particle.top,
+              animation: `float ${particle.duration}s ease-out forwards`,
+              animationDelay: `${particle.delay}s`,
+            }}
+          >
+            {particle.emoji}
+          </div>
+        ))}
+      </div>
+    );
+  }
+);
+
+CelebrationEffect.displayName = "CelebrationEffect";
