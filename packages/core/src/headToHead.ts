@@ -4,6 +4,7 @@
 import type { Item, Items } from "./models";
 import { pickRandomPair } from "./randomUtils";
 import { compareStrings } from "./utils/comparison";
+import { UNRANKED_TIER_ID } from "./constants/tiers";
 
 export interface HeadToHeadRecord {
   wins: number;
@@ -60,8 +61,6 @@ export interface HeadToHeadQuickResult {
   artifacts: HeadToHeadArtifacts | null;
   suggestedPairs: [Item, Item][];
 }
-
-export const UNRANKED_TIER_ID = "unranked";
 
 // Tunable constants (port of HeadToHeadLogic.Tun)
 export const Tun = {
