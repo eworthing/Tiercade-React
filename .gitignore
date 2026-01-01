@@ -3,65 +3,30 @@
 .AppleDouble
 .LSOverride
 
-# Xcode
-build/
-DerivedData/
-DerivedDataTemp/
-*.xcworkspace/xcuserdata/
-*.xccheckout
-*.xcuserstate
-*.xcscmblueprint
-
-# SwiftPM
-/.build/
-/Packages/
-*.xcodeproj/project.xcworkspace/
-Tiercade.xcodeproj/xcuserdata/
-
-# SwiftPM resolved file noise
-Package.resolved
-TiercadeCore/.swiftpm/
-
-# Playwright/Vitest outputs (from reference project)
-ReferenceCodeToConvert/**/test-results/
-ReferenceCodeToConvert/**/playwright-report/
-ReferenceCodeToConvert/**/.vite
-ReferenceCodeToConvert/**/node_modules/
-
-# Ignore nested repo content (use submodule if needed)
-ReferenceCodeToConvert/ReferenceTierList/.git
-ReferenceCodeToConvert/ReferenceTierList/.git/**
-
 # Logs
 *.log
-
-# Images and caches
-*.png
-*.jpg
-*.jpeg
-*.gif
-.cache/
 
 # User files
 *.swp
 *.swo
-
-# Ignore Swift build caches
-.build
 
 # Node / JavaScript
 node_modules/
 npm-debug.log*
 yarn-error.log*
 dist/
+.cache/
 
 # Expo / React Native
 .expo/
 apps/native/android/
 apps/native/ios/
 
-# Playwright reports (root level)
+# Playwright / Testing
 playwright-report/
+test-results/
+*test_report*.json
+*.jsonl
 
 # Environment files
 .env
@@ -71,26 +36,12 @@ playwright-report/
 .vscode/
 .idea/
 
-# CocoaPods / Carthage / fastlane
-Pods/
-Carthage/
-fastlane/report.xml
-
-# Temporary test outputs
-test-results/
-*test_report*.json
-test_configs.json
-*.jsonl
-
 # Backup files
 *.backup
 *.backup-*
 
 # NPM lock files (if not using npm)
 package-lock.json
-
-# Documentation
-docs/books/
 
 # Claude Code MCP configuration (personal)
 .mcp.json

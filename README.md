@@ -2,449 +2,182 @@
 
 <!-- markdownlint-disable MD013 -->
 
-A comprehensive tier list management application built with SwiftUI. Create,
-manage, and analyze tier lists with professional-grade features including
-advanced analytics, multiple export formats, and intelligent insights.
+A comprehensive tier list management application built with React and TypeScript.
+Create, manage, and analyze tier lists with professional-grade features including
+drag-and-drop, head-to-head ranking, and multiple export formats.
 
-![iOS](https://img.shields.io/badge/iOS-26.0+-blue.svg)
-![tvOS](https://img.shields.io/badge/tvOS-26.0+-blue.svg)
-![macOS](https://img.shields.io/badge/macOS-26.0+-blue.svg)
-![Swift](https://img.shields.io/badge/Swift-6.0-orange.svg)
-![SwiftUI](https://img.shields.io/badge/SwiftUI-Native-green.svg)
-![Xcode](https://img.shields.io/badge/Xcode-26+-blue.svg)
+![React](https://img.shields.io/badge/React-19-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)
+![Vite](https://img.shields.io/badge/Vite-5.0-purple.svg)
+![Tailwind](https://img.shields.io/badge/Tailwind-4.0-cyan.svg)
+![Expo](https://img.shields.io/badge/Expo-52-black.svg)
 
-## 🚀 Features
+## Features
 
-### **Core Tier Management**
+### Core Tier Management
 
-- **Drag & Drop Interface** - Native SwiftUI drag and drop on iOS/macOS, with click-to-select Quick Move workflows on tvOS
-- **Flexible Tier System** - Custom tier names, ordering, and variable tier counts (defaults to S, A, B, C, D, F)
-- **Item Management** - Add, remove, and organize items across tiers
+- **Drag & Drop Interface** - Smooth drag-and-drop powered by dnd-kit
+- **Flexible Tier System** - Custom tier names, ordering, and variable tier counts
+- **Item Management** - Add, remove, edit, and organize items across tiers
 - **Real-time Updates** - Instant visual feedback for all operations
 
-### **Advanced Operations**
+### Advanced Operations
 
-- **Quick Rank Mode** - Rapid tier assignment with gesture shortcuts
 - **HeadToHead Voting** - Binary comparison system for difficult ranking decisions
-- **Search & Filter** - Real-time search with highlighting and advanced filtering options
-- **Undo/Redo System** - Comprehensive history management with unlimited undo/redo
+- **Search & Filter** - Real-time search with highlighting
+- **Undo/Redo System** - Comprehensive history management
+- **Batch Operations** - Multi-select and bulk move items
 
-### **Data Management**
+### Data Management
 
-- **Enhanced Persistence** - Auto-save with crash recovery and multiple save slots
+- **Auto-save** - Automatic persistence to localStorage
 - **Export System** - Multiple format support:
   - JSON (structured data)
   - CSV (spreadsheet compatible)
-  - Markdown (documentation ready)
-  - Plain Text (human readable)
-- **Import Capabilities** - JSON and CSV import with validation and error handling
-- **Progress Tracking** - Visual progress indicators for all file operations
+  - PNG (image export)
+- **Import Capabilities** - JSON and CSV import with validation
+- **URL Sharing** - Share tier lists via URL
 
-### **Analytics & Insights**
+### Analytics & Insights
 
-- **Statistical Analysis** - Comprehensive tier distribution analysis
-- **Balance Scoring** - 0-100 scale algorithm evaluating tier distribution equality
-- **Visual Charts** - Animated bar charts showing tier percentages
-- **Rule-based Insights** - Clear recommendations for tier optimization
-- **Interactive Dashboard** - Complete analytics UI with real-time statistics
+- **Statistical Analysis** - Tier distribution analysis
+- **Visual Charts** - Bar charts showing tier percentages
+- **Balance Scoring** - Algorithm evaluating tier distribution
 
-### **User Experience**
+## Tech Stack
 
-- **Toast Notifications** - Contextual feedback for user actions
-- **Loading Indicators** - Progress feedback for all async operations
-- **Keyboard Shortcuts** - Productivity shortcuts (Cmd+A for analysis, Cmd+Z for undo)
-- **Responsive Design** - Optimized for various iOS device sizes
-- **Dark/Light Mode** - Full support for iOS appearance preferences
-- **Immersive Media Gallery** - SwiftUI TabView gallery with remote-friendly focus and full-screen playback on tvOS
+- **Web:** React 19 + TypeScript + Vite + Tailwind CSS
+- **Mobile:** React Native (Expo 52) + React Navigation
+- **State:** Redux Toolkit
+- **Testing:** Jest + Playwright (E2E)
+- **Drag & Drop:** dnd-kit
 
-### **tvOS Experience**
+## Quick Start
 
-- **Remote-First Navigation** - Optimized focus rings and directional layout tuned for the Siri Remote, with safe-area-aware spacing for comfortable living-room viewing.
-- **Dedicated Overlays** - Quick Move, Quick Rank, and Detail overlays appear as modal glass surfaces that pause background interaction until dismissed, keeping attention on the active task.
-- **Toolbar & Action Bar** - Floating top and bottom bars adapt to tvOS conventions, exposing undo/redo, HeadToHead, analysis, and selection actions with clear focus targets.
-- **Exit Command Handling** - Pressing the remote’s ⌘/Menu (Exit) button inside modals dismisses the current overlay instead of backing out of the app, mirroring native tvOS behavior.
-- **Deferred Skip Flow** - The HeadToHead overlay now features a dedicated Skip card with a recirculating clock icon, updates the skipped count live, and automatically resurfaces deferred pairs after all first-pass matchups.
-- **Focus Tooltips** - Custom tooltips surface helpful hints (e.g. “Randomize”, “Lock Tier”) when buttons receive focus, guiding new users through tier management on the TV.
-- **Media Playback** - Item detail pages can promote images and video with full-screen playback support that respects tvOS playback gestures.
-
-## 🏗️ Architecture
-
-### **Technical Stack**
-
-- **SwiftUI** - Modern declarative UI framework
-- **Swift 6.0** - Latest language features with strict concurrency checking
-- **OS 26.0+** - Target deployment: iOS 26.0, tvOS 26.0, macOS 26.0
-- **TiercadeCore** - Platform-agnostic Swift Package for shared logic (iOS 26+/macOS 26+/tvOS 26+)
-
-> Note: The app targets OS 26.0+ to leverage the latest platform features (Swift 6 strict concurrency, modern SwiftUI APIs, @Observable macro). The `TiercadeCore` Swift package shares the same OS 26.0+ baseline to align compiler features and simplify maintenance.
-
-### **Design Patterns**
-
-- **MVVM Architecture** - Clean separation of concerns with SwiftUI
-- **@Observable + @MainActor** - Modern Swift 6 state management with automatic observation
-- **Typed Throws** - Compile-time error handling with specific error types
-- **Async/Await** - Structured concurrency for file operations and analysis
-- **Protocol-Oriented Design** - Flexible, testable interfaces throughout
-
-### **Modernization Guardrails**
-
-- **Strict Concurrency** – All targets enable "Complete" checking; core logic favors `Sendable` value types and actors for isolation (see `AGENTS.md` for build-setting guardrails).
-- **Observation-First State** – UI state uses Swift Observation macros (`@Observable`, `@Bindable`) instead of `ObservableObject`/`@Published`.
-- **SwiftUI Everywhere** – Screens, overlays, and navigation are pure SwiftUI with `NavigationStack`/`NavigationSplitView`; UIKit appears only through targeted representable adapters when absolutely necessary.
-- **SwiftData Persistence** – Tier lists now persist end-to-end through SwiftData: `TiercadeApp` boots a shared `ModelContainer`, injects its `ModelContext` into `AppState`, and the `AppState+Persistence` pipeline handles save/load and autosave against that context.
-  - *Migration note:* During initialization (`AppState.init`) legacy UserDefaults keys are cleared before seeding so upgrades land on the SwiftData-backed store without conflicts.
-- **Async Streams** – Legacy Combine pipelines are rewritten to `AsyncSequence`, `AsyncStream`, `async let`, or `TaskGroup` constructs.
-- **Liquid Glass Chrome** – Translucent, glassy effects stay confined to top-level chrome (toolbars, sheets) to keep fast-refreshing content performant.
-- **Swift Testing** – New tests rely on the Swift Testing framework (`@Test`, `#expect`) with incremental XCTest retirement.
-- **SwiftPM Only** – Dependencies live in SwiftPM; feature flags and environment variants opt into [SwiftPM traits](https://github.com/apple/swift-evolution/blob/main/proposals/0450-package-manager-traits.md). Trait identifiers are project-defined (e.g. `"feature.offlineMode"`), and can be toggled per configuration without extra targets. (Traits are planned but not yet active in the current manifest.)
-
-### **Configuration Snippets**
-
-```swift
-// Package.swift baseline for strict concurrency
-.enableUpcomingFeature("StrictConcurrency"),
-.unsafeFlags(["-strict-concurrency=complete"])
-```
-
-```swift
-// Example SPM traits configuration (planned; not yet active in Package.swift)
-traits: [
-    .trait("feature.offlineMode"),
-    .trait("feature.aiExperiments"),
-    .trait("debug.tools", enabledTraits: ["development"])
-]
-```
-
-### **Core Components**
-
-#### **AppState (@MainActor + @Observable)**
-
-Central state management with modern Swift 6 concurrency and observation:
-
-```swift
-@MainActor
-@Observable
-final class AppState {
-    // Core state (automatic observation via @Observable)
-    var tiers: Items = ["S":[],"A":[],"B":[],"C":[],"D":[],"F":[],"unranked":[]]
-    var tierOrder: [String] = ["S","A","B","C","D","F"]
-
-    // UI/feature state
-    var searchQuery: String = ""
-    var isLoading: Bool = false
-    var loadingMessage: String = ""
-    var operationProgress: Double = 0
-    var currentToast: ToastMessage?
-    var analysisData: TierAnalysisData?
-
-    // Operations with typed throws
-    func move(_ id: String, to tier: String)
-    func exportToFormat(_ format: ExportFormat) async throws(ExportError) -> (Data, String)
-    func generateAnalysis() async
-    func save() throws(PersistenceError)
-    func importFromJSON(_ jsonString: String) async throws(ImportError)
-    func undo()
-    func redo()
-}
-```
-
-#### **Feature Architecture**
-
-Each major feature is implemented as a self-contained system:
-
-- **Export/Import System** - `ExportFormat` enum with async operations
-- **Analysis Engine** - `TierAnalysisData` with statistical calculations
-- **Progress System** - `withLoadingIndicator` wrapper plus `setLoading`/`updateProgress` with Sendable-safe operations
-- **Undo Management** - System undo/redo backed by tier snapshots
-- **Search System** - Real-time filtering with highlighting
-
-### **Data Flow**
-
-```text
-User Interaction → SwiftUI View → AppState Method →
-TiercadeCore Logic → State Update → UI Refresh
-```
-
-## 🧪 Testing
-
-### Core Package Tests
-
-TiercadeCore ships with Swift Testing coverage for critical logic:
-
-- Core tier manipulation (`TierLogic`, `QuickRankLogic`)
-- HeadToHead quick pass, refinement heuristics, and warm-start queueing
-- Shared utilities (`RandomUtils`, `TierIdentifier`, `Formatters`, `DataLoader`)
-- Bundled project descriptors and model decoding/normalization paths
-
-Run the suite with:
+### Web App
 
 ```bash
-cd TiercadeCore
-swift test --enable-code-coverage
+# Install dependencies
+npm install
+
+# Start development server
+cd apps/web
+npm run dev
+
+# Run tests
+npm test
+npx playwright test
 ```
 
-Coverage inspection:
+### React Native App
 
 ```bash
-xcrun llvm-cov report \
-  --instr-profile .build/debug/codecov/default.profdata \
-  .build/debug/TiercadeCorePackageTests.xctest/Contents/MacOS/TiercadeCorePackageTests
+cd apps/native
+npx expo start
 ```
 
-### AI Testing Framework
+## Project Structure
 
-Comprehensive testing for Apple Intelligence features:
+```
+Tiercade-React/
+├── apps/
+│   ├── web/              # React web app (Vite)
+│   └── native/           # React Native app (Expo)
+├── packages/
+│   ├── core/             # Platform-agnostic logic & types
+│   ├── state/            # Redux store, slices, selectors
+│   ├── ui/               # Shared React components
+│   └── theme/            # Design tokens & themes
+└── docs/
+    ├── migration/        # Architecture documentation
+    └── HeadToHead/       # Algorithm documentation
+```
+
+## Packages
+
+### `@tiercade/core`
+
+Platform-agnostic business logic with no React dependencies.
+
+- Core types: `Item`, `Items`, `TierConfig`
+- Tier operations: `moveItem`, `reorderWithin`
+- HeadToHead algorithm
+- Analytics calculations
+- Import/export parsing
+
+### `@tiercade/state`
+
+Redux Toolkit store configuration.
+
+- `tierSlice` - Tier and item state
+- `headToHeadSlice` - H2H session state
+- `themeSlice` - Theme selection
+- `undoRedoSlice` - History management
+
+### `@tiercade/ui`
+
+Shared React components.
+
+- `TierBoard` - Main tier list grid
+- `TierRow` - Individual tier row
+- `Modal`, `Toast`, `Button` - Common UI
+
+### `@tiercade/theme`
+
+Design tokens and theme configuration.
+
+- Color palette
+- Typography scales
+- Spacing metrics
+- Tier colors
+
+## Development
+
+### Requirements
+
+- Node.js 18+
+- npm or yarn
+
+### Testing
 
 ```bash
-# Run all test suites
-./run_all_ai_tests.sh
+# Unit tests
+cd packages/core && npm test
 
-# Analyze results
-python3 analyze_test_results.py results/run-<TIMESTAMP>/
+# E2E tests
+cd apps/web && npx playwright test
 ```
 
-**Configuration files:**
-- Test suites: `Tiercade/TestConfigs/TestSuites.json`
-- Framework docs: `Tiercade/TestConfigs/TESTING_FRAMEWORK.md`
-- Feature flags: `docs/AppleIntelligence/FEATURE_FLAG_USAGE.md`
-
-We keep tvOS UI automation lean and accessibility-driven; add high-value Swift Testing coverage before considering UI scripts.
-
-## 🛠️ Development
-
-### **Requirements**
-
-- **Xcode 26+** - Latest development environment
-- **iOS 26.0+ Simulator** - For testing and development
-- **tvOS 26.0+ Simulator** - For tvOS UI testing (primary focus)
-- **macOS 26.0+** - For macOS development and packaging
-- **Swift 6 language mode (Swift 6.2 toolchain)** - Strict concurrency checking enabled
-
-## 📚 More documentation
-
-- Design tokens, Liquid Glass, and focus patterns: [`Tiercade/Design/README.md`](Tiercade/Design/README.md)
-- Core domain models and deterministic helpers: [`TiercadeCore/README.md`](TiercadeCore/README.md)
-- Platform guardrails, tvOS focus, and build scripts: [`AGENTS.md`](AGENTS.md)
-  - **Note**: `AGENTS.md` is the source file with symlinks:
-    - `CLAUDE.md` → `AGENTS.md` (for Claude Code compatibility)
-    - `.github/copilot-instructions.md` → `../AGENTS.md` (for GitHub Copilot)
-- **Apple Intelligence features**: [`docs/AppleIntelligence/README.md`](docs/AppleIntelligence/README.md)
-  - Item generation spec: [`AI_ITEM_GENERATION_PLAN.md`](docs/AppleIntelligence/AI_ITEM_GENERATION_PLAN.md)
-  - Research plan: [`DEEP_RESEARCH_2025-10.md`](docs/AppleIntelligence/DEEP_RESEARCH_2025-10.md)
-  - Feature flags: [`FEATURE_FLAG_USAGE.md`](docs/AppleIntelligence/FEATURE_FLAG_USAGE.md)
-- **Native macOS migration**: [`CATALYST_TO_NATIVE_MACOS_MIGRATION.md`](CATALYST_TO_NATIVE_MACOS_MIGRATION.md)
-- **SwiftLint** - Enforce cyclomatic complexity thresholds (warning 8, error 12) as part of pre-commit checks
-
-### **Project Setup**
+### Building
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd Tiercade
+# Build web app
+cd apps/web && npm run build
 
-# Open in Xcode
-open Tiercade.xcodeproj
-
-# Build and run
-Cmd+R (or Product → Run)
+# Build for production
+npm run build
 ```
 
-### **Interactive tvOS Verification**
+## Documentation
 
-- After every successful build, boot the tvOS simulator with the latest app build, keep it open for visual review, and exercise the relevant surfaces with a Siri Remote (or keyboard arrow) pass to confirm focus, animations, and gestures.
-- Preferred flow: run the "Build tvOS Tiercade (Debug)" task (or `Cmd+R` in Xcode), then leave the simulator running while iterating on focus tweaks, visual polish, and final sign-off.
-- **Cross-platform validation (required after UI refactors or access-level changes):** Build both tvOS and native macOS to catch visibility issues and platform-specific bugs. Use `./build_install_launch.sh` for tvOS and `./build_install_launch.sh macos` for native macOS. Native macOS often surfaces visibility issues (like [f662d34](https://github.com/eworthing/Tiercade/commit/f662d34)) that tvOS builds don't catch.
+- **Architecture:** [docs/migration/REACT_MONOREPO_ARCHITECTURE.md](docs/migration/REACT_MONOREPO_ARCHITECTURE.md)
+- **HeadToHead Algorithm:** [docs/HeadToHead/README.md](docs/HeadToHead/README.md)
+- **AI Agent Instructions:** [AGENTS.md](AGENTS.md)
 
-### **Project Structure**
+## Contributing
 
-```text
-Tiercade/
-├── Tiercade/                  # Main app target (SwiftUI + tvOS focus)
-│   ├── State/                 # AppState core and feature extensions
-│   ├── Views/
-│   │   ├── Main/              # Core screen composition (ContentView, MainAppView)
-│   │   ├── Toolbar/           # Toolbar views and export sheets
-│   │   ├── Overlays/          # QuickMove, Item menu, QR overlays
-│   │   └── Components/        # Reusable detail, settings, and shared parts
-│   ├── Bridges/               # UIKit/AVKit bridges for focus & galleries
-│   ├── Design/                # Tokens, themes, and tvOS metrics
-│   ├── Export/                # Export renderer helpers
-│   ├── Util/                  # Cross-cutting utilities (focus, device checks)
-│   ├── SharedCore.swift       # Shared dependency wiring
-│   └── TiercadeApp.swift      # App entry point
-├── TiercadeCore/              # Platform-agnostic Swift Package
-│   ├── Sources/
-│   │   ├── Models/            # Data structures & model resolution
-│   │   ├── Logic/             # Tiering, history, HeadToHead logic
-│   │   └── Utilities/         # Formatters, data loaders, randomness
-│   └── README.md              # Core package overview (tests will return later)
-└── Tiercade.xcodeproj/        # Xcode project configuration
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests
+5. Submit a pull request
 
-## 📊 Implementation Details
+Use conventional commits: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`
 
-### **Export System Architecture**
+## License
 
-Multi-format export with async operations and progress tracking:
-
-```swift
-enum ExportFormat: CaseIterable {
-    case text, json, markdown, csv
-
-    var displayName: String { /* Plain Text, JSON, Markdown, CSV */ }
-    var fileExtension: String { /* txt, json, md, csv */ }
-}
-
-// Async export with progress updates — returns (data, suggestedFileName)
-func exportToFormat(_ format: ExportFormat, group: String = "All", themeName: String = "Default") async -> (Data, String)? {
-    await withLoadingIndicator(message: "Exporting \(format.displayName)...") {
-        updateProgress(0.2)
-        // produce content
-        updateProgress(1.0)
-        return (Data(), "tier_list.\(format.fileExtension)")
-    }
-}
-```
-
-### **Analysis Engine**
-
-Comprehensive statistical analysis with balance scoring algorithm:
-
-```swift
-struct TierAnalysisData {
-    let totalItems: Int
-    let tierDistribution: [TierDistributionData]
-    let mostPopulatedTier: String?
-    let leastPopulatedTier: String?
-    let balanceScore: Double   // 0-100 scale
-    let insights: [String]     // Rule-based recommendations
-    let unrankedCount: Int
-}
-```
-
-### **Progress System**
-
-Unified progress tracking for all async operations:
-
-```swift
-func withLoadingIndicator<T>(message: String, operation: () async throws -> T) async rethrows -> T {
-    setLoading(true, message: message)
-    defer { setLoading(false) }
-    return try await operation()
-}
-
-// Use alongside granular updates
-func setLoading(_ loading: Bool, message: String = "") { /* updates isLoading, loadingMessage */ }
-func updateProgress(_ value: Double) { /* 0.0 ... 1.0 */ }
-```
-
-## 🎯 Design Decisions
-
-### **State Management Choice: @Observable + @MainActor**
-
-- **Rationale**: Modern Swift 6 observation replacing @ObservableObject/@Published
-- **Benefits**: Automatic observation, no boilerplate, compile-time concurrency safety
-- **Trade-offs**: Requires Swift 6 and latest OS versions
-
-### **Architecture: MVVM with SwiftUI**
-
-- **Rationale**: Natural fit for SwiftUI's declarative paradigm
-- **Benefits**: Clean separation, testable business logic, reactive UI
-- **Trade-offs**: Some boilerplate, complexity for simple features
-
-### **Core Logic: Separate Swift Package (TiercadeCore)**
-
-- **Rationale**: Platform-agnostic logic for potential multi-platform expansion
-- **Benefits**: Reusability, focused testing, clear boundaries
-- **Trade-offs**: Additional complexity, package management overhead
-
-### **File Operations: Native iOS APIs**
-
-- **Rationale**: Deep integration with iOS Files app and sharing
-- **Benefits**: Native UX, security model compliance, feature richness
-- **Trade-offs**: iOS-specific implementation, complexity
-
-### **Analytics: Custom Algorithm Implementation**
-
-- **Rationale**: Tailored balance scoring for tier list optimization
-- **Benefits**: Domain-specific insights, no external dependencies
-- **Trade-offs**: Custom algorithm maintenance, limited to our metrics
-
-## 🚀 Performance Considerations
-
-### **Async Operations**
-
-- All file I/O operations use async/await for non-blocking UI
-- Progress tracking provides user feedback during long operations
-- Proper error handling with user-friendly messages
-
-### **Memory Management**
-
-- @MainActor ensures UI updates on main thread
-- Weak references where appropriate to prevent retain cycles
-- Efficient data structures for large item lists
-
-### **UI Responsiveness**
-
-- SwiftUI's declarative updates for smooth animations
-- Debounced search to avoid excessive filtering
-- Lazy loading for large datasets
-
-## 📱 User Experience Design
-
-### **Interaction Patterns**
-
-- **Drag & Drop** - Primary interaction for tier management
-- **Quick Actions** - Keyboard shortcuts for power users
-- **Progressive Disclosure** - Advanced features accessible but not overwhelming
-- **Contextual Feedback** - Toast messages and progress indicators
-
-### **Visual Design**
-
-- **Native iOS Patterns** - Follows Apple's Human Interface Guidelines
-- **Consistent Spacing** - Systematic layout with proper margins
-- **Color Coding** - Semantic colors for different states and actions
-- **Typography** - iOS system fonts with appropriate hierarchy
-
-### **Accessibility**
-
-- VoiceOver support for screen readers
-- Dynamic Type support for text scaling
-- High contrast mode compatibility
-- Keyboard navigation support
-
-## 🔮 Future Enhancements
-
-### **Planned Features**
-
-- **Cloud Sync** - iCloud integration for cross-device synchronization
-- **Collaboration** - Share tier lists with real-time collaboration
-- **Templates** - Pre-built tier list templates for common categories
-- **Advanced Analytics** - Machine learning insights and trends
-- **Widget Support** - iOS home screen widgets for quick access
-
-### **Technical Improvements**
-
-- **Performance Optimization** - Core Data for large datasets
-- **Offline Capabilities** - Enhanced offline-first architecture
-- **Localization** - Multi-language support
-- **Apple Watch** - Companion app for quick tier management
-
-## 📄 License
-
-This project is currently unlicensed. This is a personal project developed with GitHub Copilot assistance.
-
-## 📚 Documentation
-
-- **Core Package**: [TiercadeCore/README.md](TiercadeCore/README.md) - Platform-agnostic logic and models
-- **Design System**: [Tiercade/Design/README.md](Tiercade/Design/README.md) - Design tokens and styles
-- **Apple Intelligence**: [docs/AppleIntelligence/README.md](docs/AppleIntelligence/README.md) - AI features, testing, and research
-- **Copilot Instructions**: [.github/copilot-instructions.md](.github/copilot-instructions.md) - Development guidance for AI assistance
-
-## 📞 Support
-
-For project support and questions, please open an issue on GitHub or contact the maintainer via the repository email in GitHub profile.
+This project is currently unlicensed. Personal project.
 
 ---
 
-**Built with ❤️ using SwiftUI and modern iOS development practices.**
+**Built with React, TypeScript, and modern web development practices.**
