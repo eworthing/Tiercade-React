@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import type { Item } from "@tiercade/core";
 import { STAGGER } from "@tiercade/theme";
 import { useDroppable } from "@dnd-kit/core";
@@ -50,6 +50,10 @@ export const TierRow: React.FC<TierRowProps> = ({
   const label = tierLabel ?? (tierId === "unranked" ? "Unranked" : tierId);
   const bgColor = tierColor ?? DEFAULT_TIER_BACKGROUND;
   const isUnranked = tierId === "unranked";
+
+  // O(1) selection lookup instead of O(n) includes() per item
+  const selectedSet = useMemo(() => new Set(selectedItems), [selectedItems]);
+  const revealedSet = useMemo(() => new Set(revealedItems), [revealedItems]);
 
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
     id: tierId,
@@ -120,12 +124,12 @@ export const TierRow: React.FC<TierRowProps> = ({
                 item={item}
                 tierId={tierId}
                 index={index}
-                isSelected={selectedItems.includes(item.id)}
+                isSelected={selectedSet.has(item.id)}
                 onClick={onItemClick}
                 onDoubleClick={onItemDoubleClick}
                 onMediaDrop={onItemMediaDrop}
                 scale={itemScale}
-                isRevealed={!revealMode || revealedItems.includes(item.id)}
+                isRevealed={!revealMode || revealedSet.has(item.id)}
                 onReveal={onItemReveal}
               />
             ))}

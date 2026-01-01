@@ -47,8 +47,9 @@ export const undoRedoSlice = createSlice({
       state.past.push(snapshot);
 
       // Trim history if it exceeds max size
+      // Use slice instead of shift() for O(1) amortized instead of O(n)
       if (state.past.length > state.maxHistorySize) {
-        state.past.shift();
+        state.past = state.past.slice(-state.maxHistorySize);
       }
 
       // Clear future when new action is taken

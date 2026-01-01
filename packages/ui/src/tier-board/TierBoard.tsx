@@ -64,6 +64,11 @@ export const TierBoard: React.FC<TierBoardProps> = ({
     return Object.values(tiers).flat();
   }, [tiers]);
 
+  // O(1) lookup map for drag operations (instead of O(n) find() calls)
+  const itemMap = useMemo(() => {
+    return new Map(allItems.map(item => [item.id, item]));
+  }, [allItems]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -76,9 +81,10 @@ export const TierBoard: React.FC<TierBoardProps> = ({
   );
 
   // Accessibility announcements for screen readers
+  // Uses itemMap for O(1) lookups instead of O(n) find() calls
   const announcements: Announcements = {
     onDragStart: ({ active }) => {
-      const item = allItems.find((i) => i.id === active.id);
+      const item = itemMap.get(String(active.id));
       return `Picked up ${item?.name ?? active.id}. Use arrow keys to move between tiers.`;
     },
     onDragOver: ({ over }) => {
@@ -87,19 +93,19 @@ export const TierBoard: React.FC<TierBoardProps> = ({
       return `Over ${tierName} tier`;
     },
     onDragEnd: ({ active, over }) => {
-      const item = allItems.find((i) => i.id === active.id);
+      const item = itemMap.get(String(active.id));
       if (!over) return `Cancelled dragging ${item?.name ?? active.id}`;
       const tierName = tierLabels[String(over.data.current?.tierId ?? over.id)] ?? over.id;
       return `Dropped ${item?.name ?? active.id} in ${tierName} tier`;
     },
     onDragCancel: ({ active }) => {
-      const item = allItems.find((i) => i.id === active.id);
+      const item = itemMap.get(String(active.id));
       return `Cancelled dragging ${item?.name ?? active.id}`;
     },
   };
 
   const handleDragStart = (event: DragStartEvent) => {
-    const item = allItems.find((i) => i.id === event.active.id);
+    const item = itemMap.get(String(event.active.id));
     setActiveItem(item ?? null);
   };
 

@@ -40,11 +40,14 @@ export const tierSlice = createSlice({
     },
     toggleSelection(state, action: PayloadAction<string>) {
       const id = action.payload;
-      if (state.selection.includes(id)) {
-        state.selection = state.selection.filter((x) => x !== id);
+      // Use Set for O(1) lookup instead of Array.includes() O(n)
+      const selectionSet = new Set(state.selection);
+      if (selectionSet.has(id)) {
+        selectionSet.delete(id);
       } else {
-        state.selection.push(id);
+        selectionSet.add(id);
       }
+      state.selection = Array.from(selectionSet);
     },
     clearSelection(state) {
       state.selection = [];

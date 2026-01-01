@@ -176,7 +176,8 @@ export function refinementPairs(
   );
   const ordered = orderedItems(artifacts.rankable, metrics);
 
-  const seen = new Set<PairKey>();
+  // Use string-based Set for O(1) lookups
+  const seen = new Set<string>();
   const results = forcedBoundaryPairs(ordered, metrics, limit, seen);
 
   if (results.length >= limit) {
@@ -987,17 +988,9 @@ export function sortTierMembers(
 
 // --- Refinement Support Functions ---
 
-interface PairKey {
-  a: string;
-  b: string;
-}
-
-function makePairKey(a: Item, b: Item): PairKey {
-  return a.id < b.id ? { a: a.id, b: b.id } : { a: b.id, b: a.id };
-}
-
-function pairKeyEqual(k1: PairKey, k2: PairKey): boolean {
-  return k1.a === k2.a && k1.b === k2.b;
+// Use string-based keys for O(1) Set.has() lookups instead of O(n) iteration
+function makePairKeyStr(a: Item, b: Item): string {
+  return a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
 }
 
 interface CandidatePair {
@@ -1067,20 +1060,14 @@ export function forcedBoundaryPairs(
   ordered: Item[],
   metrics: Record<string, HeadToHeadMetrics>,
   limit: number,
-  seen: Set<PairKey>
+  seen: Set<string>
 ): [Item, Item][] {
   const results: [Item, Item][] = [];
 
   function appendIfNew(pair: [Item, Item]): void {
-    const key = makePairKey(pair[0], pair[1]);
-    let found = false;
-    for (const existing of seen) {
-      if (pairKeyEqual(existing, key)) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
+    const key = makePairKeyStr(pair[0], pair[1]);
+    // O(1) lookup with string-based Set
+    if (!seen.has(key)) {
       seen.add(key);
       results.push(pair);
     }
@@ -1102,7 +1089,7 @@ export function forcedBoundaryPairs(
 export function frontierCandidatePairs(
   artifacts: HeadToHeadArtifacts,
   metrics: Record<string, HeadToHeadMetrics>,
-  seen: Set<PairKey>
+  seen: Set<string>
 ): CandidatePair[] {
   const candidates: CandidatePair[] = [];
 
@@ -1118,15 +1105,9 @@ export function frontierCandidatePairs(
         const lowerMetrics = metrics[lowerItem.id];
         if (!upperMetrics || !lowerMetrics) continue;
 
-        const key = makePairKey(upperItem, lowerItem);
-        let found = false;
-        for (const existing of seen) {
-          if (pairKeyEqual(existing, key)) {
-            found = true;
-            break;
-          }
-        }
-        if (found) continue;
+        const key = makePairKeyStr(upperItem, lowerItem);
+        // O(1) lookup with string-based Set
+        if (seen.has(key)) continue;
 
         seen.add(key);
         const closeness = Math.abs(upperMetrics.wilsonLB - lowerMetrics.wilsonUB);
@@ -1165,7 +1146,8 @@ class WarmStartQueueBuilder {
   private target: number;
   private queue: [Item, Item][] = [];
   private counts: Map<string, number> = new Map();
-  private seen: Set<PairKey> = new Set();
+  // Use string-based Set for O(1) lookups
+  private seen: Set<string> = new Set();
 
   constructor(pool: Item[], target: number) {
     this.target = target;
@@ -1183,15 +1165,9 @@ class WarmStartQueueBuilder {
 
   enqueue(first: Item, second: Item): void {
     if (first.id === second.id) return;
-    const key = makePairKey(first, second);
-    let found = false;
-    for (const existing of this.seen) {
-      if (pairKeyEqual(existing, key)) {
-        found = true;
-        break;
-      }
-    }
-    if (found) return;
+    const key = makePairKeyStr(first, second);
+    // O(1) lookup with string-based Set
+    if (this.seen.has(key)) return;
 
     if (this.needsMore(first) || this.needsMore(second)) {
       this.queue.push([first, second]);
