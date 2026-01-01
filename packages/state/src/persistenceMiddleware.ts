@@ -1,8 +1,10 @@
 import type { Middleware, MiddlewareAPI, Dispatch, AnyAction } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
+import type { UndoRedoState, TierSnapshot } from "./undoRedoSlice";
 
 const STORAGE_KEY = "tiercade-state";
 const DEBOUNCE_MS = 500;
+const MAX_PERSISTED_HISTORY = 20; // Limit history size for storage efficiency
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -23,13 +25,20 @@ export const persistenceMiddleware: Middleware = (
   saveTimeout = setTimeout(() => {
     const state = store.getState();
     try {
+      // Trim undo/redo history for storage efficiency
+      const trimmedUndoRedo: UndoRedoState = {
+        past: state.undoRedo.past.slice(-MAX_PERSISTED_HISTORY),
+        future: state.undoRedo.future.slice(-MAX_PERSISTED_HISTORY),
+        maxHistorySize: state.undoRedo.maxHistorySize,
+      };
+
       const persistedState = {
         tier: state.tier,
         theme: state.theme,
-        // Don't persist undoRedo - start fresh each session
+        undoRedo: trimmedUndoRedo,
         // Don't persist headToHead - session-specific state
         savedAt: Date.now(),
-        version: 1,
+        version: 2, // Bump version for undo/redo support
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedState));
     } catch (error) {
@@ -43,6 +52,7 @@ export const persistenceMiddleware: Middleware = (
 export interface PersistedState {
   tier: RootState["tier"];
   theme: RootState["theme"];
+  undoRedo?: UndoRedoState;
   savedAt: number;
   version: number;
 }
@@ -66,9 +76,11 @@ export function loadPersistedState(): Partial<PersistedState> | undefined {
       return undefined;
     }
 
+    const historyCount = (parsed.undoRedo?.past?.length ?? 0) + (parsed.undoRedo?.future?.length ?? 0);
     console.log(
       "[Tiercade] Restored state from",
-      new Date(parsed.savedAt).toLocaleString()
+      new Date(parsed.savedAt).toLocaleString(),
+      historyCount > 0 ? `(${historyCount} undo/redo entries)` : ""
     );
 
     return parsed;

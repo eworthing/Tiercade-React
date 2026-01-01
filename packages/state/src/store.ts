@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { tierReducer, type TierState } from "./tierSlice";
 import { headToHeadReducer } from "./headToHeadSlice";
 import { themeReducer, type ThemeState } from "./themeSlice";
-import { undoRedoReducer } from "./undoRedoSlice";
+import { undoRedoReducer, type UndoRedoState } from "./undoRedoSlice";
 import { onboardingReducer } from "./onboardingSlice";
 import { persistenceMiddleware, loadPersistedState } from "./persistenceMiddleware";
 
@@ -13,6 +13,7 @@ const persistedState = loadPersistedState();
 const preloadedState: {
   tier?: TierState;
   theme?: ThemeState;
+  undoRedo?: UndoRedoState;
 } = {};
 
 if (persistedState?.tier) {
@@ -20,6 +21,9 @@ if (persistedState?.tier) {
 }
 if (persistedState?.theme) {
   preloadedState.theme = persistedState.theme;
+}
+if (persistedState?.undoRedo) {
+  preloadedState.undoRedo = persistedState.undoRedo;
 }
 
 export const store = configureStore({
