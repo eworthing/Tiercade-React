@@ -30,63 +30,78 @@ export interface ItemSeasonStats {
 
 /**
  * Calculate tier distribution statistics
+ * Single-pass algorithm: collects counts and tracks min/max/empty in one iteration
  */
 export function analyzeTierDistribution(
   tiers: Items,
   tierOrder: string[]
 ): TierAnalytics {
   const distribution: TierDistribution[] = [];
+  const emptyTiers: string[] = [];
   let totalItems = 0;
+  let largest = { name: "", count: 0 };
+  let smallest = { name: "", count: Infinity };
 
-  // Calculate counts for each tier
+  // Single pass: collect counts, track min/max/empty simultaneously
   for (const tierName of tierOrder) {
     const items = tiers[tierName] || [];
-    totalItems += items.length;
+    const count = items.length;
+    totalItems += count;
     distribution.push({
       tierName,
-      itemCount: items.length,
-      percentage: 0, // Will calculate after we know total
+      itemCount: count,
+      percentage: 0, // Calculated after total is known
     });
+
+    if (count === 0) {
+      emptyTiers.push(tierName);
+    } else {
+      if (count > largest.count) {
+        largest = { name: tierName, count };
+      }
+      if (count < smallest.count) {
+        smallest = { name: tierName, count };
+      }
+    }
   }
 
   // Add unranked if it exists and has items
   const unranked = tiers["unranked"] || [];
   if (unranked.length > 0) {
-    totalItems += unranked.length;
+    const count = unranked.length;
+    totalItems += count;
     distribution.push({
       tierName: "unranked",
-      itemCount: unranked.length,
+      itemCount: count,
       percentage: 0,
     });
+    if (count > largest.count) {
+      largest = { name: "unranked", count };
+    }
+    if (count < smallest.count) {
+      smallest = { name: "unranked", count };
+    }
   }
 
-  // Calculate percentages
-  for (const tier of distribution) {
-    tier.percentage = totalItems > 0 ? (tier.itemCount / totalItems) * 100 : 0;
+  // Calculate percentages (unavoidable second pass, but simple)
+  if (totalItems > 0) {
+    for (const tier of distribution) {
+      tier.percentage = (tier.itemCount / totalItems) * 100;
+    }
   }
 
-  // Find largest and smallest tiers
-  const nonEmpty = distribution.filter((t) => t.itemCount > 0);
-  const largest = nonEmpty.reduce(
-    (max, tier) => (tier.itemCount > max.itemCount ? tier : max),
-    nonEmpty[0] || { tierName: "", itemCount: 0 }
-  );
-  const smallest = nonEmpty.reduce(
-    (min, tier) => (tier.itemCount < min.itemCount ? tier : min),
-    nonEmpty[0] || { tierName: "", itemCount: 0 }
-  );
-
-  const emptyTiers = distribution
-    .filter((t) => t.itemCount === 0)
-    .map((t) => t.tierName);
+  // Handle edge case: no non-empty tiers
+  if (smallest.count === Infinity) {
+    smallest = { name: "", count: 0 };
+  }
 
   return {
     totalItems,
     totalTiers: tierOrder.length,
     distribution,
     averageItemsPerTier: tierOrder.length > 0 ? totalItems / tierOrder.length : 0,
-    largestTier: { name: largest.tierName, count: largest.itemCount },
-    smallestTier: { name: smallest.tierName, count: smallest.itemCount },
+    largestTier: largest,
+    smallestTier: smallest,
     emptyTiers,
   };
 }

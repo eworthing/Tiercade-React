@@ -60,6 +60,16 @@ const SORT_OPTIONS: { mode: GlobalSortMode; label: string }[] = [
   { mode: { type: "alphabetical", ascending: false }, label: "Z to A" },
 ];
 
+/** Compare sort modes without JSON.stringify (O(1) vs O(n) serialization) */
+function isSameSortMode(a: GlobalSortMode, b: GlobalSortMode): boolean {
+  if (a.type !== b.type) return false;
+  if (a.type === "custom") return true;
+  if (a.type === "alphabetical" && b.type === "alphabetical") {
+    return a.ascending === b.ascending;
+  }
+  return false;
+}
+
 export const SortFilterBar: React.FC<SortFilterBarProps> = ({
   sortMode,
   filters,
@@ -147,13 +157,13 @@ export const SortFilterBar: React.FC<SortFilterBarProps> = ({
                 key={option.label}
                 onClick={() => onSortModeChange(option.mode)}
                 className={`w-full px-3 py-1.5 text-left text-sm hover:bg-surface-soft flex items-center gap-2 transition-colors ${
-                  JSON.stringify(sortMode) === JSON.stringify(option.mode)
+                  isSameSortMode(sortMode, option.mode)
                     ? "text-accent"
                     : "text-text"
                 }`}
               >
                 {option.label}
-                {JSON.stringify(sortMode) === JSON.stringify(option.mode) && (
+                {isSameSortMode(sortMode, option.mode) && (
                   <svg className="w-4 h-4 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>

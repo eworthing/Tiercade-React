@@ -42,11 +42,15 @@ export const selectSelectionCount = createSelector(
   (selection) => selection.length
 );
 
-/** Check if a specific item is selected */
-export const selectIsItemSelected = createSelector(
-  [selectSelection, (_state: RootState, itemId: string) => itemId],
-  (selection, itemId) => selection.includes(itemId)
+/** Select selection as a Set for O(1) lookups (memoized) */
+export const selectSelectionSet = createSelector(
+  [selectSelection],
+  (selection) => new Set(selection)
 );
+
+/** Check if a specific item is selected - O(1) with memoized Set */
+export const selectIsItemSelected = (state: RootState, itemId: string): boolean =>
+  selectSelectionSet(state).has(itemId);
 
 /** Select all items flattened into a single array */
 export const selectAllItems = createSelector(
