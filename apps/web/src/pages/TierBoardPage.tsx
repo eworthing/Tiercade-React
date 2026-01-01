@@ -102,6 +102,7 @@ export const TierBoardPage: React.FC = () => {
   }, [dispatch, selectedThemeId]);
 
   // Load default project on mount only if no tier data exists
+  // Note: Empty deps is intentional - we only check initial state on mount
   useEffect(() => {
     const hasTierData = tierOrder && tierOrder.length > 0;
     const hasTierItems = Object.keys(tiers).length > 0;
@@ -109,9 +110,10 @@ export const TierBoardPage: React.FC = () => {
     if (!hasTierData && !hasTierItems) {
       dispatch(loadDefaultProject());
     }
-  }, []); // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]); // dispatch is stable, tierOrder/tiers intentionally read from initial render
 
-  // Check for shared tier list in URL
+  // Check for shared tier list in URL on mount
   useEffect(() => {
     const sharedData = getShareDataFromUrl();
     if (sharedData) {
@@ -127,7 +129,7 @@ export const TierBoardPage: React.FC = () => {
       );
       clearShareDataFromUrl();
     }
-  }, []); // Only run once on mount
+  }, [dispatch]); // dispatch is stable
 
   // Compute tier colors and labels from theme + custom overrides
   const { tierColors, tierLabels } = useMemo(() => {

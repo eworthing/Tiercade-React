@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { Item, MediaType } from "@tiercade/core";
 
 interface ItemFormValues {
@@ -98,8 +98,8 @@ export function useItemForm({
     setError(null);
   }, []);
 
-  // Check if form has changes from initial values
-  const hasChanges = (() => {
+  // Check if form has changes from initial values (memoized for performance)
+  const hasChanges = useMemo(() => {
     if (!initialItem) {
       return name.trim() !== "" || mediaUrl !== null;
     }
@@ -113,7 +113,7 @@ export function useItemForm({
       mediaUrl !== oldMediaUrl ||
       mediaType !== oldMediaType
     );
-  })();
+  }, [name, mediaUrl, mediaType, initialItem]);
 
   return {
     values: {

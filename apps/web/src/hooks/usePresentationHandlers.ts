@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAppDispatch } from "./useAppDispatch";
 import { useAppSelector } from "./useAppSelector";
 import {
@@ -132,33 +132,62 @@ export function usePresentationHandlers() {
     [dispatch]
   );
 
-  return {
-    // State
-    isPresenting,
-    chromaKey,
-    revealMode,
-    revealedItems,
-    showProgress,
-    celebrateSTier,
-    itemScale,
-    itemQueue,
-    currentQueueItem,
-    watermarkText,
-    showWatermark,
-    showCurrentItem,
+  // Memoize return object to prevent unnecessary re-renders in consumers
+  return useMemo(
+    () => ({
+      // State
+      isPresenting,
+      chromaKey,
+      revealMode,
+      revealedItems,
+      showProgress,
+      celebrateSTier,
+      itemScale,
+      itemQueue,
+      currentQueueItem,
+      watermarkText,
+      showWatermark,
+      showCurrentItem,
 
-    // Handlers
-    handleTogglePresentation,
-    handleChromaKeyChange,
-    handleRevealModeChange,
-    handleItemReveal,
-    handleShowProgressChange,
-    handleCelebrateSTierChange,
-    handleItemScaleChange,
-    handleDrawNext,
-    handleShuffleQueue,
-    handleStartQueue,
-    handleWatermarkTextChange,
-    handleShowWatermarkChange,
-  };
+      // Handlers
+      handleTogglePresentation,
+      handleChromaKeyChange,
+      handleRevealModeChange,
+      handleItemReveal,
+      handleShowProgressChange,
+      handleCelebrateSTierChange,
+      handleItemScaleChange,
+      handleDrawNext,
+      handleShuffleQueue,
+      handleStartQueue,
+      handleWatermarkTextChange,
+      handleShowWatermarkChange,
+    }),
+    [
+      isPresenting,
+      chromaKey,
+      revealMode,
+      revealedItems,
+      showProgress,
+      celebrateSTier,
+      itemScale,
+      itemQueue,
+      currentQueueItem,
+      watermarkText,
+      showWatermark,
+      showCurrentItem,
+      handleTogglePresentation,
+      handleChromaKeyChange,
+      handleRevealModeChange,
+      handleItemReveal,
+      handleShowProgressChange,
+      handleCelebrateSTierChange,
+      handleItemScaleChange,
+      handleDrawNext,
+      handleShuffleQueue,
+      handleStartQueue,
+      handleWatermarkTextChange,
+      handleShowWatermarkChange,
+    ]
+  );
 }

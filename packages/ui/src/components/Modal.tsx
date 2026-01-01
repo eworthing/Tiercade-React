@@ -130,8 +130,13 @@ export const Modal: React.FC<ModalProps> = ({
         document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "";
 
-        // Restore focus
-        previousActiveElement.current?.focus();
+        // Restore focus after DOM updates complete
+        const elementToRestore = previousActiveElement.current;
+        if (elementToRestore && document.body.contains(elementToRestore)) {
+          requestAnimationFrame(() => {
+            elementToRestore.focus();
+          });
+        }
       };
     }
   }, [open, closeOnEscape, handleClose]);

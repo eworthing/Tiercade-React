@@ -220,6 +220,16 @@ export interface TierCelebrationProps {
   onComplete: () => void;
 }
 
+// Pre-compute celebration particles to avoid Math.random() in render
+const CELEBRATION_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  left: `${(i * 5) % 100}%`,
+  top: `${((i * 7) + 10) % 100}%`,
+  animationDelay: `${(i % 5) * 0.1}s`,
+  animationDuration: `${1 + (i % 3) * 0.3}s`,
+  emoji: ["⭐", "✨", "🌟"][i % 3],
+}));
+
 export const TierCelebration: React.FC<TierCelebrationProps> = ({
   tier,
   show,
@@ -251,19 +261,19 @@ export const TierCelebration: React.FC<TierCelebrationProps> = ({
           </div>
         </div>
       </div>
-      {/* Floating stars */}
-      {Array.from({ length: 20 }).map((_, i) => (
+      {/* Floating stars - use pre-computed values */}
+      {CELEBRATION_PARTICLES.map((particle) => (
         <div
-          key={i}
+          key={particle.id}
           className="absolute text-2xl animate-float"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 0.5}s`,
-            animationDuration: `${1 + Math.random()}s`,
+            left: particle.left,
+            top: particle.top,
+            animationDelay: particle.animationDelay,
+            animationDuration: particle.animationDuration,
           }}
         >
-          {["⭐", "✨", "🌟"][Math.floor(Math.random() * 3)]}
+          {particle.emoji}
         </div>
       ))}
     </div>
