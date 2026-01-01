@@ -10,7 +10,11 @@ import {
   setArtifacts,
   setPairsQueue,
   setCurrentPair,
-  setRecords
+  setRecords,
+  advanceAfterVote,
+  skipCurrentPair as skipCurrentPairAction,
+  recycleDeferredPairs,
+  clearDeferredPairs
 } from "./headToHeadSlice";
 import { setTiers } from "./tierSlice";
 import { captureSnapshot } from "./undoRedoThunks";
@@ -73,7 +77,7 @@ export const voteCurrentPair =
   (winnerId: string): AppThunk =>
   (dispatch, getState) => {
     const state = getState();
-    const { isActive, currentPair, pairsQueue, records: recordsObj } =
+    const { isActive, currentPair, pairsQueue, deferredPairs, records: recordsObj } =
       state.headToHead;
 
     if (!isActive || !currentPair) {
@@ -106,14 +110,39 @@ export const voteCurrentPair =
       updatedRecordsObj[key] = value;
     }
 
-    // Advance queue
-    const [next, ...rest] = pairsQueue;
-    dispatch(setPairsQueue(rest ?? []));
-    dispatch(setCurrentPair(next ?? null));
-
     // Persist updated records via Redux action (not direct mutation)
     dispatch(setRecords(updatedRecordsObj));
+
+    // Advance to next pair
+    dispatch(advanceAfterVote());
+
+    // Check if main queue exhausted but deferred pairs exist
+    const updatedState = getState();
+    if (!updatedState.headToHead.currentPair && updatedState.headToHead.deferredPairs.length > 0) {
+      dispatch(recycleDeferredPairs());
+    }
   };
+
+/**
+ * Skips the current pair without voting, deferring it for later.
+ * The pair will be presented again after the main queue is exhausted.
+ */
+export const skipPair = (): AppThunk => (dispatch, getState) => {
+  const state = getState();
+  const { isActive, currentPair, deferredPairs } = state.headToHead;
+
+  if (!isActive || !currentPair) {
+    return;
+  }
+
+  dispatch(skipCurrentPairAction());
+
+  // Check if main queue exhausted but deferred pairs exist
+  const updatedState = getState();
+  if (!updatedState.headToHead.currentPair && updatedState.headToHead.deferredPairs.length > 0) {
+    dispatch(recycleDeferredPairs());
+  }
+};
 
 /**
  * Finishes Head-to-Head by applying quick-tier results back to the tier board.

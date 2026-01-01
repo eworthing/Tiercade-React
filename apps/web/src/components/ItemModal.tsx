@@ -45,6 +45,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
     values,
     error,
     setName,
+    setSeasonString,
+    setDescription,
     handleMediaChange,
     validate,
     reset,
@@ -58,6 +60,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       if (!validate()) return;
 
       const trimmedName = values.name.trim();
+      const trimmedSeasonString = values.seasonString.trim();
+      const trimmedDescription = values.description.trim();
 
       if (isEditMode && item) {
         // Edit mode - update existing item
@@ -71,6 +75,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         // Build updates based on media type
         const updates: Partial<Item> = {
           name: trimmedName,
+          seasonString: trimmedSeasonString || undefined,
+          description: trimmedDescription || undefined,
           mediaType: values.mediaUrl ? values.mediaType : undefined,
           // Clear other media types when changing
           imageUrl: undefined,
@@ -97,6 +103,13 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           id: generateId("item"),
           name: trimmedName,
         };
+
+        if (trimmedSeasonString) {
+          newItem.seasonString = trimmedSeasonString;
+        }
+        if (trimmedDescription) {
+          newItem.description = trimmedDescription;
+        }
 
         if (values.mediaUrl) {
           newItem.mediaType = values.mediaType;
@@ -188,6 +201,26 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             error={error ?? undefined}
             autoFocus
           />
+
+          <Input
+            label="Season / Subtitle"
+            placeholder="e.g., Season 1, (2019), Episode 5..."
+            value={values.seasonString}
+            onChange={(e) => setSeasonString(e.target.value)}
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">
+              Notes
+            </label>
+            <textarea
+              placeholder="Add notes about this item..."
+              value={values.description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-text placeholder:text-text-subtle focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none"
+              rows={3}
+            />
+          </div>
 
           <MediaUpload
             value={values.mediaUrl}

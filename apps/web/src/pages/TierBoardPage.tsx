@@ -24,6 +24,8 @@ import {
   setSearchFilter,
   toggleMediaTypeFilter,
   clearFilters,
+  moveItemsBetweenTiers,
+  deleteItems,
   // Memoized selectors
   selectTiers,
   selectTierOrder,
@@ -46,6 +48,7 @@ import type { Item, GlobalSortMode, MediaType, Items } from "@tiercade/core";
 import { sortItems, filterAllTiers, isCelebrationTier, UNRANKED_TIER_ID } from "@tiercade/core";
 import { ItemModal } from "../components/ItemModal";
 import { TierSettingsModal } from "../components/TierSettingsModal";
+import { BatchActionBar } from "../components/BatchActionBar";
 import {
   generateShareUrl,
   getShareDataFromUrl,
@@ -281,6 +284,22 @@ export const TierBoardPage: React.FC = () => {
     dispatch(clearFilters());
   }, [dispatch]);
 
+  // Batch operation handlers
+  const handleBatchMoveToTier = useCallback(
+    (targetTierName: string) => {
+      if (selection.length === 0) return;
+      dispatch(captureSnapshot("Batch Move"));
+      dispatch(moveItemsBetweenTiers({ itemIds: selection, targetTierName }));
+    },
+    [dispatch, selection]
+  );
+
+  const handleBatchDelete = useCallback(() => {
+    if (selection.length === 0) return;
+    dispatch(captureSnapshot("Batch Delete"));
+    dispatch(deleteItems(selection));
+  }, [dispatch, selection]);
+
   // Enhanced move handler for celebrations
   const handleMoveItemWithCelebration = useCallback(
     (itemId: string, targetTierName: string) => {
@@ -464,6 +483,17 @@ export const TierBoardPage: React.FC = () => {
           onShowWatermarkChange={presentation.handleShowWatermarkChange}
         />
       </Modal>
+
+      {/* Batch Action Bar - appears when items are selected */}
+      <BatchActionBar
+        selectedCount={selection.length}
+        tierOrder={tierOrder}
+        tierLabels={tierLabels}
+        tierColors={tierColors}
+        onMoveToTier={handleBatchMoveToTier}
+        onDelete={handleBatchDelete}
+        onClear={() => dispatch(clearSelection())}
+      />
     </div>
   );
 };

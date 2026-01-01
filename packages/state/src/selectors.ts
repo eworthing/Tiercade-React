@@ -149,21 +149,38 @@ export const selectHeadToHeadCurrentPair = (state: RootState) => state.headToHea
 /** Select head-to-head pairs queue */
 export const selectHeadToHeadPairsQueue = (state: RootState) => state.headToHead.pairsQueue;
 
+/** Select head-to-head deferred pairs */
+export const selectHeadToHeadDeferredPairs = (state: RootState) => state.headToHead.deferredPairs;
+
 /** Select head-to-head phase */
 export const selectHeadToHeadPhase = (state: RootState) => state.headToHead.phase;
 
 /** Select head-to-head pool */
 export const selectHeadToHeadPool = (state: RootState) => state.headToHead.pool;
 
+/** Select number of skipped pairs */
+export const selectHeadToHeadSkippedCount = (state: RootState) => state.headToHead.skippedCount;
+
 /** Select head-to-head progress */
 export const selectHeadToHeadProgress = createSelector(
-  [selectHeadToHeadPairsQueue, (state: RootState) => state.headToHead.totalPairs],
-  (queue, total) => ({
-    remaining: queue.length,
-    total,
-    completed: total - queue.length,
-    percentage: total > 0 ? Math.round(((total - queue.length) / total) * 100) : 0
-  })
+  [
+    (state: RootState) => state.headToHead.completedComparisons,
+    (state: RootState) => state.headToHead.totalPairs,
+    selectHeadToHeadPairsQueue,
+    selectHeadToHeadDeferredPairs,
+    (state: RootState) => state.headToHead.currentPair
+  ],
+  (completed, total, queue, deferred, currentPair) => {
+    const remaining = queue.length + deferred.length + (currentPair ? 1 : 0);
+    const decidedTotal = completed + remaining;
+    return {
+      remaining,
+      total: decidedTotal,
+      completed,
+      deferred: deferred.length,
+      percentage: decidedTotal > 0 ? Math.round((completed / decidedTotal) * 100) : 0
+    };
+  }
 );
 
 // ============================================================================

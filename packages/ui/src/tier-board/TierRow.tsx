@@ -158,9 +158,12 @@ interface ItemMediaContentProps {
 }
 
 /** Shared name overlay component for media items */
-const NameOverlay: React.FC<{ name: string }> = ({ name }) => (
+const NameOverlay: React.FC<{ name: string; subtitle?: string }> = ({ name, subtitle }) => (
   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card opacity-0 group-hover:opacity-100 transition-opacity">
     <p className="text-2xs text-white text-center truncate font-medium">{name}</p>
+    {subtitle && (
+      <p className="text-[9px] text-white/70 text-center truncate">{subtitle}</p>
+    )}
   </div>
 );
 
@@ -196,7 +199,7 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
             <path d="M8 5v14l11-7z" />
           </svg>
         </MediaBadge>
-        <NameOverlay name={displayName} />
+        <NameOverlay name={displayName} subtitle={item.seasonString} />
       </>
     );
   }
@@ -236,16 +239,23 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
             GIF
           </div>
         )}
-        <NameOverlay name={displayName} />
+        <NameOverlay name={displayName} subtitle={item.seasonString} />
       </>
     );
   }
 
   // Text-only fallback
   return (
-    <span className="text-xs text-text text-center leading-tight">
-      {displayName}
-    </span>
+    <div className="flex flex-col items-center justify-center gap-0.5 p-1">
+      <span className="text-xs text-text text-center leading-tight font-medium">
+        {displayName}
+      </span>
+      {item.seasonString && (
+        <span className="text-[9px] text-text-muted text-center leading-tight">
+          {item.seasonString}
+        </span>
+      )}
+    </div>
   );
 };
 

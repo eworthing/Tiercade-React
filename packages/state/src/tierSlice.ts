@@ -136,6 +136,18 @@ export const tierSlice = createSlice({
       const { itemId, targetTierName } = action.payload;
       state.tiers = moveItemLogic(state.tiers, itemId, targetTierName);
     },
+    moveItemsBetweenTiers(
+      state,
+      action: PayloadAction<{ itemIds: string[]; targetTierName: string }>
+    ) {
+      const { itemIds, targetTierName } = action.payload;
+      // Move each item sequentially using the core logic
+      for (const itemId of itemIds) {
+        state.tiers = moveItemLogic(state.tiers, itemId, targetTierName);
+      }
+      // Clear selection after batch move
+      state.selection = [];
+    },
     reorderItemWithinTier(
       state,
       action: PayloadAction<{
@@ -303,6 +315,7 @@ export const {
   deleteItem,
   deleteItems,
   moveItemBetweenTiers,
+  moveItemsBetweenTiers,
   reorderItemWithinTier,
   setTierLabels,
   setTierColors,

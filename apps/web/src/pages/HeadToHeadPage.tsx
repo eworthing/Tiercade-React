@@ -5,7 +5,10 @@ import { useAppSelector } from "../hooks/useAppSelector";
 import {
   startHeadToHead,
   voteCurrentPair,
+  skipPair,
   finishHeadToHead,
+  selectHeadToHeadProgress,
+  selectHeadToHeadSkippedCount,
 } from "@tiercade/state";
 import { Button } from "@tiercade/ui";
 
@@ -15,23 +18,17 @@ export const HeadToHeadPage: React.FC = () => {
   const isActive = useAppSelector((state) => state.headToHead.isActive);
   const currentPair = useAppSelector((state) => state.headToHead.currentPair);
   const pairsQueue = useAppSelector((state) => state.headToHead.pairsQueue);
+  const deferredPairs = useAppSelector((state) => state.headToHead.deferredPairs);
   const phase = useAppSelector((state) => state.headToHead.phase);
   const pool = useAppSelector((state) => state.headToHead.pool);
   const tiers = useAppSelector((state) => state.tier.tiers);
+  const progress = useAppSelector(selectHeadToHeadProgress);
+  const skippedCount = useAppSelector(selectHeadToHeadSkippedCount);
 
   // Calculate total items available
   const totalItems = useMemo(() => {
     return Object.values(tiers).flat().length;
   }, [tiers]);
-
-  // Calculate progress
-  const progressPercent = useMemo(() => {
-    if (!isActive || !pool.length) return 0;
-    const totalPairs = (pool.length * (pool.length - 1)) / 2;
-    const remaining = pairsQueue.length + (currentPair ? 1 : 0);
-    const completed = totalPairs - remaining;
-    return Math.min(100, Math.round((completed / totalPairs) * 100));
-  }, [isActive, pool, pairsQueue, currentPair]);
 
   const handleStart = useCallback(() => {
     dispatch(startHeadToHead());
@@ -48,10 +45,10 @@ export const HeadToHeadPage: React.FC = () => {
   }, [dispatch, currentPair]);
 
   const handleSkip = useCallback(() => {
-    // Skip by advancing without recording a meaningful vote
-    if (!currentPair || pairsQueue.length === 0) return;
-    dispatch(voteCurrentPair(currentPair[0].id));
-  }, [dispatch, currentPair, pairsQueue]);
+    // Properly defer the pair for later instead of fake voting
+    if (!currentPair) return;
+    dispatch(skipPair());
+  }, [dispatch, currentPair]);
 
   const handleFinish = useCallback(() => {
     dispatch(finishHeadToHead());
@@ -203,24 +200,42 @@ export const HeadToHeadPage: React.FC = () => {
   // Active comparison state
   if (currentPair) {
     const [itemA, itemB] = currentPair;
-    const remainingPairs = pairsQueue.length;
+    const isReviewingDeferred = pairsQueue.length === 0 && deferredPairs.length > 0;
 
     return (
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Progress bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-text-muted">
-              {phase === "quick" ? "Quick Pass" : "Refinement"}
-            </span>
-            <span className="text-text-muted">
-              {remainingPairs} comparisons remaining
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                phase === "quick"
+                  ? "bg-blue-500/20 text-blue-400"
+                  : "bg-purple-500/20 text-purple-400"
+              }`}>
+                {phase === "quick" ? "Quick Pass" : "Refinement"}
+              </span>
+              {isReviewingDeferred && (
+                <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/20 text-amber-400">
+                  Reviewing Skipped
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-text-muted">
+              {skippedCount > 0 && (
+                <span className="text-amber-400">
+                  {skippedCount} skipped
+                </span>
+              )}
+              <span>
+                {progress.remaining} remaining
+              </span>
+            </div>
           </div>
           <div className="h-2 bg-surface-raised rounded-full overflow-hidden">
             <div
               className="h-full bg-accent transition-all duration-300 ease-out"
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${progress.percentage}%` }}
             />
           </div>
         </div>
@@ -231,7 +246,7 @@ export const HeadToHeadPage: React.FC = () => {
             Which do you prefer?
           </h2>
           <p className="text-text-muted text-sm mt-1">
-            Use arrow keys or click to vote • Space to skip • Esc to finish
+            Use arrow keys or click to vote • Space to skip (decide later) • Esc to finish
           </p>
         </div>
 

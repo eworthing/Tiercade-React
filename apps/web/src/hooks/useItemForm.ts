@@ -5,6 +5,8 @@ interface ItemFormValues {
   name: string;
   mediaUrl: string | null;
   mediaType: MediaType;
+  seasonString: string;
+  description: string;
 }
 
 interface UseItemFormOptions {
@@ -19,6 +21,10 @@ interface UseItemFormResult {
   error: string | null;
   /** Update the name field */
   setName: (name: string) => void;
+  /** Update the season string field */
+  setSeasonString: (seasonString: string) => void;
+  /** Update the description field */
+  setDescription: (description: string) => void;
   /** Handle media upload change */
   handleMediaChange: (url: string | null, type: MediaType) => void;
   /** Validate the form and return whether it's valid */
@@ -40,6 +46,8 @@ export function useItemForm({
   initialItem = null,
 }: UseItemFormOptions = {}): UseItemFormResult {
   const [name, setName] = useState("");
+  const [seasonString, setSeasonString] = useState("");
+  const [description, setDescription] = useState("");
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<MediaType>("image");
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +56,8 @@ export function useItemForm({
   useEffect(() => {
     if (initialItem) {
       setName(initialItem.name ?? "");
+      setSeasonString(initialItem.seasonString ?? "");
+      setDescription(initialItem.description ?? "");
       // Determine media type and URL from item
       if (initialItem.videoUrl) {
         setMediaUrl(initialItem.videoUrl);
@@ -66,6 +76,8 @@ export function useItemForm({
     } else {
       // Reset for add mode
       setName("");
+      setSeasonString("");
+      setDescription("");
       setMediaUrl(null);
       setMediaType("image");
       setError(null);
@@ -89,6 +101,8 @@ export function useItemForm({
 
   const reset = useCallback(() => {
     setName("");
+    setSeasonString("");
+    setDescription("");
     setMediaUrl(null);
     setMediaType("image");
     setError(null);
@@ -101,28 +115,36 @@ export function useItemForm({
   // Check if form has changes from initial values (memoized for performance)
   const hasChanges = useMemo(() => {
     if (!initialItem) {
-      return name.trim() !== "" || mediaUrl !== null;
+      return name.trim() !== "" || seasonString.trim() !== "" || description.trim() !== "" || mediaUrl !== null;
     }
 
     const trimmedName = name.trim();
+    const trimmedSeasonString = seasonString.trim();
+    const trimmedDescription = description.trim();
     const oldMediaUrl = initialItem.videoUrl ?? initialItem.audioUrl ?? initialItem.imageUrl ?? null;
     const oldMediaType = initialItem.mediaType ?? "image";
 
     return (
       trimmedName !== (initialItem.name ?? "") ||
+      trimmedSeasonString !== (initialItem.seasonString ?? "") ||
+      trimmedDescription !== (initialItem.description ?? "") ||
       mediaUrl !== oldMediaUrl ||
       mediaType !== oldMediaType
     );
-  }, [name, mediaUrl, mediaType, initialItem]);
+  }, [name, seasonString, description, mediaUrl, mediaType, initialItem]);
 
   return {
     values: {
       name,
       mediaUrl,
       mediaType,
+      seasonString,
+      description,
     },
     error,
     setName,
+    setSeasonString,
+    setDescription,
     handleMediaChange,
     validate,
     reset,
