@@ -40,6 +40,110 @@ When working with Apple platforms (iOS, macOS, tvOS, visionOS) or Apple APIs (Sw
     - `docs/migration/LLM_PHASE1_IMPLEMENTATION_CHECKLIST.md`
   - Prefer **faithful ports** of existing Swift behavior before introducing new patterns.
 
+### React 19 & TypeScript Best Practices
+
+**Accessibility IDs:** Use React 19's `useId` hook for stable, SSR-safe accessibility IDs:
+```tsx
+// ✅ Correct: useId for accessibility relationships
+const id = useId();
+const labelId = `${id}-label`;
+const descriptionId = `${id}-description`;
+
+// ❌ Wrong: Random IDs cause hydration mismatches
+const id = `input-${Math.random()}`;
+```
+
+**Memoized Selectors:** Use `createSelector` from Redux Toolkit for derived state:
+```tsx
+// packages/state/src/selectors.ts
+import { createSelector } from "@reduxjs/toolkit";
+
+// ✅ Memoized: only recomputes when dependencies change
+export const selectTotalItemCount = createSelector(
+  [selectAllItems],
+  (items) => items.length
+);
+
+// ❌ Inline selectors create new functions every render
+const count = useAppSelector((state) =>
+  Object.values(state.tier.tiers).flat().length
+);
+```
+
+**Modal Focus Management:** Implement proper focus trapping for accessibility:
+```tsx
+// Focus trap pattern for modals
+useEffect(() => {
+  if (!open) return;
+
+  const focusables = getFocusableElements(contentRef.current);
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Tab") {
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+
+  document.addEventListener("keydown", handleKeyDown);
+  return () => document.removeEventListener("keydown", handleKeyDown);
+}, [open]);
+```
+
+**Animation Constants:** Use centralized timing from `@tiercade/theme`:
+```tsx
+import { DURATION, TOAST, EFFECTS } from "@tiercade/theme";
+
+// ✅ Consistent, maintainable
+setTimeout(onClose, DURATION.NORMAL);
+
+// ❌ Magic numbers scattered across files
+setTimeout(onClose, 200);
+```
+
+**Component DisplayNames:** Add for React DevTools debugging:
+```tsx
+export const Modal: React.FC<ModalProps> = ({ ... }) => { ... };
+Modal.displayName = "Modal";
+
+// For forwardRef components
+export const Input = forwardRef<HTMLInputElement, InputProps>(...);
+Input.displayName = "Input";
+```
+
+**Timer Cleanup:** Always clean up timeouts/intervals to prevent memory leaks:
+```tsx
+// ✅ Track timers with refs for cleanup
+const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+useEffect(() => {
+  return () => {
+    timersRef.current.forEach((timer) => clearTimeout(timer));
+  };
+}, []);
+```
+
+**DOM Timing:** Prefer `requestAnimationFrame` over `setTimeout(fn, 0)` for DOM operations:
+```tsx
+// ✅ Reliable timing for focus after render
+requestAnimationFrame(() => {
+  focusableElement?.focus();
+});
+
+// ❌ Less reliable, may fire before paint
+setTimeout(() => {
+  focusableElement?.focus();
+}, 0);
+```
+
 ## Apple Intelligence Prototype Scope (Read Me First)
 
 **📚 AI Documentation Hub**: All AI-related specs, diagnostics, and testing docs → `docs/AppleIntelligence/README.md`

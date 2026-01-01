@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
-import { Modal, Button, Input, ImageUpload } from "@tiercade/ui";
+import { Modal, Button, Input, MediaUpload, type MediaType } from "@tiercade/ui";
+import { generateId } from "@tiercade/core";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { addItemToUnranked } from "@tiercade/state";
-import { captureSnapshot } from "@tiercade/state";
+import { addItemToUnranked, captureSnapshot } from "@tiercade/state";
 
 interface AddItemModalProps {
   open: boolean;
@@ -12,8 +12,14 @@ interface AddItemModalProps {
 export const AddItemModal: React.FC<AddItemModalProps> = ({ open, onClose }) => {
   const dispatch = useAppDispatch();
   const [name, setName] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<MediaType>("image");
   const [error, setError] = useState<string | null>(null);
+
+  const handleMediaChange = useCallback((url: string | null, type: MediaType) => {
+    setMediaUrl(url);
+    setMediaType(type);
+  }, []);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -26,32 +32,48 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ open, onClose }) => 
         return;
       }
 
-      // Generate a unique ID
-      const id = `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      const id = generateId("item");
 
       // Capture snapshot for undo
       dispatch(captureSnapshot("Add Item"));
 
+      // Build item based on media type
+      const item: {
+        id: string;
+        name: string;
+        imageUrl?: string;
+        videoUrl?: string;
+        mediaType?: MediaType;
+      } = {
+        id,
+        name: trimmedName,
+      };
+
+      if (mediaUrl) {
+        if (mediaType === "video") {
+          item.videoUrl = mediaUrl;
+        } else {
+          item.imageUrl = mediaUrl;
+        }
+        item.mediaType = mediaType;
+      }
+
       // Add the item
-      dispatch(
-        addItemToUnranked({
-          id,
-          name: trimmedName,
-          imageUrl: imageUrl ?? undefined,
-        })
-      );
+      dispatch(addItemToUnranked(item));
 
       // Reset form and close
       setName("");
-      setImageUrl(null);
+      setMediaUrl(null);
+      setMediaType("image");
       onClose();
     },
-    [dispatch, name, imageUrl, onClose]
+    [dispatch, name, mediaUrl, mediaType, onClose]
   );
 
   const handleClose = useCallback(() => {
     setName("");
-    setImageUrl(null);
+    setMediaUrl(null);
+    setMediaType("image");
     setError(null);
     onClose();
   }, [onClose]);
@@ -84,10 +106,13 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ open, onClose }) => 
           autoFocus
         />
 
-        <ImageUpload
-          value={imageUrl}
-          onChange={setImageUrl}
+        <MediaUpload
+          value={mediaUrl}
+          mediaType={mediaType}
+          onChange={handleMediaChange}
           maxSizeKB={500}
+          maxVideoSizeKB={5000}
+          allowVideo={true}
         />
 
         {/* Hidden submit button for form submission on Enter */}

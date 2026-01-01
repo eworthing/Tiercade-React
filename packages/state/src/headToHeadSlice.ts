@@ -67,6 +67,9 @@ export const headToHeadSlice = createSlice({
     },
     setSuggestedPairs(state, action: PayloadAction<[Item, Item][]>) {
       state.suggestedPairs = action.payload;
+    },
+    setRecords(state, action: PayloadAction<Record<string, HeadToHeadRecord>>) {
+      state.records = action.payload;
     }
   }
 });
@@ -79,7 +82,8 @@ export const {
   setCurrentPair,
   setPhase,
   setArtifacts,
-  setSuggestedPairs
+  setSuggestedPairs,
+  setRecords
 } = headToHeadSlice.actions;
 
 export const headToHeadReducer = headToHeadSlice.reducer;

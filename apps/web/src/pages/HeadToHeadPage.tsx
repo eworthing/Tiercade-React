@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
 import {
@@ -10,6 +11,7 @@ import { Button } from "@tiercade/ui";
 
 export const HeadToHeadPage: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const isActive = useAppSelector((state) => state.headToHead.isActive);
   const currentPair = useAppSelector((state) => state.headToHead.currentPair);
   const pairsQueue = useAppSelector((state) => state.headToHead.pairsQueue);
@@ -119,7 +121,7 @@ export const HeadToHeadPage: React.FC = () => {
           Head-to-Head comparison requires at least 2 items in your tier list.
           Add more items to get started.
         </p>
-        <Button variant="secondary" onClick={() => window.location.href = "/"}>
+        <Button variant="secondary" onClick={() => navigate("/")}>
           Go to Board
         </Button>
       </div>

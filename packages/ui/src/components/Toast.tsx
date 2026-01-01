@@ -4,8 +4,11 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { createPortal } from "react-dom";
+import { generateId } from "@tiercade/core";
+import { TOAST } from "@tiercade/theme";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
@@ -40,22 +43,40 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  // Track active timers for cleanup on unmount
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => clearTimeout(timer));
+      timersRef.current.clear();
+    };
+  }, []);
 
   const removeToast = useCallback((id: string) => {
+    // Clear the timer when toast is removed
+    const timer = timersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const addToast = useCallback(
-    (type: ToastType, message: string, duration = 4000) => {
-      const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    (type: ToastType, message: string, duration = TOAST.DEFAULT_DURATION) => {
+      const id = generateId("toast");
       const toast: Toast = { id, type, message, duration };
 
       setToasts((prev) => [...prev, toast]);
 
       if (duration > 0) {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
+          timersRef.current.delete(id);
           removeToast(id);
         }, duration);
+        timersRef.current.set(id, timer);
       }
     },
     [removeToast]
@@ -101,12 +122,17 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove }) => 
 
   return createPortal(
     <div
-      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm"
+      className="fixed bottom-4 right-4 z-[100] flex flex-col gap-3 max-w-sm pointer-events-none"
       aria-live="polite"
       aria-atomic="true"
     >
-      {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
+      {toasts.map((toast, index) => (
+        <ToastItem
+          key={toast.id}
+          toast={toast}
+          onRemove={onRemove}
+          index={index}
+        />
       ))}
     </div>,
     document.body
@@ -116,14 +142,15 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemove }) => 
 interface ToastItemProps {
   toast: Toast;
   onRemove: (id: string) => void;
+  index: number;
 }
 
-const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
+const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove, index }) => {
   const [isExiting, setIsExiting] = useState(false);
 
   const handleRemove = useCallback(() => {
     setIsExiting(true);
-    setTimeout(() => onRemove(toast.id), 150);
+    setTimeout(() => onRemove(toast.id), TOAST.EXIT_DURATION);
   }, [toast.id, onRemove]);
 
   const icons: Record<ToastType, React.ReactNode> = {
@@ -174,20 +201,26 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
   return (
     <div
       role="alert"
+      style={{
+        animationDelay: isExiting ? "0ms" : `${index * TOAST.STAGGER}ms`,
+      }}
       className={`
         flex items-start gap-3 p-4 rounded-lg border shadow-dropdown
-        bg-surface-soft border-border
-        ${isExiting ? "animate-fade-out" : "animate-slide-up"}
+        bg-surface-soft/95 backdrop-blur-md border-border-subtle
+        pointer-events-auto transform-gpu
+        ${isExiting ? "animate-slide-in-right opacity-0 translate-x-full" : "animate-slide-in-right"}
+        transition-all duration-200 ease-spring
+        hover:shadow-card-hover hover:scale-[1.02]
       `}
     >
-      <span className={`shrink-0 p-1 rounded-full ${colors[toast.type]}`}>
+      <span className={`shrink-0 p-1.5 rounded-full ${colors[toast.type]} shadow-sm`}>
         {icons[toast.type]}
       </span>
-      <p className="flex-1 text-sm text-text">{toast.message}</p>
+      <p className="flex-1 text-sm text-text leading-relaxed">{toast.message}</p>
       <button
         type="button"
         onClick={handleRemove}
-        className="shrink-0 p-1 -m-1 rounded text-text-subtle hover:text-text transition-colors"
+        className="shrink-0 p-1 -m-1 rounded-full text-text-subtle hover:text-text hover:bg-surface-raised transition-all duration-150 hover:scale-110 active:scale-95"
         aria-label="Dismiss"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

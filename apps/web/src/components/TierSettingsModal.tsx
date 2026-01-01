@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Modal, Button, Input, ConfirmDialog } from "@tiercade/ui";
+import { TIER_COLOR_PALETTE, TIER_PRESETS } from "@tiercade/theme";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
 import {
@@ -9,6 +10,10 @@ import {
   removeTier,
   reorderTiers,
   captureSnapshot,
+  selectTierOrder,
+  selectTierLabels,
+  selectTierColors,
+  selectTiers,
 } from "@tiercade/state";
 
 interface TierSettingsModalProps {
@@ -16,64 +21,18 @@ interface TierSettingsModalProps {
   onClose: () => void;
 }
 
-// Preset tier configurations
-const PRESETS = [
-  {
-    name: "S-A-B-C-D-F",
-    tiers: [
-      { id: "S", label: "S", color: "#FF6B6B" },
-      { id: "A", label: "A", color: "#FFA94D" },
-      { id: "B", label: "B", color: "#FFE066" },
-      { id: "C", label: "C", color: "#69DB7C" },
-      { id: "D", label: "D", color: "#74C0FC" },
-      { id: "F", label: "F", color: "#B197FC" },
-    ],
-  },
-  {
-    name: "1-2-3-4-5",
-    tiers: [
-      { id: "1", label: "1st", color: "#FFD700" },
-      { id: "2", label: "2nd", color: "#C0C0C0" },
-      { id: "3", label: "3rd", color: "#CD7F32" },
-      { id: "4", label: "4th", color: "#69DB7C" },
-      { id: "5", label: "5th", color: "#74C0FC" },
-    ],
-  },
-  {
-    name: "Gold-Silver-Bronze",
-    tiers: [
-      { id: "gold", label: "Gold", color: "#FFD700" },
-      { id: "silver", label: "Silver", color: "#C0C0C0" },
-      { id: "bronze", label: "Bronze", color: "#CD7F32" },
-    ],
-  },
-];
-
-// Common tier colors
-const COLOR_PALETTE = [
-  "#FF6B6B", // Red
-  "#FFA94D", // Orange
-  "#FFE066", // Yellow
-  "#69DB7C", // Green
-  "#74C0FC", // Blue
-  "#B197FC", // Purple
-  "#F783AC", // Pink
-  "#63E6BE", // Teal
-  "#868E96", // Gray
-];
-
 export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
   open,
   onClose,
 }) => {
   const dispatch = useAppDispatch();
-  const tierOrder = useAppSelector((state) => state.tier.tierOrder);
-  const tierLabels = useAppSelector((state) => state.tier.tierLabels);
-  const tierColors = useAppSelector((state) => state.tier.tierColors);
-  const tiers = useAppSelector((state) => state.tier.tiers);
+  const tierOrder = useAppSelector(selectTierOrder);
+  const tierLabels = useAppSelector(selectTierLabels);
+  const tierColors = useAppSelector(selectTierColors);
+  const tiers = useAppSelector(selectTiers);
 
   const [newTierName, setNewTierName] = useState("");
-  const [newTierColor, setNewTierColor] = useState(COLOR_PALETTE[0]);
+  const [newTierColor, setNewTierColor] = useState(TIER_COLOR_PALETTE[0]);
   const [tierToDelete, setTierToDelete] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState<string | null>(null);
   const [editingLabelValue, setEditingLabelValue] = useState("");
@@ -96,8 +55,8 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
 
     setNewTierName("");
     // Cycle to next color
-    const currentIndex = COLOR_PALETTE.indexOf(newTierColor);
-    setNewTierColor(COLOR_PALETTE[(currentIndex + 1) % COLOR_PALETTE.length]);
+    const currentIndex = TIER_COLOR_PALETTE.indexOf(newTierColor);
+    setNewTierColor(TIER_COLOR_PALETTE[(currentIndex + 1) % TIER_COLOR_PALETTE.length]);
   }, [dispatch, newTierName, newTierColor]);
 
   const handleDeleteTier = useCallback(() => {
@@ -152,7 +111,7 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
   );
 
   const handleApplyPreset = useCallback(
-    (preset: typeof PRESETS[0]) => {
+    (preset: typeof TIER_PRESETS[number]) => {
       dispatch(captureSnapshot("Apply Tier Preset"));
       // This is a simplified implementation - in production you'd want
       // to handle existing items and tiers more carefully
@@ -324,7 +283,7 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
           <div>
             <h3 className="text-sm font-medium text-text mb-3">Quick Presets</h3>
             <div className="flex flex-wrap gap-2">
-              {PRESETS.map((preset) => (
+              {TIER_PRESETS.map((preset) => (
                 <button
                   key={preset.name}
                   type="button"

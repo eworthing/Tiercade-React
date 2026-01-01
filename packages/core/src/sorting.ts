@@ -2,6 +2,7 @@
 // Source: TiercadeCore/Sources/TiercadeCore/Logic/Sorting.swift
 
 import type { Item, Items, GlobalSortMode, AttributeType } from "./models";
+import { compareStrings, compareWithNulls } from "./utils/comparison";
 
 /**
  * Sort items according to the specified global sort mode.
@@ -37,7 +38,8 @@ function sortAlphabetical(items: Item[], ascending: boolean): Item[] {
       numeric: true
     });
     if (comparison === 0) return 0;
-    return ascending ? (comparison < 0 ? -1 : 1) : comparison > 0 ? -1 : 1;
+    const direction = comparison < 0 ? -1 : 1;
+    return ascending ? direction : -direction as -1 | 1;
   });
   return copy;
 }
@@ -86,7 +88,7 @@ function sortByAttribute(
     if (nameComparison !== 0) {
       return nameComparison < 0 ? -1 : 1;
     }
-    return lhs.id < rhs.id ? -1 : lhs.id > rhs.id ? 1 : 0;
+    return compareStrings(lhs.id, rhs.id);
   });
 
   return copy;

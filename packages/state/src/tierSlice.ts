@@ -1,6 +1,18 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Items, Item } from "@tiercade/core";
+import type { Items, Item, GlobalSortMode, MediaType } from "@tiercade/core";
+import type { ItemFilters } from "@tiercade/core";
 import { moveItem as moveItemLogic } from "@tiercade/core";
+
+/** Build item location index on-demand for O(1) tier lookup */
+function buildItemLocationIndex(tiers: Items): Map<string, string> {
+  const index = new Map<string, string>();
+  for (const [tierName, items] of Object.entries(tiers)) {
+    for (const item of items) {
+      index.set(item.id, tierName);
+    }
+  }
+  return index;
+}
 
 export interface TierState {
   tiers: Items;
@@ -9,6 +21,8 @@ export interface TierState {
   tierLabels: Record<string, string>;
   tierColors: Record<string, string | undefined>;
   projectName: string;
+  sortMode: GlobalSortMode;
+  filters: ItemFilters;
 }
 
 const initialState: TierState = {
@@ -17,7 +31,9 @@ const initialState: TierState = {
   selection: [],
   tierLabels: {},
   tierColors: {},
-  projectName: "My Tier List"
+  projectName: "My Tier List",
+  sortMode: { type: "custom" },
+  filters: {}
 };
 
 export const tierSlice = createSlice({
@@ -35,11 +51,14 @@ export const tierSlice = createSlice({
     },
     toggleSelection(state, action: PayloadAction<string>) {
       const id = action.payload;
-      if (state.selection.includes(id)) {
-        state.selection = state.selection.filter((x) => x !== id);
+      // Use Set for O(1) lookup instead of Array.includes() O(n)
+      const selectionSet = new Set(state.selection);
+      if (selectionSet.has(id)) {
+        selectionSet.delete(id);
       } else {
-        state.selection.push(id);
+        selectionSet.add(id);
       }
+      state.selection = Array.from(selectionSet);
     },
     clearSelection(state) {
       state.selection = [];
@@ -48,39 +67,61 @@ export const tierSlice = createSlice({
       const unranked = state.tiers["unranked"] ?? [];
       state.tiers["unranked"] = [...unranked, action.payload];
     },
+    addItemToTier(
+      state,
+      action: PayloadAction<{ item: Item; tierName: string }>
+    ) {
+      const { item, tierName } = action.payload;
+      const tier = state.tiers[tierName] ?? [];
+      state.tiers[tierName] = [...tier, item];
+    },
     updateItem(
       state,
       action: PayloadAction<{ itemId: string; updates: Partial<Item> }>
     ) {
       const { itemId, updates } = action.payload;
-      // Find and update the item in all tiers
-      for (const tierName of Object.keys(state.tiers)) {
-        const tierItems = state.tiers[tierName];
-        const itemIndex = tierItems.findIndex((item) => item.id === itemId);
-        if (itemIndex !== -1) {
-          state.tiers[tierName][itemIndex] = {
-            ...tierItems[itemIndex],
-            ...updates,
-          };
-          break;
-        }
+      // Use O(n) index build once, then O(1) lookup - better than O(n*m) scan
+      const locationIndex = buildItemLocationIndex(state.tiers);
+      const tierName = locationIndex.get(itemId);
+      if (!tierName) return;
+
+      const tierItems = state.tiers[tierName];
+      const itemIndex = tierItems.findIndex((item) => item.id === itemId);
+      if (itemIndex !== -1) {
+        state.tiers[tierName][itemIndex] = {
+          ...tierItems[itemIndex],
+          ...updates,
+        };
       }
     },
     deleteItem(state, action: PayloadAction<string>) {
       const itemId = action.payload;
-      // Remove the item from all tiers
-      for (const tierName of Object.keys(state.tiers)) {
+      // Use O(n) index build once for O(1) tier lookup
+      const locationIndex = buildItemLocationIndex(state.tiers);
+      const tierName = locationIndex.get(itemId);
+      if (tierName) {
         state.tiers[tierName] = state.tiers[tierName].filter(
           (item) => item.id !== itemId
         );
       }
-      // Remove from selection if selected
-      state.selection = state.selection.filter((id) => id !== itemId);
+      // Remove from selection if selected (use Set for O(1))
+      const selectionSet = new Set(state.selection);
+      if (selectionSet.has(itemId)) {
+        selectionSet.delete(itemId);
+        state.selection = Array.from(selectionSet);
+      }
     },
     deleteItems(state, action: PayloadAction<string[]>) {
       const itemIds = new Set(action.payload);
-      // Remove the items from all tiers
-      for (const tierName of Object.keys(state.tiers)) {
+      // Build location index once, then filter only affected tiers
+      const locationIndex = buildItemLocationIndex(state.tiers);
+      const affectedTiers = new Set<string>();
+      for (const itemId of itemIds) {
+        const tierName = locationIndex.get(itemId);
+        if (tierName) affectedTiers.add(tierName);
+      }
+      // Only filter affected tiers instead of all tiers
+      for (const tierName of affectedTiers) {
         state.tiers[tierName] = state.tiers[tierName].filter(
           (item) => !itemIds.has(item.id)
         );
@@ -203,6 +244,49 @@ export const tierSlice = createSlice({
       state.tierColors = {};
       state.projectName = "My Tier List";
       state.selection = [];
+      state.sortMode = { type: "custom" };
+      state.filters = {};
+    },
+    // Sorting actions
+    setSortMode(state, action: PayloadAction<GlobalSortMode>) {
+      state.sortMode = action.payload;
+    },
+    // Filtering actions
+    setFilters(state, action: PayloadAction<ItemFilters>) {
+      state.filters = action.payload;
+    },
+    setSearchFilter(state, action: PayloadAction<string>) {
+      state.filters = { ...state.filters, searchText: action.payload };
+    },
+    setMediaTypeFilter(state, action: PayloadAction<MediaType[]>) {
+      state.filters = { ...state.filters, mediaTypes: action.payload };
+    },
+    toggleMediaTypeFilter(state, action: PayloadAction<MediaType>) {
+      const current = state.filters.mediaTypes ?? [];
+      if (current.includes(action.payload)) {
+        state.filters = {
+          ...state.filters,
+          mediaTypes: current.filter((t) => t !== action.payload)
+        };
+      } else {
+        state.filters = {
+          ...state.filters,
+          mediaTypes: [...current, action.payload]
+        };
+      }
+    },
+    setHasMediaFilter(state, action: PayloadAction<boolean | undefined>) {
+      state.filters = { ...state.filters, hasMedia: action.payload, noMedia: undefined };
+    },
+    setNoMediaFilter(state, action: PayloadAction<boolean | undefined>) {
+      state.filters = { ...state.filters, noMedia: action.payload, hasMedia: undefined };
+    },
+    clearFilters(state) {
+      state.filters = {};
+    },
+    clearSortAndFilters(state) {
+      state.sortMode = { type: "custom" };
+      state.filters = {};
     }
   }
 });
@@ -214,6 +298,7 @@ export const {
   toggleSelection,
   clearSelection,
   addItemToUnranked,
+  addItemToTier,
   updateItem,
   deleteItem,
   deleteItems,
@@ -228,7 +313,18 @@ export const {
   reorderTiers,
   setProjectName,
   loadProject,
-  resetProject
+  resetProject,
+  // Sorting
+  setSortMode,
+  // Filtering
+  setFilters,
+  setSearchFilter,
+  setMediaTypeFilter,
+  toggleMediaTypeFilter,
+  setHasMediaFilter,
+  setNoMediaFilter,
+  clearFilters,
+  clearSortAndFilters
 } = tierSlice.actions;
 
 export const tierReducer = tierSlice.reducer;

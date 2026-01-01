@@ -1,5 +1,14 @@
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback, useState, useId } from "react";
 import { createPortal } from "react-dom";
+import { DURATION } from "@tiercade/theme";
+
+/** Get all focusable elements within a container */
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const elements = container.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
+  );
+  return Array.from(elements);
+}
 
 export interface ModalProps {
   open: boolean;
@@ -27,6 +36,21 @@ export const Modal: React.FC<ModalProps> = ({
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Generate unique IDs for accessibility
+  const id = useId();
+  const titleId = `${id}-title`;
+  const descriptionId = `${id}-description`;
+
+  // Handle open/close with animation
+  useEffect(() => {
+    if (open) {
+      setIsVisible(true);
+      setIsClosing(false);
+    }
+  }, [open]);
 
   // Size classes
   const sizes = {
@@ -37,32 +61,66 @@ export const Modal: React.FC<ModalProps> = ({
     full: "max-w-4xl",
   };
 
-  // Handle escape key
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape" && closeOnEscape) {
-        e.preventDefault();
-        onClose();
-      }
-    },
-    [closeOnEscape, onClose]
-  );
+  // Handle close with animation
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      setIsClosing(false);
+      onClose();
+    }, DURATION.NORMAL);
+  }, [onClose]);
 
-  // Focus trap and management
+  // Handle overlay click
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (closeOnOverlayClick && e.target === overlayRef.current) {
+      handleClose();
+    }
+  };
+
+  // Focus trap, escape key, and body scroll management
   useEffect(() => {
     if (open) {
       // Store current focus
       previousActiveElement.current = document.activeElement as HTMLElement;
 
-      // Focus the modal content
-      setTimeout(() => {
-        const focusable = contentRef.current?.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        focusable?.focus();
-      }, 0);
+      // Focus the first focusable element using requestAnimationFrame for reliable timing
+      requestAnimationFrame(() => {
+        if (contentRef.current) {
+          const focusables = getFocusableElements(contentRef.current);
+          focusables[0]?.focus();
+        }
+      });
 
-      // Add keyboard listener
+      // Handle keyboard events (escape + focus trap)
+      const handleKeyDown = (e: KeyboardEvent) => {
+        // Escape key closes modal
+        if (e.key === "Escape" && closeOnEscape) {
+          e.preventDefault();
+          handleClose();
+          return;
+        }
+
+        // Tab key focus trap
+        if (e.key === "Tab" && contentRef.current) {
+          const focusables = getFocusableElements(contentRef.current);
+          if (focusables.length === 0) return;
+
+          const firstFocusable = focusables[0];
+          const lastFocusable = focusables[focusables.length - 1];
+
+          // Shift+Tab on first element -> focus last element
+          if (e.shiftKey && document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+          }
+          // Tab on last element -> focus first element
+          else if (!e.shiftKey && document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+          }
+        }
+      };
       document.addEventListener("keydown", handleKeyDown);
 
       // Prevent body scroll
@@ -72,39 +130,42 @@ export const Modal: React.FC<ModalProps> = ({
         document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "";
 
-        // Restore focus
-        previousActiveElement.current?.focus();
+        // Restore focus after DOM updates complete
+        const elementToRestore = previousActiveElement.current;
+        if (elementToRestore && document.body.contains(elementToRestore)) {
+          requestAnimationFrame(() => {
+            elementToRestore.focus();
+          });
+        }
       };
     }
-  }, [open, handleKeyDown]);
+  }, [open, closeOnEscape, handleClose]);
 
-  // Handle overlay click
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (closeOnOverlayClick && e.target === overlayRef.current) {
-      onClose();
-    }
-  };
-
-  if (!open) return null;
+  if (!open && !isVisible) return null;
 
   const modalContent = (
     <div
       ref={overlayRef}
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? "modal-title" : undefined}
-      aria-describedby={description ? "modal-description" : undefined}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      aria-labelledby={title ? titleId : undefined}
+      aria-describedby={description ? descriptionId : undefined}
+      className={`
+        fixed inset-0 z-50 flex items-center justify-center p-4
+        bg-black/60 backdrop-blur-md
+        ${isClosing ? "animate-backdrop-out" : "animate-backdrop-in"}
+      `}
       onClick={handleOverlayClick}
     >
       <div
         ref={contentRef}
         className={`
           w-full ${sizes[size]}
-          bg-surface-soft border border-border
+          bg-surface-soft/95 backdrop-blur-lg border border-border-subtle
           rounded-modal shadow-modal
           flex flex-col max-h-[90vh]
-          animate-slide-up
+          transform-gpu will-change-transform
+          ${isClosing ? "animate-modal-out" : "animate-modal-in"}
         `}
       >
         {/* Header */}
@@ -113,7 +174,7 @@ export const Modal: React.FC<ModalProps> = ({
             <div>
               {title && (
                 <h2
-                  id="modal-title"
+                  id={titleId}
                   className="text-lg font-semibold text-text"
                 >
                   {title}
@@ -121,7 +182,7 @@ export const Modal: React.FC<ModalProps> = ({
               )}
               {description && (
                 <p
-                  id="modal-description"
+                  id={descriptionId}
                   className="mt-1 text-sm text-text-muted"
                 >
                   {description}
@@ -130,8 +191,8 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
             <button
               type="button"
-              onClick={onClose}
-              className="p-1.5 -m-1.5 rounded-lg text-text-muted hover:text-text hover:bg-surface-raised transition-colors"
+              onClick={handleClose}
+              className="p-1.5 -m-1.5 rounded-lg text-text-muted hover:text-text hover:bg-surface-raised transition-all duration-200 hover:scale-110 active:scale-95"
               aria-label="Close modal"
             >
               <svg
@@ -166,6 +227,8 @@ export const Modal: React.FC<ModalProps> = ({
 
   return createPortal(modalContent, document.body);
 };
+
+Modal.displayName = "Modal";
 
 // Confirm dialog variant
 export interface ConfirmDialogProps {
@@ -221,3 +284,5 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     </Modal>
   );
 };
+
+ConfirmDialog.displayName = "ConfirmDialog";

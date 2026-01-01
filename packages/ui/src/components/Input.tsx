@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -6,9 +6,23 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   hint?: string;
 }
 
+/**
+ * Get the appropriate aria-describedby value based on error/hint state
+ */
+function getAriaDescribedBy(
+  inputId: string,
+  error?: string,
+  hint?: string
+): string | undefined {
+  if (error) return `${inputId}-error`;
+  if (hint) return `${inputId}-hint`;
+  return undefined;
+}
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, hint, className = "", id, ...props }, ref) => {
-    const inputId = id || `input-${Math.random().toString(36).slice(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || generatedId;
 
     return (
       <div className="flex flex-col gap-1.5">
@@ -24,17 +38,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={`
-            w-full px-3 py-2 rounded-lg
+            w-full px-3 py-2 rounded-button
             bg-surface-raised border
             text-text placeholder:text-text-subtle
-            transition-colors
-            focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+            transition-all duration-200 ease-spring
+            focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface focus:border-transparent
+            focus:shadow-glow-accent
+            hover:border-text-subtle
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? "border-danger" : "border-border"}
+            ${error ? "border-danger focus:ring-danger focus:shadow-glow-danger" : "border-border"}
             ${className}
           `}
           aria-invalid={error ? "true" : "false"}
-          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+          aria-describedby={getAriaDescribedBy(inputId, error, hint)}
           {...props}
         />
         {error && (
@@ -62,7 +78,8 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, hint, className = "", id, ...props }, ref) => {
-    const inputId = id || `textarea-${Math.random().toString(36).slice(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || generatedId;
 
     return (
       <div className="flex flex-col gap-1.5">
@@ -78,17 +95,19 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={`
-            w-full px-3 py-2 rounded-lg
+            w-full px-3 py-2 rounded-button
             bg-surface-raised border
             text-text placeholder:text-text-subtle
-            transition-colors resize-none
-            focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+            transition-all duration-200 ease-spring resize-none
+            focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface focus:border-transparent
+            focus:shadow-glow-accent
+            hover:border-text-subtle
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? "border-danger" : "border-border"}
+            ${error ? "border-danger focus:ring-danger focus:shadow-glow-danger" : "border-border"}
             ${className}
           `}
           aria-invalid={error ? "true" : "false"}
-          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+          aria-describedby={getAriaDescribedBy(inputId, error, hint)}
           rows={3}
           {...props}
         />

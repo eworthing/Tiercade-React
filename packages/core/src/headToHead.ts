@@ -3,6 +3,8 @@
 
 import type { Item, Items } from "./models";
 import { pickRandomPair } from "./randomUtils";
+import { compareStrings } from "./utils/comparison";
+import { UNRANKED_TIER_ID } from "./constants/tiers";
 
 export interface HeadToHeadRecord {
   wins: number;
@@ -59,8 +61,6 @@ export interface HeadToHeadQuickResult {
   artifacts: HeadToHeadArtifacts | null;
   suggestedPairs: [Item, Item][];
 }
-
-export const UNRANKED_TIER_ID = "unranked";
 
 // Tunable constants (port of HeadToHeadLogic.Tun)
 export const Tun = {
@@ -176,7 +176,8 @@ export function refinementPairs(
   );
   const ordered = orderedItems(artifacts.rankable, metrics);
 
-  const seen = new Set<PairKey>();
+  // Use string-based Set for O(1) lookups
+  const seen = new Set<string>();
   const results = forcedBoundaryPairs(ordered, metrics, limit, seen);
 
   if (results.length >= limit) {
@@ -751,24 +752,26 @@ export function orderedItems(
     const left = metrics[lhs.id];
     const right = metrics[rhs.id];
     if (!left || !right) {
-      return lhs.id < rhs.id ? -1 : lhs.id > rhs.id ? 1 : 0;
+      return compareStrings(lhs.id, rhs.id);
     }
+    // Sort by Wilson lower bound (descending)
     if (left.wilsonLB !== right.wilsonLB) {
       return left.wilsonLB > right.wilsonLB ? -1 : 1;
     }
+    // Then by comparison count (descending)
     if (left.comparisons !== right.comparisons) {
       return left.comparisons > right.comparisons ? -1 : 1;
     }
+    // Then by wins (descending)
     if (left.wins !== right.wins) {
       return left.wins > right.wins ? -1 : 1;
     }
+    // Then by name key (ascending)
     if (left.nameKey !== right.nameKey) {
-      return left.nameKey < right.nameKey ? -1 : 1;
+      return compareStrings(left.nameKey, right.nameKey);
     }
-    if (left.id !== right.id) {
-      return left.id < right.id ? -1 : 1;
-    }
-    return 0;
+    // Finally by ID (ascending)
+    return compareStrings(left.id, right.id);
   });
   return copy;
 }
@@ -985,17 +988,9 @@ export function sortTierMembers(
 
 // --- Refinement Support Functions ---
 
-interface PairKey {
-  a: string;
-  b: string;
-}
-
-function makePairKey(a: Item, b: Item): PairKey {
-  return a.id < b.id ? { a: a.id, b: b.id } : { a: b.id, b: a.id };
-}
-
-function pairKeyEqual(k1: PairKey, k2: PairKey): boolean {
-  return k1.a === k2.a && k1.b === k2.b;
+// Use string-based keys for O(1) Set.has() lookups instead of O(n) iteration
+function makePairKeyStr(a: Item, b: Item): string {
+  return a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
 }
 
 interface CandidatePair {
@@ -1065,20 +1060,14 @@ export function forcedBoundaryPairs(
   ordered: Item[],
   metrics: Record<string, HeadToHeadMetrics>,
   limit: number,
-  seen: Set<PairKey>
+  seen: Set<string>
 ): [Item, Item][] {
   const results: [Item, Item][] = [];
 
   function appendIfNew(pair: [Item, Item]): void {
-    const key = makePairKey(pair[0], pair[1]);
-    let found = false;
-    for (const existing of seen) {
-      if (pairKeyEqual(existing, key)) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
+    const key = makePairKeyStr(pair[0], pair[1]);
+    // O(1) lookup with string-based Set
+    if (!seen.has(key)) {
       seen.add(key);
       results.push(pair);
     }
@@ -1100,7 +1089,7 @@ export function forcedBoundaryPairs(
 export function frontierCandidatePairs(
   artifacts: HeadToHeadArtifacts,
   metrics: Record<string, HeadToHeadMetrics>,
-  seen: Set<PairKey>
+  seen: Set<string>
 ): CandidatePair[] {
   const candidates: CandidatePair[] = [];
 
@@ -1116,15 +1105,9 @@ export function frontierCandidatePairs(
         const lowerMetrics = metrics[lowerItem.id];
         if (!upperMetrics || !lowerMetrics) continue;
 
-        const key = makePairKey(upperItem, lowerItem);
-        let found = false;
-        for (const existing of seen) {
-          if (pairKeyEqual(existing, key)) {
-            found = true;
-            break;
-          }
-        }
-        if (found) continue;
+        const key = makePairKeyStr(upperItem, lowerItem);
+        // O(1) lookup with string-based Set
+        if (seen.has(key)) continue;
 
         seen.add(key);
         const closeness = Math.abs(upperMetrics.wilsonLB - lowerMetrics.wilsonUB);
@@ -1140,11 +1123,14 @@ export function frontierCandidatePairs(
 
   // Sort candidates by closeness, then by minComparisons, then by item IDs
   return candidates.sort((a, b) => {
+    // Primary: sort by closeness (ascending - closer pairs first)
     if (a.closeness !== b.closeness) return a.closeness - b.closeness;
+    // Secondary: sort by comparison count (ascending - less compared pairs first)
     if (a.minComparisons !== b.minComparisons) return a.minComparisons - b.minComparisons;
+    // Tertiary: sort by combined IDs for stability
     const leftIds = a.pair[0].id + a.pair[1].id;
     const rightIds = b.pair[0].id + b.pair[1].id;
-    return leftIds < rightIds ? -1 : leftIds > rightIds ? 1 : 0;
+    return compareStrings(leftIds, rightIds);
   });
 }
 
@@ -1160,7 +1146,8 @@ class WarmStartQueueBuilder {
   private target: number;
   private queue: [Item, Item][] = [];
   private counts: Map<string, number> = new Map();
-  private seen: Set<PairKey> = new Set();
+  // Use string-based Set for O(1) lookups
+  private seen: Set<string> = new Set();
 
   constructor(pool: Item[], target: number) {
     this.target = target;
@@ -1178,15 +1165,9 @@ class WarmStartQueueBuilder {
 
   enqueue(first: Item, second: Item): void {
     if (first.id === second.id) return;
-    const key = makePairKey(first, second);
-    let found = false;
-    for (const existing of this.seen) {
-      if (pairKeyEqual(existing, key)) {
-        found = true;
-        break;
-      }
-    }
-    if (found) return;
+    const key = makePairKeyStr(first, second);
+    // O(1) lookup with string-based Set
+    if (this.seen.has(key)) return;
 
     if (this.needsMore(first) || this.needsMore(second)) {
       this.queue.push([first, second]);
