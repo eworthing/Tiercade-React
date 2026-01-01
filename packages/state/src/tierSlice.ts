@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Items, Item } from "@tiercade/core";
+import type { Items, Item, GlobalSortMode, MediaType } from "@tiercade/core";
+import type { ItemFilters } from "@tiercade/core";
 import { moveItem as moveItemLogic } from "@tiercade/core";
 
 export interface TierState {
@@ -9,6 +10,8 @@ export interface TierState {
   tierLabels: Record<string, string>;
   tierColors: Record<string, string | undefined>;
   projectName: string;
+  sortMode: GlobalSortMode;
+  filters: ItemFilters;
 }
 
 const initialState: TierState = {
@@ -17,7 +20,9 @@ const initialState: TierState = {
   selection: [],
   tierLabels: {},
   tierColors: {},
-  projectName: "My Tier List"
+  projectName: "My Tier List",
+  sortMode: { type: "custom" },
+  filters: {}
 };
 
 export const tierSlice = createSlice({
@@ -211,6 +216,49 @@ export const tierSlice = createSlice({
       state.tierColors = {};
       state.projectName = "My Tier List";
       state.selection = [];
+      state.sortMode = { type: "custom" };
+      state.filters = {};
+    },
+    // Sorting actions
+    setSortMode(state, action: PayloadAction<GlobalSortMode>) {
+      state.sortMode = action.payload;
+    },
+    // Filtering actions
+    setFilters(state, action: PayloadAction<ItemFilters>) {
+      state.filters = action.payload;
+    },
+    setSearchFilter(state, action: PayloadAction<string>) {
+      state.filters = { ...state.filters, searchText: action.payload };
+    },
+    setMediaTypeFilter(state, action: PayloadAction<MediaType[]>) {
+      state.filters = { ...state.filters, mediaTypes: action.payload };
+    },
+    toggleMediaTypeFilter(state, action: PayloadAction<MediaType>) {
+      const current = state.filters.mediaTypes ?? [];
+      if (current.includes(action.payload)) {
+        state.filters = {
+          ...state.filters,
+          mediaTypes: current.filter((t) => t !== action.payload)
+        };
+      } else {
+        state.filters = {
+          ...state.filters,
+          mediaTypes: [...current, action.payload]
+        };
+      }
+    },
+    setHasMediaFilter(state, action: PayloadAction<boolean | undefined>) {
+      state.filters = { ...state.filters, hasMedia: action.payload, noMedia: undefined };
+    },
+    setNoMediaFilter(state, action: PayloadAction<boolean | undefined>) {
+      state.filters = { ...state.filters, noMedia: action.payload, hasMedia: undefined };
+    },
+    clearFilters(state) {
+      state.filters = {};
+    },
+    clearSortAndFilters(state) {
+      state.sortMode = { type: "custom" };
+      state.filters = {};
     }
   }
 });
@@ -237,7 +285,18 @@ export const {
   reorderTiers,
   setProjectName,
   loadProject,
-  resetProject
+  resetProject,
+  // Sorting
+  setSortMode,
+  // Filtering
+  setFilters,
+  setSearchFilter,
+  setMediaTypeFilter,
+  toggleMediaTypeFilter,
+  setHasMediaFilter,
+  setNoMediaFilter,
+  clearFilters,
+  clearSortAndFilters
 } = tierSlice.actions;
 
 export const tierReducer = tierSlice.reducer;

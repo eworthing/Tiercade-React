@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { TierBoard, Button, Modal, useToast, type FileDropResult } from "@tiercade/ui";
+import { TierBoard, Button, Modal, useToast, SortFilterBar, type FileDropResult } from "@tiercade/ui";
 import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
@@ -14,13 +14,18 @@ import {
   captureSnapshot,
   addItemToTier,
   updateItem,
+  setSortMode,
+  setSearchFilter,
+  toggleMediaTypeFilter,
+  clearFilters,
 } from "@tiercade/state";
 import {
   DEFAULT_THEME_ID,
   findThemeById,
   getTierColorHex,
 } from "@tiercade/theme";
-import type { Item } from "@tiercade/core";
+import type { Item, GlobalSortMode, MediaType, Items } from "@tiercade/core";
+import { sortItems, filterAllTiers, hasActiveFilters } from "@tiercade/core";
 import { AddItemModal } from "../components/AddItemModal";
 import { EditItemModal } from "../components/EditItemModal";
 import { TierSettingsModal } from "../components/TierSettingsModal";
@@ -42,6 +47,8 @@ export const TierBoardPage: React.FC = () => {
   const stateTierLabels = useAppSelector((state) => state.tier.tierLabels);
   const stateTierColors = useAppSelector((state) => state.tier.tierColors);
   const projectName = useAppSelector((state) => state.tier.projectName);
+  const sortMode = useAppSelector((state) => state.tier.sortMode);
+  const filters = useAppSelector((state) => state.tier.filters);
 
   // Modal states
   const [showAddItem, setShowAddItem] = useState(false);
@@ -325,6 +332,54 @@ export const TierBoardPage: React.FC = () => {
     return Object.values(tiers).flat().length;
   }, [tiers]);
 
+  // Apply filtering and sorting
+  const processedTiers = useMemo((): Items => {
+    // First filter
+    const filtered = filterAllTiers(tiers, filters);
+
+    // Then sort each tier
+    if (sortMode.type === "custom") {
+      return filtered;
+    }
+
+    const sorted: Items = {};
+    for (const [tierName, items] of Object.entries(filtered)) {
+      sorted[tierName] = sortItems(items, sortMode);
+    }
+    return sorted;
+  }, [tiers, filters, sortMode]);
+
+  // Count filtered items
+  const filteredItems = useMemo(() => {
+    return Object.values(processedTiers).flat().length;
+  }, [processedTiers]);
+
+  // Sort/filter handlers
+  const handleSortModeChange = useCallback(
+    (mode: GlobalSortMode) => {
+      dispatch(setSortMode(mode));
+    },
+    [dispatch]
+  );
+
+  const handleSearchChange = useCallback(
+    (search: string) => {
+      dispatch(setSearchFilter(search));
+    },
+    [dispatch]
+  );
+
+  const handleMediaTypeToggle = useCallback(
+    (mediaType: MediaType) => {
+      dispatch(toggleMediaTypeFilter(mediaType));
+    },
+    [dispatch]
+  );
+
+  const handleClearFilters = useCallback(() => {
+    dispatch(clearFilters());
+  }, [dispatch]);
+
   // Empty state
   if (!tierOrder.length) {
     return (
@@ -491,9 +546,23 @@ export const TierBoardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Sort and Filter Bar */}
+      {totalItems > 0 && (
+        <SortFilterBar
+          sortMode={sortMode}
+          filters={filters}
+          onSortModeChange={handleSortModeChange}
+          onSearchChange={handleSearchChange}
+          onMediaTypeToggle={handleMediaTypeToggle}
+          onClearFilters={handleClearFilters}
+          totalItems={totalItems}
+          filteredItems={filteredItems}
+        />
+      )}
+
       {/* Tier Board */}
       <TierBoard
-        tiers={tiers}
+        tiers={processedTiers}
         tierOrder={tierOrder}
         onMoveItem={handleMoveItem}
         tierColors={tierColors}
