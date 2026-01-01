@@ -1,43 +1,33 @@
 import React, { useState, useCallback } from "react";
 import type { Item, MediaType } from "@tiercade/core";
+import {
+  isAcceptedFileType,
+  isAcceptedImageType,
+  isAcceptedVideoType,
+  isAcceptedAudioType,
+  isValidFileSize,
+} from "@tiercade/core";
+import { STAGGER } from "@tiercade/theme";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// File processing utilities
-const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/avif"];
-const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/ogg"];
-const ACCEPTED_AUDIO_TYPES = ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3", "audio/webm"];
-
-const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
-const MAX_VIDEO_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_AUDIO_SIZE = 5 * 1024 * 1024; // 5MB
-
+/**
+ * Determine MediaType from MIME type
+ */
 function getMediaTypeFromMime(mimeType: string): MediaType | null {
   if (mimeType === "image/gif") return "gif";
-  if (ACCEPTED_IMAGE_TYPES.includes(mimeType)) return "image";
-  if (ACCEPTED_VIDEO_TYPES.includes(mimeType)) return "video";
-  if (ACCEPTED_AUDIO_TYPES.includes(mimeType)) return "audio";
+  if (isAcceptedImageType(mimeType)) return "image";
+  if (isAcceptedVideoType(mimeType)) return "video";
+  if (isAcceptedAudioType(mimeType)) return "audio";
   return null;
 }
 
-function isValidFileType(file: File): boolean {
-  return (
-    ACCEPTED_IMAGE_TYPES.includes(file.type) ||
-    ACCEPTED_VIDEO_TYPES.includes(file.type) ||
-    ACCEPTED_AUDIO_TYPES.includes(file.type)
-  );
-}
-
-function isValidFileSize(file: File): boolean {
-  const isVideo = file.type.startsWith("video/");
-  const isAudio = file.type.startsWith("audio/");
-  const maxSize = isVideo || isAudio ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
-  return file.size <= maxSize;
-}
-
+/**
+ * Process a dropped file and return data URL with metadata
+ */
 async function processFile(file: File): Promise<{ dataUrl: string; mediaType: MediaType; fileName: string } | null> {
-  if (!isValidFileType(file)) {
+  if (!isAcceptedFileType(file.type)) {
     console.warn("Invalid file type:", file.type);
     return null;
   }
@@ -282,8 +272,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
       ? "box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1)"
       : `${transition}, box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
     willChange: isDragging ? "transform" : "auto",
-    // Stagger animation delay
-    animationDelay: `${index * 30}ms`,
+    animationDelay: `${index * STAGGER.FAST}ms`,
     transformOrigin: "center center",
   };
 
@@ -511,5 +500,9 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
     </div>
   );
 };
+
+// Display names for React DevTools debugging
+TierRow.displayName = "TierRow";
+SortableTierItem.displayName = "SortableTierItem";
 
 export { SortableTierItem };

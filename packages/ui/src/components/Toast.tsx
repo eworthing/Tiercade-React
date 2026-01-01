@@ -6,6 +6,8 @@ import React, {
   useEffect,
 } from "react";
 import { createPortal } from "react-dom";
+import { generateId } from "@tiercade/core";
+import { TOAST, STAGGER } from "@tiercade/theme";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 
@@ -46,8 +48,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const addToast = useCallback(
-    (type: ToastType, message: string, duration = 4000) => {
-      const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    (type: ToastType, message: string, duration = TOAST.DEFAULT_DURATION) => {
+      const id = generateId("toast");
       const toast: Toast = { id, type, message, duration };
 
       setToasts((prev) => [...prev, toast]);
@@ -129,7 +131,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove, index }) => {
 
   const handleRemove = useCallback(() => {
     setIsExiting(true);
-    setTimeout(() => onRemove(toast.id), 200);
+    setTimeout(() => onRemove(toast.id), TOAST.EXIT_DURATION);
   }, [toast.id, onRemove]);
 
   const icons: Record<ToastType, React.ReactNode> = {
@@ -181,7 +183,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove, index }) => {
     <div
       role="alert"
       style={{
-        animationDelay: isExiting ? "0ms" : `${index * 50}ms`,
+        animationDelay: isExiting ? "0ms" : `${index * TOAST.STAGGER}ms`,
       }}
       className={`
         flex items-start gap-3 p-4 rounded-lg border shadow-dropdown

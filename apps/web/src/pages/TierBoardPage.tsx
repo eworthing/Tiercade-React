@@ -37,6 +37,7 @@ import {
   DEFAULT_THEME_ID,
   findThemeById,
   getTierColorHex,
+  EFFECTS,
 } from "@tiercade/theme";
 import type { Item, GlobalSortMode, MediaType, Items } from "@tiercade/core";
 import { sortItems, filterAllTiers, hasActiveFilters } from "@tiercade/core";
@@ -608,7 +609,7 @@ export const TierBoardPage: React.FC = () => {
               setTimeout(() => {
                 setShowCelebration(false);
                 setCelebrationTier(null);
-              }, 2000);
+              }, EFFECTS.CELEBRATION_DURATION);
             }
           }}
         />

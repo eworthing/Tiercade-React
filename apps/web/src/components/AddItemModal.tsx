@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { Modal, Button, Input, MediaUpload, type MediaType } from "@tiercade/ui";
+import { generateId } from "@tiercade/core";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { addItemToUnranked } from "@tiercade/state";
-import { captureSnapshot } from "@tiercade/state";
+import { addItemToUnranked, captureSnapshot } from "@tiercade/state";
 
 interface AddItemModalProps {
   open: boolean;
@@ -32,8 +32,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ open, onClose }) => 
         return;
       }
 
-      // Generate a unique ID
-      const id = `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      const id = generateId("item");
 
       // Capture snapshot for undo
       dispatch(captureSnapshot("Add Item"));
