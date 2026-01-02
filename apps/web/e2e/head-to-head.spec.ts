@@ -109,9 +109,7 @@ test.describe("Head-to-Head", () => {
     expect(totalItems).toBe(5);
   });
 
-  // Note: This test is skipped due to a bug in the undo/redo implementation.
-  // See item-modal.spec.ts for details about the performUndo thunk issue.
-  test.skip("should support undo after applying results", async ({ headToHeadPage, page }) => {
+  test("should support undo after applying results", async ({ headToHeadPage, page }) => {
     // Run full session
     await headToHeadPage.start();
     await headToHeadPage.completeAllComparisons();

@@ -24,14 +24,17 @@ export function performUndo(): AppThunk {
     // Check if we can undo before dispatching
     if (getState().undoRedo.past.length === 0) return;
 
-    // The undo action pops from past and returns the snapshot
-    const result = dispatch(undoAction());
+    // Dispatch undo action (moves snapshot from past to future)
+    dispatch(undoAction());
 
-    // Use the returned payload (the popped snapshot) to restore state
-    // BUG FIX: Previously re-queried state.past which returned wrong snapshot
-    if (result.payload) {
-      dispatch(setTiers(result.payload.tiers));
-      dispatch(setTierOrder(result.payload.tierOrder));
+    // Get the snapshot that was just moved to future
+    const { future } = getState().undoRedo;
+    const snapshot = future[future.length - 1];
+
+    // Restore state from the snapshot
+    if (snapshot) {
+      dispatch(setTiers(snapshot.tiers));
+      dispatch(setTierOrder(snapshot.tierOrder));
     }
   };
 }
@@ -44,13 +47,17 @@ export function performRedo(): AppThunk {
     // Check if we can redo before dispatching
     if (getState().undoRedo.future.length === 0) return;
 
-    // The redo action pops from future and returns the snapshot
-    const result = dispatch(redoAction());
+    // Dispatch redo action (moves snapshot from future to past)
+    dispatch(redoAction());
 
-    // Use the returned payload (the popped snapshot) to restore state
-    if (result.payload) {
-      dispatch(setTiers(result.payload.tiers));
-      dispatch(setTierOrder(result.payload.tierOrder));
+    // Get the snapshot that was just moved to past
+    const { past } = getState().undoRedo;
+    const snapshot = past[past.length - 1];
+
+    // Restore state from the snapshot
+    if (snapshot) {
+      dispatch(setTiers(snapshot.tiers));
+      dispatch(setTierOrder(snapshot.tierOrder));
     }
   };
 }

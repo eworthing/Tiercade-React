@@ -227,7 +227,7 @@ test.describe("Item Modal - Undo/Redo Integration", () => {
     await tierBoardPage.dismissOnboardingIfVisible();
   });
 
-  test.skip("should undo item addition", async ({ tierBoardPage, page }) => {
+  test("should undo item addition", async ({ tierBoardPage, page }) => {
     const itemName = "Undo Test Item " + Date.now();
     const initialCount = await tierBoardPage.getTotalItemCount();
 
@@ -240,23 +240,28 @@ test.describe("Item Modal - Undo/Redo Integration", () => {
     // Wait for the item to appear
     await expect(page.locator(`text=${itemName}`)).toBeVisible({ timeout: 3000 });
 
-    // Close the modal
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(500);
+    // Close the modal by clicking close button
+    const closeButton = page.locator('[role="dialog"] button[aria-label*="Close"]').first();
+    if (await closeButton.count() > 0) {
+      await closeButton.click();
+    } else {
+      await page.keyboard.press("Escape");
+    }
+    await tierBoardPage.waitForAnimation();
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 2000 });
 
     // Verify item added
     expect(await tierBoardPage.getTotalItemCount()).toBe(initialCount + 1);
 
-    // Undo using keyboard shortcut
-    await page.click("body");
-    await page.keyboard.press("Meta+z");
-    await page.waitForTimeout(500);
+    // Undo by clicking the undo button
+    await tierBoardPage.undo();
+    await tierBoardPage.waitForContentUpdate();
 
     // Item count should be back to original
     expect(await tierBoardPage.getTotalItemCount()).toBe(initialCount);
   });
 
-  test.skip("should undo item deletion", async ({ tierBoardPage, page }) => {
+  test("should undo item deletion", async ({ tierBoardPage, page }) => {
     const initialCount = await tierBoardPage.getTotalItemCount();
 
     // Delete first item
@@ -274,16 +279,17 @@ test.describe("Item Modal - Undo/Redo Integration", () => {
     await expect(confirmDialog).toBeVisible({ timeout: 2000 });
     await confirmDialog.locator('button:has-text("Delete")').click();
 
-    // Close dialogs
-    await page.keyboard.press("Escape");
+    // Wait for dialogs to close
     await page.waitForTimeout(500);
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 2000 });
 
     // Verify item deleted
     expect(await tierBoardPage.getTotalItemCount()).toBe(initialCount - 1);
 
-    // Undo
-    await page.click("body");
-    await page.keyboard.press("Meta+z");
+    // Undo by clicking the undo button directly
+    const undoButton = page.locator('button[aria-label*="Undo"]');
+    await expect(undoButton).toBeEnabled({ timeout: 2000 });
+    await undoButton.click();
     await page.waitForTimeout(500);
 
     // Item count should be restored

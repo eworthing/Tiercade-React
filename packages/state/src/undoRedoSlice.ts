@@ -56,22 +56,20 @@ export const undoRedoSlice = createSlice({
       state.future = [];
     },
 
-    undo(state): TierSnapshot | null {
-      if (state.past.length === 0) return null;
+    undo(state) {
+      if (state.past.length === 0) return;
 
       const snapshot = state.past.pop()!;
       state.future.push(snapshot);
-
-      return snapshot;
+      // Note: Don't return the snapshot - Immer doesn't allow both mutation and return
     },
 
-    redo(state): TierSnapshot | null {
-      if (state.future.length === 0) return null;
+    redo(state) {
+      if (state.future.length === 0) return;
 
       const snapshot = state.future.pop()!;
       state.past.push(snapshot);
-
-      return snapshot;
+      // Note: Don't return the snapshot - Immer doesn't allow both mutation and return
     },
 
     clearHistory(state) {
