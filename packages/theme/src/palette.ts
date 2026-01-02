@@ -24,6 +24,27 @@ export const TIER_COLOR_PALETTE = [
 ] as const;
 
 /**
+ * Modern OKLCH color palette for "Universal App" feel.
+ * Perceptually uniform colors for better hierarchy.
+ */
+export const TIER_COLORS_OKLCH = [
+  "oklch(0.7 0.15 25)",    // S - Red
+  "oklch(0.75 0.12 60)",   // A - Orange
+  "oklch(0.8 0.1 95)",     // B - Yellow
+  "oklch(0.75 0.1 145)",   // C - Green
+  "oklch(0.7 0.08 230)",   // D - Blue
+  "oklch(0.65 0.1 300)",   // F - Purple
+  "oklch(0.6 0.05 270)",   // Unranked - Slate/Purple
+] as const;
+
+export const SHADOWS = {
+  resting: "0 1px 2px rgba(0, 0, 0, 0.1)",
+  lifted: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+  dropped: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+  selected: "0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.3)",
+} as const;
+
+/**
  * Default tier configurations for quick setup.
  */
 export const TIER_PRESETS = [

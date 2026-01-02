@@ -30,6 +30,7 @@ export interface Media {
   attribution?: Record<string, string>;
   additional?: Record<string, JSONValue>;
 }
+export type ProjectMedia = Media;
 
 export interface ProjectItem {
   id: string;
@@ -56,6 +57,7 @@ export interface ItemOverride {
   hidden?: boolean;
   additional?: Record<string, JSONValue>;
 }
+export type ProjectItemOverride = ItemOverride;
 
 export interface ProjectTier {
   id: string;

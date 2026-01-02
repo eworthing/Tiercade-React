@@ -20,6 +20,21 @@ export interface TierTheme {
 
 export const BUNDLED_THEMES: TierTheme[] = [
   {
+    id: "MODERN-OKLCH-THEME-ID",
+    slug: "modernOklch",
+    displayName: "Modern (Universal)",
+    shortDescription: "Perceptually uniform OKLCH",
+    tiers: [
+      { id: "mod-s", index: 0, name: "S", colorHex: "oklch(0.7 0.15 25)", isUnranked: false },
+      { id: "mod-a", index: 1, name: "A", colorHex: "oklch(0.75 0.12 60)", isUnranked: false },
+      { id: "mod-b", index: 2, name: "B", colorHex: "oklch(0.8 0.1 95)", isUnranked: false },
+      { id: "mod-c", index: 3, name: "C", colorHex: "oklch(0.75 0.1 145)", isUnranked: false },
+      { id: "mod-d", index: 4, name: "D", colorHex: "oklch(0.7 0.08 230)", isUnranked: false },
+      { id: "mod-f", index: 5, name: "F", colorHex: "oklch(0.65 0.1 300)", isUnranked: false },
+      { id: "mod-unranked", index: 6, name: "Unranked", colorHex: "oklch(0.6 0.05 270)", isUnranked: true }
+    ]
+  },
+  {
     id: "E96B8A5D-7E1F-4B6C-9D4A-8BC3F46F2E9C",
     slug: "smashClassic",
     displayName: "Smash Classic",

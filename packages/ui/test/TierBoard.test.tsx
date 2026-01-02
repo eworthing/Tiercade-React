@@ -1,6 +1,7 @@
 import React from "react";
-import { describe, expect, it, vi } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom"; // Fix for missing matchers types
 import type { Items } from "@tiercade/core";
 import { TierBoard } from "../src/tier-board/TierBoard";
 
@@ -14,11 +15,11 @@ describe("TierBoard", () => {
 
     render(<TierBoard tiers={tiers} tierOrder={["S", "A"]} />);
 
-    expect(screen.getByText("S")).toBeInTheDocument();
-    expect(screen.getByText("A")).toBeInTheDocument();
-    expect(screen.getByText("Unranked")).toBeInTheDocument();
-    expect(screen.getByText("Alpha")).toBeInTheDocument();
-    expect(screen.getByText("Omega")).toBeInTheDocument();
+    (expect(screen.getByText("S")) as any).toBeInTheDocument();
+    (expect(screen.getByText("A")) as any).toBeInTheDocument();
+    (expect(screen.getByText("Unranked")) as any).toBeInTheDocument();
+    (expect(screen.getByText("Alpha")) as any).toBeInTheDocument();
+    (expect(screen.getByText("Omega")) as any).toBeInTheDocument();
   });
 
   it("invokes onMoveItem when drag end handler fires", () => {
@@ -26,7 +27,7 @@ describe("TierBoard", () => {
       S: [{ id: "alpha", name: "Alpha" }],
       unranked: []
     };
-    const onMoveItem = vi.fn();
+    const onMoveItem = jest.fn();
 
     const { container } = render(
       <TierBoard tiers={tiers} tierOrder={["S"]} onMoveItem={onMoveItem} />

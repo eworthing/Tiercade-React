@@ -86,16 +86,18 @@ export const TierRow: React.FC<TierRowProps> = ({
         ${isUnranked ? "bg-surface-soft/50" : ""}
       `}
       style={{
-        backgroundColor: isOver || showFileDrop ? undefined : `${bgColor}15`,
+        // Use CSS variable for color to support both Hex and OKLCH/Var
+        "--tier-color": bgColor,
+        backgroundColor: isOver || showFileDrop ? undefined : `color-mix(in srgb, var(--tier-color), transparent 85%)`,
         borderLeftWidth: "4px",
-        borderLeftColor: bgColor,
-      }}
+        borderLeftColor: "var(--tier-color)",
+      } as React.CSSProperties}
     >
       {/* Tier Label */}
       <header className="w-20 sm:w-24 shrink-0 flex flex-col items-center justify-center gap-1 py-3 px-2">
         <div
           className="inline-flex items-center justify-center rounded-md px-2 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-sm min-w-[40px]"
-          style={{ backgroundColor: bgColor }}
+          style={{ backgroundColor: "var(--tier-color)" }}
         >
           {label}
         </div>
@@ -104,7 +106,7 @@ export const TierRow: React.FC<TierRowProps> = ({
         </div>
       </header>
 
-      {/* Items Container with staggered animations */}
+      {/* Items Container with sorted items */}
       <div className="flex-1 flex flex-wrap content-start gap-2 py-2 pr-3 perspective-container">
         {items.length === 0 ? (
           <div className="flex items-center justify-center w-full h-full min-h-[60px] text-text-subtle text-xs animate-pulse-soft">
@@ -150,7 +152,6 @@ export const TierRow: React.FC<TierRowProps> = ({
 
 // ============================================================================
 // Item Media Content
-// Extracted to eliminate complex ternary chain and improve readability
 // ============================================================================
 
 interface ItemMediaContentProps {
@@ -326,10 +327,12 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
 
   const style: React.CSSProperties = {
     transform: dragTransform || undefined,
+    // Modern Spring Physics (Research Doc: 100ms snap, 300ms spring)
     transition: isDragging
-      ? "box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1)"
-      : `${transition}, box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
+      ? "none" // Instant response during drag
+      : `${transition}, box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275)`,
     willChange: isDragging ? "transform" : "auto",
+    zIndex: isDragging ? 100 : undefined,
     animationDelay: `${index * STAGGER.FAST}ms`,
     transformOrigin: "center center",
   };
@@ -387,6 +390,12 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
     );
   }
 
+  // Determine selection classes
+  // Research Doc: "Use box-shadow/outline, NOT border-width to prevent layout shifts"
+  const selectionClasses = isSelected
+    ? "ring-2 ring-accent shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+    : "border border-border";
+
   return (
     <div
       ref={setNodeRef}
@@ -402,16 +411,17 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
       className={`
         group relative flex flex-col items-center justify-center
         cursor-grab active:cursor-grabbing
-        rounded-card bg-surface-raised border shadow-card
+        rounded-card bg-surface-raised shadow-card
         transform-gpu
         hover:shadow-card-hover hover:border-text-subtle hover:scale-[1.03]
         active:scale-[0.98]
+        active:rotate-[2deg] /* Trello-style tilt */
         transition-all duration-200 ease-spring
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface
-        opacity-0 animate-stagger-scale
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface
         ${hasMedia ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
-        ${isSelected ? "ring-2 ring-accent border-accent shadow-glow-accent" : "border-border"}
-        ${isDragging ? "scale-110 shadow-card-lifted z-50" : ""}
+        ${selectionClasses}
+        ${isDragging ? "opacity-30" : "opacity-100"}
         ${isFileDragOver ? "ring-2 ring-success border-success shadow-glow-accent scale-105" : ""}
       `}
     >
@@ -428,7 +438,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
 
       {/* Selection indicator with pop animation */}
       {isSelected && !isFileDragOver && (
-        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-glow-accent animate-pop">
+        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-glow-accent animate-pop z-20">
           <svg
             className="w-3 h-3 text-white"
             fill="none"

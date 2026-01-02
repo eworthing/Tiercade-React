@@ -1,16 +1,17 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useOptimistic, startTransition } from "react";
 import type { Items, Item } from "@tiercade/core";
 import {
   DndContext,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragOverlay,
   type DragStartEvent,
   type DragEndEvent,
   type Announcements,
+  type DragCancelEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -18,6 +19,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { TierRow, type FileDropResult } from "./TierRow";
+import { tierListCollisionResult } from "./collision";
 
 export interface TierBoardProps {
   tiers: Items;
@@ -59,20 +61,54 @@ export const TierBoard: React.FC<TierBoardProps> = ({
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const orderedIds = useMemo(() => [...tierOrder, "unranked"], [tierOrder]);
 
-  // All items flattened for finding during drag
-  const allItems = useMemo(() => {
-    return Object.values(tiers).flat();
-  }, [tiers]);
+  // React 19 Optimistic UI
+  // Allows immediate UI updates while the parent async action processes
+  const [optimisticTiers, addOptimisticUpdate] = useOptimistic(
+    tiers,
+    (currentTiers: Items, update: { itemId: string; fromTierId: string; toTierId: string }) => {
+      const { itemId, fromTierId, toTierId } = update;
 
-  // O(1) lookup map for drag operations (instead of O(n) find() calls)
+      // If moving to same tier, do nothing (or reorder if index logic was passed)
+      if (fromTierId === toTierId) return currentTiers;
+
+      const newTiers = { ...currentTiers };
+
+      // Find item
+      const itemToMove = newTiers[fromTierId]?.find(i => i.id === itemId);
+      if (!itemToMove) return currentTiers;
+
+      // Remove from old
+      newTiers[fromTierId] = newTiers[fromTierId].filter(i => i.id !== itemId);
+
+      // Add to new
+      newTiers[toTierId] = [...(newTiers[toTierId] || []), itemToMove];
+
+      return newTiers;
+    }
+  );
+
+  // All items flattened for finding during drag
+  // Use optimistic tiers to prevent jitter during sync
+  const allItems = useMemo(() => {
+    return Object.values(optimisticTiers).flat();
+  }, [optimisticTiers]);
+
+  // O(1) lookup map for drag operations
   const itemMap = useMemo(() => {
     return new Map(allItems.map(item => [item.id, item]));
   }, [allItems]);
 
+  // Optimized Sensor Configuration (Research-Based)
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Require 8px movement to start drag (prevents accidental drags on click)
+        distance: 5, // Instant on desktop but prevents accidental clicks
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,      // 200ms long-press for mobile (prevents scroll conflict)
+        tolerance: 8,    // 8px movement tolerance
       },
     }),
     useSensor(KeyboardSensor, {
@@ -80,8 +116,7 @@ export const TierBoard: React.FC<TierBoardProps> = ({
     })
   );
 
-  // Accessibility announcements for screen readers
-  // Uses itemMap for O(1) lookups instead of O(n) find() calls
+  // Accessibility announcements
   const announcements: Announcements = {
     onDragStart: ({ active }) => {
       const item = itemMap.get(String(active.id));
@@ -95,7 +130,11 @@ export const TierBoard: React.FC<TierBoardProps> = ({
     onDragEnd: ({ active, over }) => {
       const item = itemMap.get(String(active.id));
       if (!over) return `Cancelled dragging ${item?.name ?? active.id}`;
-      const tierName = tierLabels[String(over.data.current?.tierId ?? over.id)] ?? over.id;
+      // Logic to resolve tier name from item or tier collision
+      let tierName = over.id;
+      if (over.data.current?.tierId) {
+        tierName = tierLabels[String(over.data.current.tierId)] ?? over.data.current.tierId;
+      }
       return `Dropped ${item?.name ?? active.id} in ${tierName} tier`;
     },
     onDragCancel: ({ active }) => {
@@ -114,11 +153,36 @@ export const TierBoard: React.FC<TierBoardProps> = ({
 
     if (!onMoveItem) return;
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
 
+    if (!over) return;
+
+    // Resolve IDs
     const activeId = String(active.id);
-    const overTier = String(over.data.current?.tierId ?? over.id);
-    onMoveItem(activeId, overTier);
+    const item = itemMap.get(activeId);
+
+    // Determine target tier
+    // If we dropped on a Tier container: over.id is the tierId
+    // If we dropped on an Item: over.data.current.tierId is the tierId
+    const overTierId = String(over.data.current?.tierId ?? over.id);
+
+    // Find source tier for optimistic update
+    const sourceTierId = Object.keys(optimisticTiers).find(
+      key => optimisticTiers[key]?.some(i => i.id === activeId)
+    );
+
+    if (!sourceTierId || sourceTierId === overTierId) return;
+
+    // 1. Optimistic Update (Immediate Feedback)
+    startTransition(() => {
+      addOptimisticUpdate({
+        itemId: activeId,
+        fromTierId: sourceTierId,
+        toTierId: overTierId
+      });
+    });
+
+    // 2. Actual Data Update (Propagate to parent/server)
+    onMoveItem(activeId, overTierId);
   };
 
   const handleDragCancel = () => {
@@ -128,7 +192,7 @@ export const TierBoard: React.FC<TierBoardProps> = ({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={tierListCollisionResult}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
@@ -140,13 +204,17 @@ export const TierBoard: React.FC<TierBoardProps> = ({
         },
       }}
     >
-      <SortableContext items={orderedIds} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col gap-tier-gap" role="list" data-tier-board>
-          {orderedIds.map((tierId) => (
+      <div className="flex flex-col gap-tier-gap" role="list" data-tier-board>
+        {orderedIds.map((tierId) => (
+          <SortableContext
+            key={tierId}
+            items={optimisticTiers[tierId]?.map(i => i.id) ?? []}
+            strategy={verticalListSortingStrategy}
+            id={tierId} // Context ID helps with collision? No, SortableContext needs items. Explicit container helps.
+          >
             <TierRow
-              key={tierId}
               tierId={tierId}
-              items={tiers[tierId] ?? []}
+              items={optimisticTiers[tierId] ?? []}
               tierColor={tierColors[tierId]}
               tierLabel={tierLabels[tierId]}
               selectedItems={selectedItems}
@@ -159,14 +227,26 @@ export const TierBoard: React.FC<TierBoardProps> = ({
               revealedItems={revealedItems}
               onItemReveal={onItemReveal}
             />
-          ))}
-        </div>
-      </SortableContext>
+          </SortableContext>
+        ))}
+      </div>
 
       {/* Drag Overlay - Shows a preview of the dragged item */}
       <DragOverlay dropAnimation={{
-        duration: 200,
-        easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+        duration: 300,
+        easing: "cubic-bezier(0.23, 1, 0.32, 1)", // Spring Drop (Research Doc)
+        sideEffects: ({ active }) => {
+          active.node.animate([
+            { transform: 'scale(1.05)' },
+            { transform: 'scale(0.98)' },
+            { transform: 'scale(1)' },
+          ], {
+            duration: 300,
+            easing: "cubic-bezier(0.23, 1, 0.32, 1)", // Spring Thud
+          });
+          // Return cleanup function (empty) to satisfy stricter types if needed, or just undefined
+          return () => { };
+        }
       }}>
         {activeItem ? (
           <DragPreview item={activeItem} />
@@ -190,8 +270,8 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
     <div
       className={`
         flex flex-col items-center justify-center
-        rounded-card bg-surface-raised border border-accent shadow-modal
-        cursor-grabbing scale-105
+        rounded-card bg-surface-raised border border-accent shadow-card-lifted
+        cursor-grabbing scale-105 rotate-3
         ${hasMedia ? "w-24 h-24" : "px-4 py-3"}
       `}
     >

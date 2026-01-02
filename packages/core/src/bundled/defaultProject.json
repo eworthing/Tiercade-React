@@ -10,7 +10,10 @@
       "color": "#ff7f7f",
       "order": 0,
       "locked": false,
-      "itemIds": ["item_alpha", "item_omega"]
+      "itemIds": [
+        "item_alpha",
+        "item_omega"
+      ]
     },
     {
       "id": "A",
@@ -18,7 +21,10 @@
       "color": "#ffbf7f",
       "order": 1,
       "locked": false,
-      "itemIds": ["item_beta", "item_sigma"]
+      "itemIds": [
+        "item_beta",
+        "item_sigma"
+      ]
     },
     {
       "id": "B",
@@ -26,7 +32,9 @@
       "color": "#ffdf7f",
       "order": 2,
       "locked": false,
-      "itemIds": ["item_gamma"]
+      "itemIds": [
+        "item_gamma"
+      ]
     },
     {
       "id": "C",
@@ -57,44 +65,110 @@
       "label": "Unranked",
       "order": 6,
       "locked": false,
-      "itemIds": ["item_delta", "item_epsilon"]
+      "itemIds": [
+        "item_delta",
+        "item_epsilon"
+      ]
     }
   ],
   "items": {
     "item_alpha": {
       "id": "item_alpha",
       "title": "Alpha",
-      "subtitle": "Season 1"
+      "subtitle": "Season 1",
+      "media": [
+        {
+          "id": "m_alpha",
+          "kind": "image",
+          "uri": "https://placehold.co/400/6366f1/ffffff?text=Alpha",
+          "mime": "image/png",
+          "thumbUri": "https://placehold.co/400/6366f1/ffffff?text=Alpha"
+        }
+      ]
     },
     "item_beta": {
       "id": "item_beta",
       "title": "Beta",
-      "subtitle": "Season 2"
+      "subtitle": "Season 2",
+      "media": [
+        {
+          "id": "m_beta",
+          "kind": "image",
+          "uri": "https://placehold.co/400/8b5cf6/ffffff?text=Beta",
+          "mime": "image/png",
+          "thumbUri": "https://placehold.co/400/8b5cf6/ffffff?text=Beta"
+        }
+      ]
     },
     "item_gamma": {
       "id": "item_gamma",
       "title": "Gamma",
-      "subtitle": "Season 3"
+      "subtitle": "Season 3",
+      "media": [
+        {
+          "id": "m_gamma",
+          "kind": "image",
+          "uri": "https://placehold.co/400/ec4899/ffffff?text=Gamma",
+          "mime": "image/png",
+          "thumbUri": "https://placehold.co/400/ec4899/ffffff?text=Gamma"
+        }
+      ]
     },
     "item_delta": {
       "id": "item_delta",
       "title": "Delta",
-      "subtitle": "Season 4"
+      "subtitle": "Season 4",
+      "media": [
+        {
+          "id": "m_delta",
+          "kind": "image",
+          "uri": "https://placehold.co/400/10b981/ffffff?text=Delta",
+          "mime": "image/png",
+          "thumbUri": "https://placehold.co/400/10b981/ffffff?text=Delta"
+        }
+      ]
     },
     "item_epsilon": {
       "id": "item_epsilon",
       "title": "Epsilon",
-      "subtitle": "Season 5"
+      "subtitle": "Season 5",
+      "media": [
+        {
+          "id": "m_epsilon",
+          "kind": "image",
+          "uri": "https://placehold.co/400/f59e0b/ffffff?text=Epsilon",
+          "mime": "image/png",
+          "thumbUri": "https://placehold.co/400/f59e0b/ffffff?text=Epsilon"
+        }
+      ]
     },
     "item_sigma": {
       "id": "item_sigma",
       "title": "Sigma",
-      "subtitle": "Season 1"
+      "subtitle": "Season 1",
+      "media": [
+        {
+          "id": "m_sigma",
+          "kind": "image",
+          "uri": "https://placehold.co/400/3b82f6/ffffff?text=Sigma",
+          "mime": "image/png",
+          "thumbUri": "https://placehold.co/400/3b82f6/ffffff?text=Sigma"
+        }
+      ]
     },
     "item_omega": {
       "id": "item_omega",
       "title": "Omega",
-      "subtitle": "Final"
+      "subtitle": "Final",
+      "media": [
+        {
+          "id": "m_omega",
+          "kind": "image",
+          "uri": "https://placehold.co/400/64748b/ffffff?text=Omega",
+          "mime": "image/png",
+          "thumbUri": "https://placehold.co/400/64748b/ffffff?text=Omega"
+        }
+      ]
     }
   },
   "storage": {

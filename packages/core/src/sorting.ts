@@ -1,7 +1,8 @@
 // Sorting utilities for tier items.
 // Source: TiercadeCore/Sources/TiercadeCore/Logic/Sorting.swift
 
-import type { Item, Items, GlobalSortMode, AttributeType } from "./models";
+import type { Item, Items, GlobalSortMode } from "./models";
+import { AttributeType } from "./models";
 import { compareStrings, compareWithNulls } from "./utils/comparison";
 
 /**

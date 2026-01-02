@@ -13,9 +13,6 @@ export const MAX_VIDEO_SIZE_KB = 5000;
 /** Maximum audio file size in KB */
 export const MAX_AUDIO_SIZE_KB = 3000;
 
-/** Maximum video duration in seconds */
-export const MAX_VIDEO_DURATION_SECONDS = 30;
-
 /** Supported image MIME types */
 export const SUPPORTED_IMAGE_TYPES = [
   "image/jpeg",
