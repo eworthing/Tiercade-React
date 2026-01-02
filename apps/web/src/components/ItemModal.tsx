@@ -162,37 +162,53 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         title={title}
         description={description}
         size="md"
+        className="!bg-slate-950/90 !backdrop-blur-2xl !border-white/10 !shadow-2xl overflow-hidden ring-1 ring-white/5"
         footer={
           isEditMode ? (
-            <div className="flex items-center justify-between w-full">
+            <div className="flex items-center justify-end w-full gap-3 pt-2">
               <Button
-                variant="danger"
+                variant="ghost"
                 onClick={() => setShowDeleteConfirm(true)}
+                className="mr-auto text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl"
               >
                 Delete
               </Button>
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" onClick={handleClose}>
-                  Cancel
-                </Button>
-                <Button variant="primary" onClick={handleSubmit}>
-                  {submitLabel}
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                onClick={handleClose}
+                className="text-white/50 hover:text-white hover:bg-white/5 rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-indigo-500/20 text-white font-medium tracking-wide rounded-xl border-t border-white/10"
+              >
+                {submitLabel}
+              </Button>
             </div>
           ) : (
             <>
-              <Button variant="ghost" onClick={handleClose}>
+              <Button
+                variant="ghost"
+                onClick={handleClose}
+                className="text-white/50 hover:text-white hover:bg-white/5 rounded-xl"
+              >
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleSubmit}>
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-indigo-500/20 text-white font-medium tracking-wide rounded-xl border-t border-white/10"
+              >
                 {submitLabel}
               </Button>
             </>
           )
         }
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <Input
             label="Item Name"
             placeholder="Enter item name..."
@@ -200,35 +216,39 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             onChange={(e) => setName(e.target.value)}
             error={error ?? undefined}
             autoFocus
+            className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/20 focus:!ring-purple-500/50 focus:!border-purple-500/50 hover:!border-white/20 !rounded-xl transition-all"
           />
 
           <Input
             label="Season / Subtitle"
-            placeholder="e.g., Season 1, (2019), Episode 5..."
+            placeholder="e.g., Season 1, (2019)..."
             value={values.seasonString}
             onChange={(e) => setSeasonString(e.target.value)}
+            className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/20 focus:!ring-purple-500/50 focus:!border-purple-500/50 hover:!border-white/20 !rounded-xl transition-all"
           />
 
           <div>
-            <label className="block text-sm font-medium text-text mb-1.5">
+            <label className="block text-sm font-medium text-white/70 mb-2 pl-1">
               Notes
             </label>
             <textarea
               placeholder="Add notes about this item..."
               value={values.description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-text placeholder:text-text-subtle focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent resize-none"
+              className="w-full px-3 py-3 !bg-white/5 border !border-white/10 !rounded-xl !text-white placeholder:!text-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none transition-all hover:border-white/20"
               rows={3}
             />
           </div>
 
           <MediaUpload
             value={values.mediaUrl}
-            mediaType={values.mediaType}
+            mediaType={values.mediaType as any}
             onChange={handleMediaChange}
             maxSizeKB={MAX_IMAGE_SIZE_KB}
             maxVideoSizeKB={MAX_VIDEO_SIZE_KB}
             allowVideo={true}
+            className="rounded-xl overflow-hidden"
+            dropzoneClassName="!bg-white/5 !border-white/10 hover:!border-purple-500/50 hover:!bg-white/10 transition-all !rounded-xl !text-white/60"
           />
 
           {/* Hidden submit button for form submission on Enter */}

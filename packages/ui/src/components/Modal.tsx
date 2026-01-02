@@ -20,6 +20,7 @@ export interface ModalProps {
   footer?: React.ReactNode;
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
+  className?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -32,6 +33,7 @@ export const Modal: React.FC<ModalProps> = ({
   footer,
   closeOnOverlayClick = true,
   closeOnEscape = true,
+  className = "",
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -173,6 +175,7 @@ export const Modal: React.FC<ModalProps> = ({
           flex flex-col max-h-[90vh]
           transform-gpu will-change-transform
           ${isClosing ? "animate-modal-out" : "animate-modal-in"}
+          ${className}
         `}
       >
         {/* Header */}

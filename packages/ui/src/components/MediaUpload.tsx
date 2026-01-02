@@ -9,6 +9,7 @@ export interface MediaUploadProps {
   maxSizeKB?: number;
   maxVideoSizeKB?: number;
   className?: string;
+  dropzoneClassName?: string;
   allowVideo?: boolean;
 }
 
@@ -28,6 +29,7 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
   maxSizeKB = 500,
   maxVideoSizeKB = 5000, // 5MB for videos
   className = "",
+  dropzoneClassName = "",
   allowVideo = true,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -266,11 +268,11 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
             flex flex-col items-center justify-center gap-2 p-6
             rounded-lg border-2 border-dashed cursor-pointer
             transition-colors
-            ${
-              isDragging
-                ? "border-accent bg-accent/10"
-                : "border-border hover:border-text-subtle hover:bg-surface-raised/50"
+            ${isDragging
+              ? "border-accent bg-accent/10"
+              : "border-border hover:border-text-subtle hover:bg-surface-raised/50"
             }
+            ${dropzoneClassName}
           `}
         >
           <svg
