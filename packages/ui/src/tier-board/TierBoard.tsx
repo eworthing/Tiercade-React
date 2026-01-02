@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useOptimistic, startTransition } from "react";
+import { createPortal } from "react-dom";
 import type { Items, Item } from "@tiercade/core";
 import {
   DndContext,
@@ -232,26 +233,29 @@ export const TierBoard: React.FC<TierBoardProps> = ({
       </div>
 
       {/* Drag Overlay - Shows a preview of the dragged item */}
-      <DragOverlay dropAnimation={{
-        duration: 300,
-        easing: "cubic-bezier(0.23, 1, 0.32, 1)", // Spring Drop (Research Doc)
-        sideEffects: ({ active }) => {
-          active.node.animate([
-            { transform: 'scale(1.05)' },
-            { transform: 'scale(0.98)' },
-            { transform: 'scale(1)' },
-          ], {
-            duration: 300,
-            easing: "cubic-bezier(0.23, 1, 0.32, 1)", // Spring Thud
-          });
-          // Return cleanup function (empty) to satisfy stricter types if needed, or just undefined
-          return () => { };
-        }
-      }}>
-        {activeItem ? (
-          <DragPreview item={activeItem} />
-        ) : null}
-      </DragOverlay>
+      {typeof document !== 'undefined' && createPortal(
+        <DragOverlay dropAnimation={{
+          duration: 300,
+          easing: "cubic-bezier(0.23, 1, 0.32, 1)", // Spring Drop (Research Doc)
+          sideEffects: ({ active }) => {
+            active.node.animate([
+              { transform: 'scale(1.05)' },
+              { transform: 'scale(0.98)' },
+              { transform: 'scale(1)' },
+            ], {
+              duration: 300,
+              easing: "cubic-bezier(0.23, 1, 0.32, 1)", // Spring Thud
+            });
+            // Return cleanup function (empty) to satisfy stricter types if needed, or just undefined
+            return () => { };
+          }
+        }}>
+          {activeItem ? (
+            <DragPreview item={activeItem} />
+          ) : null}
+        </DragOverlay>,
+        document.body
+      )}
     </DndContext>
   );
 };
@@ -271,9 +275,13 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
       className={`
         flex flex-col items-center justify-center
         rounded-card bg-surface-raised border border-accent shadow-card-lifted
-        cursor-grabbing scale-105 rotate-3
-        ${hasMedia ? "w-24 h-24" : "px-4 py-3"}
+        cursor-grabbing
+        ${hasMedia ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
       `}
+      style={{
+        animation: "var(--animate-lift) forwards",
+        transformOrigin: "center center",
+      }}
     >
       {hasVideo ? (
         <>

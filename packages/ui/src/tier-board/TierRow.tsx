@@ -409,51 +409,56 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       className={`
-        group relative flex flex-col items-center justify-center
-        cursor-grab active:cursor-grabbing
-        rounded-card bg-surface-raised shadow-card
-        transform-gpu
-        hover:shadow-card-hover hover:border-text-subtle hover:scale-[1.03]
-        active:scale-[0.98]
-        active:rotate-[2deg] /* Trello-style tilt */
-        transition-all duration-200 ease-spring
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface
+        relative flex flex-col items-center justify-center
+        outline-none
         ${hasMedia ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
-        ${selectionClasses}
         ${isDragging ? "opacity-30" : "opacity-100"}
-        ${isFileDragOver ? "ring-2 ring-success border-success shadow-glow-accent scale-105" : ""}
       `}
     >
-      {/* File drop overlay */}
-      {isFileDragOver && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-success/20 rounded-card border-2 border-dashed border-success">
-          <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-        </div>
-      )}
+      <div
+        className={`
+          group w-full h-full relative flex flex-col items-center justify-center
+          cursor-grab active:cursor-grabbing
+          rounded-card bg-surface-raised shadow-card
+          transform-gpu
+          hover:shadow-card-hover hover:border-text-subtle hover:scale-[1.03]
+          active:scale-[0.98]
+          active:rotate-[2deg]
+          transition-all duration-200 ease-spring
+          ${selectionClasses}
+          ${isFileDragOver ? "ring-2 ring-success border-success shadow-glow-accent scale-105" : ""}
+        `}
+      >
+        {/* File drop overlay */}
+        {isFileDragOver && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-success/20 rounded-card border-2 border-dashed border-success">
+            <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+          </div>
+        )}
 
-      <ItemMediaContent item={item} />
+        <ItemMediaContent item={item} />
 
-      {/* Selection indicator with pop animation */}
-      {isSelected && !isFileDragOver && (
-        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-glow-accent animate-pop z-20">
-          <svg
-            className="w-3 h-3 text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={3}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        </div>
-      )}
+        {/* Selection indicator with pop animation */}
+        {isSelected && !isFileDragOver && (
+          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-glow-accent animate-pop z-20">
+            <svg
+              className="w-3 h-3 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
