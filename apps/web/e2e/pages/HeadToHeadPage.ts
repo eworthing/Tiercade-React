@@ -19,21 +19,27 @@ export class HeadToHeadPage extends BasePage {
    * Get the page heading
    */
   get heading(): Locator {
-    return this.page.locator("h1:has-text('Head-to-Head'), h2:has-text('Head-to-Head')");
+    return this.page.locator(
+      '[data-testid="h2h-heading"], h1:has-text("Head-to-Head"), h2:has-text("Head-to-Head")'
+    );
   }
 
   /**
    * Get the Start/Begin button
    */
   get startButton(): Locator {
-    return this.page.locator('button:has-text("Start Comparing"), button:has-text("Start"), button:has-text("Begin")');
+    return this.page.locator(
+      '[data-testid="h2h-start"], button:has-text("Start Comparing"), button:has-text("Start"), button:has-text("Begin")'
+    );
   }
 
   /**
    * Check if H2H session can be started
    */
   async canStart(): Promise<boolean> {
-    return (await this.startButton.count()) > 0;
+    const button = this.startButton.first();
+    if (!(await button.isVisible())) return false;
+    return button.isEnabled();
   }
 
   /**
@@ -41,7 +47,7 @@ export class HeadToHeadPage extends BasePage {
    */
   async start(): Promise<void> {
     if (await this.canStart()) {
-      await this.startButton.click();
+      await this.startButton.first().click();
       await this.waitForContentUpdate();
     }
   }
@@ -54,22 +60,23 @@ export class HeadToHeadPage extends BasePage {
    * Get all comparison cards (clickable buttons in the comparison grid)
    */
   get comparisonCards(): Locator {
-    // The cards are buttons in a grid with VS badge between them
-    return this.page.locator('.grid.grid-cols-2 > button');
+    return this.page.locator(
+      '[data-testid="h2h-card-left"], [data-testid="h2h-card-right"]'
+    );
   }
 
   /**
    * Get the left comparison card
    */
   get leftCard(): Locator {
-    return this.comparisonCards.first();
+    return this.getByTestId("h2h-card-left");
   }
 
   /**
    * Get the right comparison card
    */
   get rightCard(): Locator {
-    return this.comparisonCards.last();
+    return this.getByTestId("h2h-card-right");
   }
 
   /**
@@ -124,14 +131,16 @@ export class HeadToHeadPage extends BasePage {
    * Get progress indicator text (e.g., "5 remaining", "skipped")
    */
   get progressText(): Locator {
-    return this.page.locator('text=/\\d+ remaining|\\d+ skipped|Quick Pass|Refinement/i');
+    return this.page.locator(
+      '[data-testid="h2h-remaining-count"], [data-testid="h2h-skipped-count"], [data-testid="h2h-phase"], [data-testid="h2h-reviewing-skipped"]'
+    );
   }
 
   /**
    * Get progress bar (the visual bar showing completion)
    */
   get progressBar(): Locator {
-    return this.page.locator('.h-2.bg-surface-raised.rounded-full');
+    return this.getByTestId("h2h-progress-bar");
   }
 
   /**
@@ -151,7 +160,9 @@ export class HeadToHeadPage extends BasePage {
    * Get the Skip button
    */
   get skipButton(): Locator {
-    return this.page.locator('button:has-text("Skip this pair"), button:has-text("Skip")');
+    return this.page.locator(
+      '[data-testid="h2h-skip"], button:has-text("Skip this pair"), button:has-text("Skip")'
+    );
   }
 
   /**
@@ -166,8 +177,9 @@ export class HeadToHeadPage extends BasePage {
    * Check if skip is available
    */
   async canSkip(): Promise<boolean> {
-    const btn = this.skipButton;
-    return (await btn.count()) > 0 && (await btn.isEnabled());
+    const button = this.skipButton.first();
+    if (!(await button.isVisible())) return false;
+    return button.isEnabled();
   }
 
   // ============================================================================
@@ -179,7 +191,7 @@ export class HeadToHeadPage extends BasePage {
    */
   get applyButton(): Locator {
     return this.page.locator(
-      'button:has-text("Apply Results"), button:has-text("End & Apply"), button:has-text("Apply"), button:has-text("Finalize"), button:has-text("Done")'
+      '[data-testid="h2h-apply"], button:has-text("Apply Results"), button:has-text("End & Apply"), button:has-text("Apply"), button:has-text("Finalize"), button:has-text("Done")'
     );
   }
 

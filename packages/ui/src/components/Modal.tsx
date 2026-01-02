@@ -44,13 +44,20 @@ export const Modal: React.FC<ModalProps> = ({
   const titleId = `${id}-title`;
   const descriptionId = `${id}-description`;
 
-  // Handle open/close with animation
+  // Handle open/close with animation - sync internal state with open prop
   useEffect(() => {
     if (open) {
       setIsVisible(true);
       setIsClosing(false);
+    } else if (isVisible && !isClosing) {
+      // Parent set open=false, animate out
+      setIsClosing(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        setIsClosing(false);
+      }, DURATION.NORMAL);
     }
-  }, [open]);
+  }, [open, isVisible, isClosing]);
 
   // Size classes
   const sizes = {

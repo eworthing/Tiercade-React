@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Modal, Button, Input, MediaUpload, type MediaType } from "@tiercade/ui";
-import { generateId } from "@tiercade/core";
+import { generateId, type Item } from "@tiercade/core";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { addItemToUnranked, captureSnapshot } from "@tiercade/state";
 
@@ -16,67 +16,60 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ open, onClose }) => 
   const [mediaType, setMediaType] = useState<MediaType>("image");
   const [error, setError] = useState<string | null>(null);
 
+  const resetForm = useCallback(() => {
+    setName("");
+    setMediaUrl(null);
+    setMediaType("image");
+    setError(null);
+  }, []);
+
   const handleMediaChange = useCallback((url: string | null, type: MediaType) => {
     setMediaUrl(url);
     setMediaType(type);
   }, []);
 
-  const handleSubmit = useCallback(
+  const submit = useCallback(() => {
+    setError(null);
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError("Name is required");
+      return;
+    }
+
+    const id = generateId("item");
+
+    dispatch(captureSnapshot("Add Item"));
+
+    const item: Item = { id, name: trimmedName };
+
+    if (mediaUrl) {
+      if (mediaType === "video") {
+        item.videoUrl = mediaUrl;
+      } else {
+        item.imageUrl = mediaUrl;
+      }
+      item.mediaType = mediaType;
+    }
+
+    dispatch(addItemToUnranked(item));
+
+    resetForm();
+    onClose();
+  }, [dispatch, mediaUrl, mediaType, name, onClose, resetForm]);
+
+  const handleFormSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      setError(null);
-
-      const trimmedName = name.trim();
-      if (!trimmedName) {
-        setError("Name is required");
-        return;
-      }
-
-      const id = generateId("item");
-
-      // Capture snapshot for undo
-      dispatch(captureSnapshot("Add Item"));
-
-      // Build item based on media type
-      const item: {
-        id: string;
-        name: string;
-        imageUrl?: string;
-        videoUrl?: string;
-        mediaType?: MediaType;
-      } = {
-        id,
-        name: trimmedName,
-      };
-
-      if (mediaUrl) {
-        if (mediaType === "video") {
-          item.videoUrl = mediaUrl;
-        } else {
-          item.imageUrl = mediaUrl;
-        }
-        item.mediaType = mediaType;
-      }
-
-      // Add the item
-      dispatch(addItemToUnranked(item));
-
-      // Reset form and close
-      setName("");
-      setMediaUrl(null);
-      setMediaType("image");
-      onClose();
+      submit();
     },
-    [dispatch, name, mediaUrl, mediaType, onClose]
+    [submit]
   );
 
   const handleClose = useCallback(() => {
-    setName("");
-    setMediaUrl(null);
-    setMediaType("image");
-    setError(null);
+    resetForm();
     onClose();
-  }, [onClose]);
+  }, [onClose, resetForm]);
 
   return (
     <Modal
@@ -90,13 +83,13 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ open, onClose }) => 
           <Button variant="ghost" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit}>
+          <Button variant="primary" onClick={submit}>
             Add Item
           </Button>
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleFormSubmit} className="space-y-4">
         <Input
           label="Item Name"
           placeholder="Enter item name..."

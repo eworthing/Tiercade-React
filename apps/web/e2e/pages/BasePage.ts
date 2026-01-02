@@ -165,7 +165,7 @@ export abstract class BasePage {
    * Get element by data-testid
    */
   getByTestId(testId: string): Locator {
-    return this.page.locator(`[data-testid="${testId}"]`);
+    return this.page.getByTestId(testId);
   }
 
   /**
@@ -178,15 +178,18 @@ export abstract class BasePage {
   /**
    * Get element by role
    */
-  getByRole(role: string): Locator {
-    return this.page.locator(`[role="${role}"]`);
+  getByRole(
+    role: Parameters<Page["getByRole"]>[0],
+    options?: Parameters<Page["getByRole"]>[1]
+  ): Locator {
+    return this.page.getByRole(role, options);
   }
 
   /**
    * Get element containing text
    */
   getByText(text: string | RegExp): Locator {
-    return this.page.locator(`text=${text}`);
+    return this.page.getByText(text);
   }
 
   /**

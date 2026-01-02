@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
@@ -7,28 +7,78 @@ import {
   voteCurrentPair,
   skipPair,
   finishHeadToHead,
+  selectHeadToHeadCurrentPair,
+  selectHeadToHeadDeferredPairs,
+  selectHeadToHeadIsActive,
+  selectHeadToHeadPairsQueue,
+  selectHeadToHeadPhase,
   selectHeadToHeadProgress,
   selectHeadToHeadSkippedCount,
+  selectTotalItemCount,
 } from "@tiercade/state";
-import { Button } from "@tiercade/ui";
+import { Button, ConfirmDialog } from "@tiercade/ui";
+import type { Item } from "@tiercade/core";
+
+interface ComparisonCardProps {
+  item: Item;
+  side: "left" | "right";
+  shortcut: 1 | 2;
+  onClick: () => void;
+}
+
+const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, onClick }) => {
+  const badgePositionClass = side === "left" ? "left-3" : "right-3";
+  const fallbackLabel = shortcut === 1 ? "A" : "B";
+  const itemName = item.name ?? item.id;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      data-testid={`h2h-card-${side}`}
+      aria-label={`Select ${itemName} as winner (press ${shortcut} or ${side === "left" ? "left arrow" : "right arrow"})`}
+      className="group relative bg-surface-raised border-2 border-border hover:border-accent rounded-xl p-6 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      {item.imageUrl ? (
+        <div className="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden bg-surface">
+          <img
+            src={item.imageUrl}
+            alt={itemName}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="w-32 h-32 mx-auto mb-4 rounded-lg bg-surface flex items-center justify-center">
+          <span className="text-3xl text-text-muted">{fallbackLabel}</span>
+        </div>
+      )}
+      <h3 className="text-lg font-semibold text-text group-hover:text-accent transition-colors">
+        {itemName}
+      </h3>
+      {item.seasonString && (
+        <p className="text-sm text-text-muted mt-1">{item.seasonString}</p>
+      )}
+      <div
+        className={`absolute top-3 ${badgePositionClass} w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-sm font-bold text-text-muted group-hover:bg-accent group-hover:text-white group-hover:border-accent transition-colors`}
+      >
+        {shortcut}
+      </div>
+    </button>
+  );
+};
 
 export const HeadToHeadPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const isActive = useAppSelector((state) => state.headToHead.isActive);
-  const currentPair = useAppSelector((state) => state.headToHead.currentPair);
-  const pairsQueue = useAppSelector((state) => state.headToHead.pairsQueue);
-  const deferredPairs = useAppSelector((state) => state.headToHead.deferredPairs);
-  const phase = useAppSelector((state) => state.headToHead.phase);
-  const pool = useAppSelector((state) => state.headToHead.pool);
-  const tiers = useAppSelector((state) => state.tier.tiers);
+  const isActive = useAppSelector(selectHeadToHeadIsActive);
+  const currentPair = useAppSelector(selectHeadToHeadCurrentPair);
+  const pairsQueue = useAppSelector(selectHeadToHeadPairsQueue);
+  const deferredPairs = useAppSelector(selectHeadToHeadDeferredPairs);
+  const phase = useAppSelector(selectHeadToHeadPhase);
+  const totalItems = useAppSelector(selectTotalItemCount);
   const progress = useAppSelector(selectHeadToHeadProgress);
   const skippedCount = useAppSelector(selectHeadToHeadSkippedCount);
-
-  // Calculate total items available
-  const totalItems = useMemo(() => {
-    return Object.values(tiers).flat().length;
-  }, [tiers]);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   const handleStart = useCallback(() => {
     dispatch(startHeadToHead());
@@ -59,10 +109,15 @@ export const HeadToHeadPage: React.FC = () => {
     if (!isActive || !currentPair) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // Ignore keyboard shortcuts when a modal/dialog is open
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+        return;
+      }
+
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable) {
         return;
       }
 
@@ -83,14 +138,14 @@ export const HeadToHeadPage: React.FC = () => {
           break;
         case "Escape":
           e.preventDefault();
-          handleFinish();
+          setShowEndConfirm(true);
           break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isActive, currentPair, handleVoteLeft, handleVoteRight, handleSkip, handleFinish]);
+  }, [isActive, currentPair, handleVoteLeft, handleVoteRight, handleSkip]);
 
   // Empty state - not enough items
   if (totalItems < 2) {
@@ -128,10 +183,12 @@ export const HeadToHeadPage: React.FC = () => {
   // Idle state - not started
   if (!isActive) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-8" data-testid="h2h-page">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-text mb-2">Head-to-Head</h1>
+          <h1 className="text-2xl font-bold text-text mb-2" data-testid="h2h-heading">
+            Head-to-Head
+          </h1>
           <p className="text-text-muted max-w-md mx-auto">
             Compare items one-on-one to intelligently rank your tier list.
             Simply pick the winner in each matchup.
@@ -162,7 +219,7 @@ export const HeadToHeadPage: React.FC = () => {
             You have <span className="text-accent font-medium">{totalItems} items</span> to rank.
             This will take approximately {Math.ceil((totalItems * (totalItems - 1)) / 2 / 10)} minutes.
           </p>
-          <Button variant="primary" onClick={handleStart}>
+          <Button variant="primary" onClick={handleStart} data-testid="h2h-start">
             Start Comparing
           </Button>
         </div>
@@ -203,12 +260,12 @@ export const HeadToHeadPage: React.FC = () => {
     const isReviewingDeferred = pairsQueue.length === 0 && deferredPairs.length > 0;
 
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6" data-testid="h2h-page">
         {/* Progress bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
-              <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+              <span data-testid="h2h-phase" className={`px-2 py-0.5 rounded text-xs font-medium ${
                 phase === "quick"
                   ? "bg-blue-500/20 text-blue-400"
                   : "bg-purple-500/20 text-purple-400"
@@ -216,23 +273,23 @@ export const HeadToHeadPage: React.FC = () => {
                 {phase === "quick" ? "Quick Pass" : "Refinement"}
               </span>
               {isReviewingDeferred && (
-                <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/20 text-amber-400">
+                <span data-testid="h2h-reviewing-skipped" className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/20 text-amber-400">
                   Reviewing Skipped
                 </span>
               )}
             </div>
             <div className="flex items-center gap-3 text-text-muted">
               {skippedCount > 0 && (
-                <span className="text-amber-400">
+                <span data-testid="h2h-skipped-count" className="text-amber-400">
                   {skippedCount} skipped
                 </span>
               )}
-              <span>
+              <span data-testid="h2h-remaining-count">
                 {progress.remaining} remaining
               </span>
             </div>
           </div>
-          <div className="h-2 bg-surface-raised rounded-full overflow-hidden">
+          <div className="h-2 bg-surface-raised rounded-full overflow-hidden" data-testid="h2h-progress-bar">
             <div
               className="h-full bg-accent transition-all duration-300 ease-out"
               style={{ width: `${progress.percentage}%` }}
@@ -252,63 +309,18 @@ export const HeadToHeadPage: React.FC = () => {
 
         {/* Comparison cards */}
         <div className="grid grid-cols-2 gap-6">
-          {/* Item A */}
-          <button
+          <ComparisonCard
+            item={itemA}
+            side="left"
+            shortcut={1}
             onClick={handleVoteLeft}
-            className="group relative bg-surface-raised border-2 border-border hover:border-accent rounded-xl p-6 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            {itemA.imageUrl ? (
-              <div className="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden bg-surface">
-                <img
-                  src={itemA.imageUrl}
-                  alt={itemA.name ?? itemA.id}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="w-32 h-32 mx-auto mb-4 rounded-lg bg-surface flex items-center justify-center">
-                <span className="text-3xl text-text-muted">A</span>
-              </div>
-            )}
-            <h3 className="text-lg font-semibold text-text group-hover:text-accent transition-colors">
-              {itemA.name ?? itemA.id}
-            </h3>
-            {itemA.seasonString && (
-              <p className="text-sm text-text-muted mt-1">{itemA.seasonString}</p>
-            )}
-            <div className="absolute top-3 left-3 w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-sm font-bold text-text-muted group-hover:bg-accent group-hover:text-white group-hover:border-accent transition-colors">
-              1
-            </div>
-          </button>
-
-          {/* Item B */}
-          <button
+          />
+          <ComparisonCard
+            item={itemB}
+            side="right"
+            shortcut={2}
             onClick={handleVoteRight}
-            className="group relative bg-surface-raised border-2 border-border hover:border-accent rounded-xl p-6 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            {itemB.imageUrl ? (
-              <div className="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden bg-surface">
-                <img
-                  src={itemB.imageUrl}
-                  alt={itemB.name ?? itemB.id}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="w-32 h-32 mx-auto mb-4 rounded-lg bg-surface flex items-center justify-center">
-                <span className="text-3xl text-text-muted">B</span>
-              </div>
-            )}
-            <h3 className="text-lg font-semibold text-text group-hover:text-accent transition-colors">
-              {itemB.name ?? itemB.id}
-            </h3>
-            {itemB.seasonString && (
-              <p className="text-sm text-text-muted mt-1">{itemB.seasonString}</p>
-            )}
-            <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-sm font-bold text-text-muted group-hover:bg-accent group-hover:text-white group-hover:border-accent transition-colors">
-              2
-            </div>
-          </button>
+          />
         </div>
 
         {/* VS badge */}
@@ -320,20 +332,33 @@ export const HeadToHeadPage: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center justify-center gap-4">
-          <Button variant="ghost" size="sm" onClick={handleSkip}>
+          <Button variant="ghost" size="sm" onClick={handleSkip} data-testid="h2h-skip">
             Skip this pair
           </Button>
-          <Button variant="danger" size="sm" onClick={handleFinish}>
+          <Button variant="danger" size="sm" onClick={() => setShowEndConfirm(true)} data-testid="h2h-apply">
             End & Apply Results
           </Button>
         </div>
+
+        <ConfirmDialog
+          open={showEndConfirm}
+          onConfirm={() => {
+            setShowEndConfirm(false);
+            handleFinish();
+          }}
+          onCancel={() => setShowEndConfirm(false)}
+          title="End Session?"
+          message={`You have ${progress.remaining} comparisons remaining. Ending now will apply results based on completed comparisons only.`}
+          confirmLabel="End & Apply"
+          variant="warning"
+        />
       </div>
     );
   }
 
   // Completed state - no more pairs
   return (
-    <div className="max-w-md mx-auto text-center space-y-6">
+    <div className="max-w-md mx-auto text-center space-y-6" data-testid="h2h-page">
       <div className="w-20 h-20 mx-auto rounded-full bg-success/20 flex items-center justify-center">
         <svg
           className="w-10 h-10 text-success"
@@ -361,7 +386,7 @@ export const HeadToHeadPage: React.FC = () => {
         <Button variant="secondary" onClick={handleStart}>
           Start Over
         </Button>
-        <Button variant="primary" onClick={handleFinish}>
+        <Button variant="primary" onClick={handleFinish} data-testid="h2h-apply">
           Apply Results
         </Button>
       </div>

@@ -33,6 +33,9 @@ test.describe("Item Modal - Add Item", () => {
     await page.locator('[role="dialog"] button:has-text("Add Item")').click();
     await tierBoardPage.waitForContentUpdate();
 
+    // Modal should close after submit
+    await expect(tierBoardPage.addItemModal).not.toBeVisible();
+
     // Item should appear in unranked tier
     await expect(page.locator(`text=${itemName}`)).toBeVisible();
   });
@@ -56,6 +59,9 @@ test.describe("Item Modal - Add Item", () => {
     // Submit
     await tierBoardPage.modalSaveButton.click();
     await tierBoardPage.waitForContentUpdate();
+
+    // Modal should close after submit
+    await expect(tierBoardPage.addItemModal).not.toBeVisible();
 
     // Item should be visible
     await expect(page.locator(`text=${itemName}`)).toBeVisible();
@@ -89,6 +95,9 @@ test.describe("Item Modal - Add Item", () => {
     // Click cancel button in modal footer
     await page.locator('[role="dialog"] button:has-text("Cancel")').click();
     await tierBoardPage.waitForContentUpdate();
+
+    // Modal should close after cancel
+    await expect(tierBoardPage.addItemModal).not.toBeVisible();
 
     // Item should NOT be added
     await expect(page.locator(`text=${itemName}`)).not.toBeVisible();
