@@ -1,10 +1,11 @@
 /**
  * Animation duration and timing constants
  *
- * Centralizes all animation values for consistency across components
+ * Centralizes all animation values for consistency across components.
+ * Aligned with Spectrum 2 motion specifications where applicable.
  */
 
-/** Duration values in milliseconds */
+/** Duration values in milliseconds (legacy) */
 export const DURATION = {
   /** Fast micro-interactions (hover, focus) */
   FAST: 100,
@@ -14,6 +15,21 @@ export const DURATION = {
   SLOW: 300,
   /** Extended animations (page transitions) */
   EXTENDED: 500,
+} as const;
+
+/**
+ * Spectrum 2 Motion Durations
+ * See: https://spectrum.adobe.com/page/motion/
+ */
+export const S2_DURATION = {
+  /** 130ms - Quick micro-interactions */
+  FAST: 130,
+  /** 200ms - Standard transitions */
+  NORMAL: 200,
+  /** 350ms - Deliberate animations */
+  SLOW: 350,
+  /** 500ms - Extended/dramatic animations */
+  SLOWER: 500,
 } as const;
 
 /** Stagger delays for sequential animations in milliseconds */
@@ -44,7 +60,7 @@ export const EFFECTS = {
   CONFETTI_DURATION: 1500,
 } as const;
 
-/** Easing functions */
+/** Easing functions (legacy) */
 export const EASING = {
   /** Standard easing for most transitions */
   DEFAULT: "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -56,6 +72,21 @@ export const EASING = {
   EASE_IN: "cubic-bezier(0.4, 0, 1, 1)",
   /** Bounce effect */
   BOUNCE: "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+} as const;
+
+/**
+ * Spectrum 2 Motion Easings
+ * See: https://spectrum.adobe.com/page/motion/
+ */
+export const S2_EASING = {
+  /** Standard ease-in-out for most transitions */
+  DEFAULT: "cubic-bezier(0.45, 0, 0.40, 1)",
+  /** Ease-out for elements entering/appearing */
+  ENTER: "cubic-bezier(0, 0, 0.40, 1)",
+  /** Ease-in for elements exiting/leaving */
+  EXIT: "cubic-bezier(0.45, 0, 1, 1)",
+  /** Spring-like bounce for playful interactions */
+  SPRING: "cubic-bezier(0.34, 1.56, 0.64, 1)",
 } as const;
 
 /** Drag activation constraints */

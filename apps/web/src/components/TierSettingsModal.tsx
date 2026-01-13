@@ -1,5 +1,13 @@
 import React, { useState, useCallback } from "react";
-import { Modal, Button, Input, ConfirmDialog } from "@tiercade/ui";
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogTrigger,
+  Heading,
+  Content,
+  AlertDialog,
+} from "@react-spectrum/s2";
 import { TIER_COLOR_PALETTE, TIER_PRESETS } from "@tiercade/theme";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
@@ -32,7 +40,7 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
   const tiers = useAppSelector(selectTiers);
 
   const [newTierName, setNewTierName] = useState("");
-  const [newTierColor, setNewTierColor] = useState(TIER_COLOR_PALETTE[0]);
+  const [newTierColor, setNewTierColor] = useState<string>(TIER_COLOR_PALETTE[0]);
   const [tierToDelete, setTierToDelete] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState<string | null>(null);
   const [editingLabelValue, setEditingLabelValue] = useState("");
@@ -55,7 +63,7 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
 
     setNewTierName("");
     // Cycle to next color
-    const currentIndex = TIER_COLOR_PALETTE.indexOf(newTierColor);
+    const currentIndex = TIER_COLOR_PALETTE.indexOf(newTierColor as typeof TIER_COLOR_PALETTE[number]);
     setNewTierColor(TIER_COLOR_PALETTE[(currentIndex + 1) % TIER_COLOR_PALETTE.length]);
   }, [dispatch, newTierName, newTierColor]);
 
@@ -143,178 +151,178 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
 
   return (
     <>
-      <Modal
-        open={open && !tierToDelete}
-        onClose={onClose}
-        title="Tier Settings"
-        description="Customize your tier list structure"
-        size="lg"
-      >
-        <div className="space-y-6">
-          {/* Existing Tiers */}
-          <div>
-            <h3 className="text-sm font-medium text-text mb-3">Tiers</h3>
-            <div className="space-y-2">
-              {tierOrder.map((tierId, index) => (
-                <div
-                  key={tierId}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-surface-raised border border-border"
-                >
-                  {/* Reorder buttons */}
-                  <div className="flex flex-col gap-0.5">
-                    <button
-                      type="button"
-                      onClick={() => handleMoveUp(index)}
-                      disabled={index === 0}
-                      className="p-0.5 text-text-subtle hover:text-text disabled:opacity-30 disabled:cursor-not-allowed"
-                      aria-label="Move up"
+      <DialogTrigger isOpen={open && !tierToDelete} onOpenChange={(isOpen) => !isOpen && onClose()}>
+        <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+        <Dialog size="L">
+          <Heading>Tier Settings</Heading>
+          <Content>
+            <p style={{ marginBottom: 16, color: "var(--spectrum-gray-700)" }}>
+              Customize your tier list structure
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {/* Existing Tiers */}
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Tiers</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {tierOrder.map((tierId, index) => (
+                    <div
+                      key={tierId}
+                      style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 8, backgroundColor: "var(--spectrum-gray-100)", border: "1px solid var(--spectrum-gray-300)" }}
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveDown(index)}
-                      disabled={index === tierOrder.length - 1}
-                      className="p-0.5 text-text-subtle hover:text-text disabled:opacity-30 disabled:cursor-not-allowed"
-                      aria-label="Move down"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                  </div>
+                      {/* Reorder buttons */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveUp(index)}
+                          disabled={index === 0}
+                          style={{ padding: 2, opacity: index === 0 ? 0.3 : 1, cursor: index === 0 ? "not-allowed" : "pointer" }}
+                          aria-label="Move up"
+                        >
+                          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveDown(index)}
+                          disabled={index === tierOrder.length - 1}
+                          style={{ padding: 2, opacity: index === tierOrder.length - 1 ? 0.3 : 1, cursor: index === tierOrder.length - 1 ? "not-allowed" : "pointer" }}
+                          aria-label="Move down"
+                        >
+                          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </div>
 
-                  {/* Color picker */}
-                  <div className="relative">
-                    <input
-                      type="color"
-                      value={tierColors[tierId] ?? "#1e293b"}
-                      onChange={(e) => handleColorChange(tierId, e.target.value)}
-                      className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                      title="Change color"
-                    />
-                  </div>
+                      {/* Color picker */}
+                      <input
+                        type="color"
+                        value={tierColors[tierId] ?? "#1e293b"}
+                        onChange={(e) => handleColorChange(tierId, e.target.value)}
+                        style={{ width: 32, height: 32, borderRadius: 4, cursor: "pointer", border: "none", backgroundColor: "transparent" }}
+                        title="Change color"
+                      />
 
-                  {/* Label */}
-                  {editingLabel === tierId ? (
-                    <input
-                      type="text"
-                      value={editingLabelValue}
-                      onChange={(e) => setEditingLabelValue(e.target.value)}
-                      onBlur={handleLabelSave}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleLabelSave();
-                        if (e.key === "Escape") {
-                          setEditingLabel(null);
-                          setEditingLabelValue("");
-                        }
-                      }}
-                      className="flex-1 px-2 py-1 bg-surface border border-border rounded text-text text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-                      autoFocus
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingLabel(tierId);
-                        setEditingLabelValue(tierLabels[tierId] ?? tierId);
-                      }}
-                      className="flex-1 text-left text-text hover:text-accent transition-colors"
-                    >
-                      {tierLabels[tierId] ?? tierId}
-                    </button>
-                  )}
+                      {/* Label */}
+                      {editingLabel === tierId ? (
+                        <input
+                          type="text"
+                          value={editingLabelValue}
+                          onChange={(e) => setEditingLabelValue(e.target.value)}
+                          onBlur={handleLabelSave}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleLabelSave();
+                            if (e.key === "Escape") {
+                              setEditingLabel(null);
+                              setEditingLabelValue("");
+                            }
+                          }}
+                          style={{ flex: 1, padding: "4px 8px", backgroundColor: "var(--spectrum-gray-50)", border: "1px solid var(--spectrum-gray-400)", borderRadius: 4, fontSize: 14 }}
+                          autoFocus
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingLabel(tierId);
+                            setEditingLabelValue(tierLabels[tierId] ?? tierId);
+                          }}
+                          style={{ flex: 1, textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                        >
+                          {tierLabels[tierId] ?? tierId}
+                        </button>
+                      )}
 
-                  {/* Item count */}
-                  <span className="text-xs text-text-subtle">
-                    {tiers[tierId]?.length ?? 0} items
-                  </span>
+                      {/* Item count */}
+                      <span style={{ fontSize: 12, color: "var(--spectrum-gray-600)" }}>
+                        {tiers[tierId]?.length ?? 0} items
+                      </span>
 
-                  {/* Delete button */}
-                  <button
-                    type="button"
-                    onClick={() => setTierToDelete(tierId)}
-                    disabled={tierOrder.length <= 1}
-                    className="p-1.5 text-text-subtle hover:text-danger disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    aria-label="Delete tier"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                      {/* Delete button */}
+                      <button
+                        type="button"
+                        onClick={() => setTierToDelete(tierId)}
+                        disabled={tierOrder.length <= 1}
+                        style={{ padding: 6, opacity: tierOrder.length <= 1 ? 0.3 : 1, cursor: tierOrder.length <= 1 ? "not-allowed" : "pointer", color: "var(--spectrum-negative-color-900)" }}
+                        aria-label="Delete tier"
+                      >
+                        <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* Add New Tier */}
-          <div>
-            <h3 className="text-sm font-medium text-text mb-3">Add New Tier</h3>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={newTierColor}
-                onChange={(e) => setNewTierColor(e.target.value)}
-                className="w-10 h-10 rounded cursor-pointer border-0 bg-transparent"
-                title="Tier color"
-              />
-              <Input
-                placeholder="Tier name..."
-                value={newTierName}
-                onChange={(e) => setNewTierName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleAddTier();
-                }}
-                className="flex-1"
-              />
-              <Button
-                variant="primary"
-                onClick={handleAddTier}
-                disabled={!newTierName.trim()}
-              >
-                Add
-              </Button>
-            </div>
-          </div>
+              {/* Add New Tier */}
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Add New Tier</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <input
+                    type="color"
+                    value={newTierColor}
+                    onChange={(e) => setNewTierColor(e.target.value)}
+                    style={{ width: 40, height: 40, borderRadius: 4, cursor: "pointer", border: "none", backgroundColor: "transparent" }}
+                    title="Tier color"
+                  />
+                  <TextField
+                    label=" "
+                    placeholder="Tier name..."
+                    value={newTierName}
+                    onChange={setNewTierName}
+                  />
+                  <Button
+                    variant="accent"
+                    onPress={handleAddTier}
+                    isDisabled={!newTierName.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
 
-          {/* Presets */}
-          <div>
-            <h3 className="text-sm font-medium text-text mb-3">Quick Presets</h3>
-            <div className="flex flex-wrap gap-2">
-              {TIER_PRESETS.map((preset) => (
-                <button
-                  key={preset.name}
-                  type="button"
-                  onClick={() => handleApplyPreset(preset)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-raised border border-border text-text-muted hover:text-text hover:border-text-subtle transition-colors"
-                >
-                  {preset.name}
-                </button>
-              ))}
+              {/* Presets */}
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Quick Presets</h3>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {TIER_PRESETS.map((preset) => (
+                    <Button
+                      key={preset.name}
+                      variant="secondary"
+                      size="S"
+                      onPress={() => handleApplyPreset(preset)}
+                    >
+                      {preset.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </Modal>
+          </Content>
+        </Dialog>
+      </DialogTrigger>
 
-      <ConfirmDialog
-        open={!!tierToDelete}
-        onConfirm={handleDeleteTier}
-        onCancel={() => setTierToDelete(null)}
-        title="Delete Tier"
-        message={
-          tierToDeleteInfo
+      <DialogTrigger isOpen={!!tierToDelete} onOpenChange={(isOpen) => !isOpen && setTierToDelete(null)}>
+        <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+        <AlertDialog
+          title="Delete Tier"
+          variant="destructive"
+          primaryActionLabel="Delete"
+          cancelLabel="Cancel"
+          onPrimaryAction={handleDeleteTier}
+          onCancel={() => setTierToDelete(null)}
+        >
+          {tierToDeleteInfo
             ? `Are you sure you want to delete "${tierToDeleteInfo.label}"? ${
                 tierToDeleteInfo.itemCount > 0
                   ? `${tierToDeleteInfo.itemCount} item(s) will be moved to Unranked.`
                   : ""
               }`
-            : ""
-        }
-        confirmLabel="Delete"
-        variant="danger"
-      />
+            : ""}
+        </AlertDialog>
+      </DialogTrigger>
     </>
   );
 };

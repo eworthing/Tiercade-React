@@ -16,7 +16,7 @@ import {
   selectHeadToHeadSkippedCount,
   selectTotalItemCount,
 } from "@tiercade/state";
-import { Button, ConfirmDialog } from "@tiercade/ui";
+import { Button, AlertDialog, DialogTrigger } from "@react-spectrum/s2";
 import type { Item } from "@tiercade/core";
 
 interface ComparisonCardProps {
@@ -27,7 +27,7 @@ interface ComparisonCardProps {
 }
 
 const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, onClick }) => {
-  const badgePositionClass = side === "left" ? "left-3" : "right-3";
+  const [hovered, setHovered] = useState(false);
   const fallbackLabel = shortcut === 1 ? "A" : "B";
   const itemName = item.name ?? item.id;
 
@@ -35,31 +35,81 @@ const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, o
     <button
       type="button"
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       data-testid={`h2h-card-${side}`}
       aria-label={`Select ${itemName} as winner (press ${shortcut} or ${side === "left" ? "left arrow" : "right arrow"})`}
-      className="group relative bg-surface-raised border-2 border-border hover:border-accent rounded-xl p-6 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      style={{
+        position: "relative",
+        backgroundColor: "var(--spectrum-gray-100)",
+        border: hovered ? "2px solid var(--spectrum-blue-700)" : "2px solid var(--spectrum-gray-300)",
+        borderRadius: 12,
+        padding: 24,
+        textAlign: "center",
+        transition: "all 200ms ease",
+        cursor: "pointer",
+        transform: hovered ? "translateY(-4px)" : "translateY(0)",
+        boxShadow: hovered ? "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)" : "none"
+      }}
     >
       {item.imageUrl ? (
-        <div className="w-32 h-32 mx-auto mb-4 rounded-lg overflow-hidden bg-surface">
+        <div style={{
+          width: 128,
+          height: 128,
+          margin: "0 auto 16px",
+          borderRadius: 8,
+          overflow: "hidden",
+          backgroundColor: "var(--spectrum-gray-200)"
+        }}>
           <img
             src={item.imageUrl}
             alt={itemName}
-            className="w-full h-full object-cover"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </div>
       ) : (
-        <div className="w-32 h-32 mx-auto mb-4 rounded-lg bg-surface flex items-center justify-center">
-          <span className="text-3xl text-text-muted">{fallbackLabel}</span>
+        <div style={{
+          width: 128,
+          height: 128,
+          margin: "0 auto 16px",
+          borderRadius: 8,
+          backgroundColor: "var(--spectrum-gray-200)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <span style={{ fontSize: 30, color: "var(--spectrum-gray-700)" }}>{fallbackLabel}</span>
         </div>
       )}
-      <h3 className="text-lg font-semibold text-text group-hover:text-accent transition-colors">
+      <h3 style={{
+        fontSize: 18,
+        fontWeight: 600,
+        color: hovered ? "var(--spectrum-blue-700)" : "var(--spectrum-gray-900)",
+        transition: "color 150ms ease"
+      }}>
         {itemName}
       </h3>
       {item.seasonString && (
-        <p className="text-sm text-text-muted mt-1">{item.seasonString}</p>
+        <p style={{ fontSize: 14, color: "var(--spectrum-gray-700)", marginTop: 4 }}>{item.seasonString}</p>
       )}
       <div
-        className={`absolute top-3 ${badgePositionClass} w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-sm font-bold text-text-muted group-hover:bg-accent group-hover:text-white group-hover:border-accent transition-colors`}
+        style={{
+          position: "absolute",
+          top: 12,
+          [side === "left" ? "left" : "right"]: 12,
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          backgroundColor: hovered ? "var(--spectrum-blue-700)" : "var(--spectrum-gray-200)",
+          border: hovered ? "1px solid var(--spectrum-blue-700)" : "1px solid var(--spectrum-gray-300)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
+          fontWeight: 700,
+          color: hovered ? "white" : "var(--spectrum-gray-700)",
+          transition: "all 150ms ease"
+        }}
       >
         {shortcut}
       </div>
@@ -150,10 +200,26 @@ export const HeadToHeadPage: React.FC = () => {
   // Empty state - not enough items
   if (totalItems < 2) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <div className="w-16 h-16 mb-4 rounded-full bg-surface-raised flex items-center justify-center">
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 400,
+        textAlign: "center"
+      }}>
+        <div style={{
+          width: 64,
+          height: 64,
+          marginBottom: 16,
+          borderRadius: "50%",
+          backgroundColor: "var(--spectrum-gray-100)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
           <svg
-            className="w-8 h-8 text-text-subtle"
+            style={{ width: 32, height: 32, color: "var(--spectrum-gray-600)" }}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -166,14 +232,14 @@ export const HeadToHeadPage: React.FC = () => {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-text mb-2">
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>
           Need More Items
         </h2>
-        <p className="text-text-muted text-sm max-w-xs mb-4">
+        <p style={{ color: "var(--spectrum-gray-700)", fontSize: 14, maxWidth: 280, marginBottom: 16 }}>
           Head-to-Head comparison requires at least 2 items in your tier list.
           Add more items to get started.
         </p>
-        <Button variant="secondary" onClick={() => navigate("/")}>
+        <Button variant="secondary" onPress={() => navigate("/")}>
           Go to Board
         </Button>
       </div>
@@ -183,23 +249,40 @@ export const HeadToHeadPage: React.FC = () => {
   // Idle state - not started
   if (!isActive) {
     return (
-      <div className="space-y-8" data-testid="h2h-page">
+      <div style={{ display: "flex", flexDirection: "column", gap: 32 }} data-testid="h2h-page">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-text mb-2" data-testid="h2h-heading">
+        <div style={{ textAlign: "center" }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--spectrum-gray-900)", marginBottom: 8 }} data-testid="h2h-heading">
             Head-to-Head
           </h1>
-          <p className="text-text-muted max-w-md mx-auto">
+          <p style={{ color: "var(--spectrum-gray-700)", maxWidth: 448, margin: "0 auto" }}>
             Compare items one-on-one to intelligently rank your tier list.
             Simply pick the winner in each matchup.
           </p>
         </div>
 
         {/* Start Card */}
-        <div className="max-w-md mx-auto bg-surface-raised border border-border rounded-xl p-6 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent/20 flex items-center justify-center">
+        <div style={{
+          maxWidth: 448,
+          margin: "0 auto",
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "1px solid var(--spectrum-gray-300)",
+          borderRadius: 12,
+          padding: 24,
+          textAlign: "center"
+        }}>
+          <div style={{
+            width: 64,
+            height: 64,
+            margin: "0 auto 16px",
+            borderRadius: "50%",
+            backgroundColor: "rgba(99, 102, 241, 0.2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
             <svg
-              className="w-8 h-8 text-accent"
+              style={{ width: 32, height: 32, color: "var(--spectrum-blue-700)" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -212,39 +295,39 @@ export const HeadToHeadPage: React.FC = () => {
               />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-text mb-2">
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>
             Ready to Compare
           </h2>
-          <p className="text-text-muted text-sm mb-6">
-            You have <span className="text-accent font-medium">{totalItems} items</span> to rank.
+          <p style={{ color: "var(--spectrum-gray-700)", fontSize: 14, marginBottom: 24 }}>
+            You have <span style={{ color: "var(--spectrum-blue-700)", fontWeight: 500 }}>{totalItems} items</span> to rank.
             This will take approximately {Math.ceil((totalItems * (totalItems - 1)) / 2 / 10)} minutes.
           </p>
-          <Button variant="primary" onClick={handleStart} data-testid="h2h-start">
+          <Button variant="accent" onPress={handleStart} data-testid="h2h-start">
             Start Comparing
           </Button>
         </div>
 
         {/* How it works */}
-        <div className="max-w-lg mx-auto">
-          <h3 className="text-sm font-medium text-text-muted mb-3 text-center">
+        <div style={{ maxWidth: 512, margin: "0 auto" }}>
+          <h3 style={{ fontSize: 14, fontWeight: 500, color: "var(--spectrum-gray-700)", marginBottom: 12, textAlign: "center" }}>
             How it works
           </h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-3">
-              <div className="text-2xl mb-2">1</div>
-              <p className="text-xs text-text-muted">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, textAlign: "center" }}>
+            <div style={{ padding: 12 }}>
+              <div style={{ fontSize: 24, marginBottom: 8, color: "var(--spectrum-gray-900)" }}>1</div>
+              <p style={{ fontSize: 12, color: "var(--spectrum-gray-700)" }}>
                 Compare two items at a time
               </p>
             </div>
-            <div className="p-3">
-              <div className="text-2xl mb-2">2</div>
-              <p className="text-xs text-text-muted">
+            <div style={{ padding: 12 }}>
+              <div style={{ fontSize: 24, marginBottom: 8, color: "var(--spectrum-gray-900)" }}>2</div>
+              <p style={{ fontSize: 12, color: "var(--spectrum-gray-700)" }}>
                 Pick the winner each round
               </p>
             </div>
-            <div className="p-3">
-              <div className="text-2xl mb-2">3</div>
-              <p className="text-xs text-text-muted">
+            <div style={{ padding: 12 }}>
+              <div style={{ fontSize: 24, marginBottom: 8, color: "var(--spectrum-gray-900)" }}>3</div>
+              <p style={{ fontSize: 12, color: "var(--spectrum-gray-700)" }}>
                 Items get sorted into tiers
               </p>
             </div>
@@ -260,27 +343,41 @@ export const HeadToHeadPage: React.FC = () => {
     const isReviewingDeferred = pairsQueue.length === 0 && deferredPairs.length > 0;
 
     return (
-      <div className="max-w-3xl mx-auto space-y-6" data-testid="h2h-page">
+      <div style={{ maxWidth: 768, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }} data-testid="h2h-page">
         {/* Progress bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <span data-testid="h2h-phase" className={`px-2 py-0.5 rounded text-xs font-medium ${
-                phase === "quick"
-                  ? "bg-blue-500/20 text-blue-400"
-                  : "bg-purple-500/20 text-purple-400"
-              }`}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span data-testid="h2h-phase" style={{
+                padding: "2px 8px",
+                borderRadius: 4,
+                fontSize: 12,
+                fontWeight: 500,
+                backgroundColor: phase === "quick"
+                  ? "rgba(59, 130, 246, 0.2)"
+                  : "rgba(147, 51, 234, 0.2)",
+                color: phase === "quick"
+                  ? "var(--spectrum-blue-800)"
+                  : "var(--spectrum-purple-800)"
+              }}>
                 {phase === "quick" ? "Quick Pass" : "Refinement"}
               </span>
               {isReviewingDeferred && (
-                <span data-testid="h2h-reviewing-skipped" className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/20 text-amber-400">
+                <span data-testid="h2h-reviewing-skipped" style={{
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  backgroundColor: "rgba(245, 158, 11, 0.2)",
+                  color: "var(--spectrum-orange-800)"
+                }}>
                   Reviewing Skipped
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3 text-text-muted">
+            <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--spectrum-gray-700)" }}>
               {skippedCount > 0 && (
-                <span data-testid="h2h-skipped-count" className="text-amber-400">
+                <span data-testid="h2h-skipped-count" style={{ color: "var(--spectrum-orange-700)" }}>
                   {skippedCount} skipped
                 </span>
               )}
@@ -289,26 +386,35 @@ export const HeadToHeadPage: React.FC = () => {
               </span>
             </div>
           </div>
-          <div className="h-2 bg-surface-raised rounded-full overflow-hidden" data-testid="h2h-progress-bar">
+          <div style={{
+            height: 8,
+            backgroundColor: "var(--spectrum-gray-100)",
+            borderRadius: 9999,
+            overflow: "hidden"
+          }} data-testid="h2h-progress-bar">
             <div
-              className="h-full bg-accent transition-all duration-300 ease-out"
-              style={{ width: `${progress.percentage}%` }}
+              style={{
+                height: "100%",
+                backgroundColor: "var(--spectrum-blue-700)",
+                transition: "width 300ms ease-out",
+                width: `${progress.percentage}%`
+              }}
             />
           </div>
         </div>
 
         {/* Question */}
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-text">
+        <div style={{ textAlign: "center" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--spectrum-gray-900)" }}>
             Which do you prefer?
           </h2>
-          <p className="text-text-muted text-sm mt-1">
+          <p style={{ color: "var(--spectrum-gray-700)", fontSize: 14, marginTop: 4 }}>
             Use arrow keys or click to vote • Space to skip (decide later) • Esc to finish
           </p>
         </div>
 
         {/* Comparison cards */}
-        <div className="grid grid-cols-2 gap-6">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
           <ComparisonCard
             item={itemA}
             side="left"
@@ -324,44 +430,66 @@ export const HeadToHeadPage: React.FC = () => {
         </div>
 
         {/* VS badge */}
-        <div className="flex justify-center -mt-4 relative z-10">
-          <div className="w-12 h-12 rounded-full bg-surface-raised border-2 border-border flex items-center justify-center">
-            <span className="text-sm font-bold text-text-muted">VS</span>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: -16, position: "relative", zIndex: 10 }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            backgroundColor: "var(--spectrum-gray-100)",
+            border: "2px solid var(--spectrum-gray-300)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--spectrum-gray-700)" }}>VS</span>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-center gap-4">
-          <Button variant="ghost" size="sm" onClick={handleSkip} data-testid="h2h-skip">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16 }}>
+          <Button variant="secondary" fillStyle="outline" size="S" onPress={handleSkip} data-testid="h2h-skip">
             Skip this pair
           </Button>
-          <Button variant="danger" size="sm" onClick={() => setShowEndConfirm(true)} data-testid="h2h-apply">
+          <Button variant="negative" size="S" onPress={() => setShowEndConfirm(true)} data-testid="h2h-apply">
             End & Apply Results
           </Button>
         </div>
 
-        <ConfirmDialog
-          open={showEndConfirm}
-          onConfirm={() => {
-            setShowEndConfirm(false);
-            handleFinish();
-          }}
-          onCancel={() => setShowEndConfirm(false)}
-          title="End Session?"
-          message={`You have ${progress.remaining} comparisons remaining. Ending now will apply results based on completed comparisons only.`}
-          confirmLabel="End & Apply"
-          variant="warning"
-        />
+        <DialogTrigger isOpen={showEndConfirm} onOpenChange={(open) => !open && setShowEndConfirm(false)}>
+          <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+          <AlertDialog
+            title="End Session?"
+            variant="confirmation"
+            primaryActionLabel="End & Apply"
+            cancelLabel="Cancel"
+            onPrimaryAction={() => {
+              setShowEndConfirm(false);
+              handleFinish();
+            }}
+            onCancel={() => setShowEndConfirm(false)}
+          >
+            {`You have ${progress.remaining} comparisons remaining. Ending now will apply results based on completed comparisons only.`}
+          </AlertDialog>
+        </DialogTrigger>
       </div>
     );
   }
 
   // Completed state - no more pairs
   return (
-    <div className="max-w-md mx-auto text-center space-y-6" data-testid="h2h-page">
-      <div className="w-20 h-20 mx-auto rounded-full bg-success/20 flex items-center justify-center">
+    <div style={{ maxWidth: 448, margin: "0 auto", textAlign: "center", display: "flex", flexDirection: "column", gap: 24 }} data-testid="h2h-page">
+      <div style={{
+        width: 80,
+        height: 80,
+        margin: "0 auto",
+        borderRadius: "50%",
+        backgroundColor: "rgba(16, 185, 129, 0.2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
         <svg
-          className="w-10 h-10 text-success"
+          style={{ width: 40, height: 40, color: "var(--spectrum-green-700)" }}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -375,18 +503,18 @@ export const HeadToHeadPage: React.FC = () => {
         </svg>
       </div>
       <div>
-        <h2 className="text-xl font-semibold text-text mb-2">
+        <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>
           All Done!
         </h2>
-        <p className="text-text-muted">
+        <p style={{ color: "var(--spectrum-gray-700)" }}>
           You've compared all the items. Apply the results to update your tier list.
         </p>
       </div>
-      <div className="flex justify-center gap-3">
-        <Button variant="secondary" onClick={handleStart}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+        <Button variant="secondary" onPress={handleStart}>
           Start Over
         </Button>
-        <Button variant="primary" onClick={handleFinish} data-testid="h2h-apply">
+        <Button variant="accent" onPress={handleFinish} data-testid="h2h-apply">
           Apply Results
         </Button>
       </div>

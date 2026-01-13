@@ -11,11 +11,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   value,
   onChange,
   maxSizeKB = 500,
-  className = "",
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   const maxSizeBytes = maxSizeKB * 1024;
 
@@ -105,32 +105,119 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     setError(null);
   };
 
+  const containerStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 500,
+    color: "var(--spectrum-gray-900)",
+  };
+
+  const previewContainerStyle: React.CSSProperties = {
+    position: "relative",
+  };
+
+  const previewWrapperStyle: React.CSSProperties = {
+    position: "relative",
+    width: "100%",
+    height: 128,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "var(--spectrum-gray-100)",
+    border: "1px solid var(--spectrum-gray-300)",
+  };
+
+  const imageStyle: React.CSSProperties = {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+  };
+
+  const overlayStyle: React.CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    opacity: isHovered ? 1 : 0,
+    transition: "opacity 0.15s ease",
+    borderRadius: 8,
+  };
+
+  const overlayButtonStyle: React.CSSProperties = {
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 500,
+    borderRadius: 8,
+    border: "none",
+    cursor: "pointer",
+    transition: "background-color 0.15s ease",
+  };
+
+  const dropzoneStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: 24,
+    borderRadius: 8,
+    border: "2px dashed",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    borderColor: isDragging ? "var(--spectrum-blue-700)" : "var(--spectrum-gray-400)",
+    backgroundColor: isDragging ? "rgba(var(--spectrum-blue-900-rgb, 20, 115, 230), 0.1)" : "transparent",
+  };
+
+  const errorStyle: React.CSSProperties = {
+    fontSize: 12,
+    color: "var(--spectrum-negative-visual-color, #d31510)",
+  };
+
   return (
-    <div className={`flex flex-col gap-2 ${className}`}>
-      <label className="text-sm font-medium text-text">Image</label>
+    <div style={containerStyle}>
+      <label style={labelStyle}>Image</label>
 
       {value ? (
         // Image preview
-        <div className="relative group">
-          <div className="relative w-full h-32 rounded-lg overflow-hidden bg-surface-raised border border-border">
+        <div
+          style={previewContainerStyle}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div style={previewWrapperStyle}>
             <img
               src={value}
               alt="Item preview"
-              className="w-full h-full object-contain"
+              style={imageStyle}
             />
           </div>
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+          <div style={overlayStyle}>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="px-3 py-1.5 text-xs font-medium bg-surface-raised rounded-lg text-text hover:bg-surface-soft transition-colors"
+              style={{
+                ...overlayButtonStyle,
+                backgroundColor: "var(--spectrum-gray-100)",
+                color: "var(--spectrum-gray-900)",
+              }}
             >
               Replace
             </button>
             <button
               type="button"
               onClick={handleRemove}
-              className="px-3 py-1.5 text-xs font-medium bg-danger rounded-lg text-white hover:bg-danger-soft transition-colors"
+              style={{
+                ...overlayButtonStyle,
+                backgroundColor: "var(--spectrum-negative-visual-color, #d31510)",
+                color: "white",
+              }}
             >
               Remove
             </button>
@@ -143,19 +230,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onClick={() => inputRef.current?.click()}
-          className={`
-            flex flex-col items-center justify-center gap-2 p-6
-            rounded-lg border-2 border-dashed cursor-pointer
-            transition-colors
-            ${
-              isDragging
-                ? "border-accent bg-accent/10"
-                : "border-border hover:border-text-subtle hover:bg-surface-raised/50"
-            }
-          `}
+          style={dropzoneStyle}
         >
           <svg
-            className="w-8 h-8 text-text-subtle"
+            style={{ width: 32, height: 32, color: "var(--spectrum-gray-600)" }}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -167,11 +245,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <div className="text-center">
-            <p className="text-sm text-text-muted">
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>
               Drop image here, click to browse, or paste
             </p>
-            <p className="text-xs text-text-subtle mt-1">
+            <p style={{ fontSize: 12, color: "var(--spectrum-gray-600)", marginTop: 4 }}>
               Max {maxSizeKB}KB • PNG, JPG, GIF, WebP
             </p>
           </div>
@@ -183,11 +261,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         type="file"
         accept="image/*"
         onChange={handleFileSelect}
-        className="hidden"
+        style={{ display: "none" }}
       />
 
       {error && (
-        <p className="text-xs text-danger" role="alert">
+        <p style={errorStyle} role="alert">
           {error}
         </p>
       )}

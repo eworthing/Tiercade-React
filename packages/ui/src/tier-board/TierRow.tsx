@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import type { Item } from "@tiercade/core";
 import { STAGGER } from "@tiercade/theme";
 import { useDroppable } from "@dnd-kit/core";
@@ -71,6 +71,7 @@ export const TierRow: React.FC<TierRowProps> = ({
   });
 
   const showFileDrop = isFileDragOver && onFileDrop;
+  const isHighlighted = isOver || showFileDrop;
 
   return (
     <section
@@ -79,39 +80,82 @@ export const TierRow: React.FC<TierRowProps> = ({
       role="listbox"
       aria-label={`${label} tier, ${items.length} items`}
       {...dragProps}
-      className={`
-        flex items-stretch gap-3 rounded-tier border min-h-[80px]
-        transition-all duration-300 ease-spring transform-gpu
-        ${isOver || showFileDrop ? "border-accent bg-accent/10 scale-[1.01] shadow-glow-accent" : "border-border"}
-        ${isUnranked ? "bg-surface-soft/50" : ""}
-      `}
       style={{
-        // Use CSS variable for color to support both Hex and OKLCH/Var
-        "--tier-color": bgColor,
-        backgroundColor: isOver || showFileDrop ? undefined : `color-mix(in srgb, var(--tier-color), transparent 85%)`,
-        borderLeftWidth: "4px",
-        borderLeftColor: "var(--tier-color)",
-      } as React.CSSProperties}
+        display: "flex",
+        alignItems: "stretch",
+        gap: 12,
+        borderRadius: 8,
+        border: isHighlighted ? "1px solid var(--spectrum-blue-700)" : "1px solid var(--spectrum-gray-300)",
+        minHeight: 80,
+        transition: "all 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+        transform: isHighlighted ? "scale(1.01)" : "scale(1)",
+        boxShadow: isHighlighted ? "0 0 20px rgba(99, 102, 241, 0.3)" : "none",
+        backgroundColor: isHighlighted
+          ? "rgba(99, 102, 241, 0.1)"
+          : isUnranked
+          ? "rgba(30, 41, 59, 0.5)"
+          : `color-mix(in srgb, ${bgColor}, transparent 85%)`,
+        borderLeftWidth: 4,
+        borderLeftColor: bgColor,
+      }}
     >
       {/* Tier Label */}
-      <header className="w-20 sm:w-24 shrink-0 flex flex-col items-center justify-center gap-1 py-3 px-2">
+      <header style={{
+        width: 80,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 4,
+        padding: "12px 8px"
+      }}>
         <div
-          className="inline-flex items-center justify-center rounded-md px-2 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-sm min-w-[40px]"
-          style={{ backgroundColor: "var(--tier-color)" }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 6,
+            padding: "6px 8px",
+            fontSize: 12,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: "white",
+            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+            minWidth: 40,
+            backgroundColor: bgColor
+          }}
         >
           {label}
         </div>
-        <div className="text-2xs text-text-subtle text-center">
+        <div style={{ fontSize: 10, color: "var(--spectrum-gray-600)", textAlign: "center" }}>
           {items.length} item{items.length === 1 ? "" : "s"}
         </div>
       </header>
 
       {/* Items Container with sorted items */}
-      <div className="flex-1 flex flex-wrap content-start gap-2 py-2 pr-3 perspective-container">
+      <div style={{
+        flex: 1,
+        display: "flex",
+        flexWrap: "wrap",
+        alignContent: "flex-start",
+        gap: 8,
+        padding: "8px 12px 8px 0"
+      }}>
         {items.length === 0 ? (
-          <div className="flex items-center justify-center w-full h-full min-h-[60px] text-text-subtle text-xs animate-pulse-soft">
-            {isOver || showFileDrop ? (
-              <span className="text-accent font-medium animate-bounce-in">
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            minHeight: 60,
+            color: "var(--spectrum-gray-600)",
+            fontSize: 12
+          }}>
+            {isHighlighted ? (
+              <span style={{ color: "var(--spectrum-blue-700)", fontWeight: 500 }}>
                 {showFileDrop ? "Drop file to add item" : "Drop here"}
               </span>
             ) : (
@@ -137,8 +181,17 @@ export const TierRow: React.FC<TierRowProps> = ({
             ))}
             {/* Drop zone indicator when dragging files over tier */}
             {showFileDrop && (
-              <div className="flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-card border-2 border-dashed border-accent bg-accent/10 animate-pulse">
-                <svg className="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 80,
+                height: 80,
+                borderRadius: 8,
+                border: "2px dashed var(--spectrum-blue-700)",
+                backgroundColor: "rgba(99, 102, 241, 0.1)"
+              }}>
+                <svg style={{ width: 24, height: 24, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </div>
@@ -156,27 +209,48 @@ export const TierRow: React.FC<TierRowProps> = ({
 
 interface ItemMediaContentProps {
   item: Item;
+  isHovered?: boolean;
 }
 
 /** Shared name overlay component for media items */
-const NameOverlay: React.FC<{ name: string; subtitle?: string }> = ({ name, subtitle }) => (
-  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card opacity-0 group-hover:opacity-100 transition-opacity">
-    <p className="text-2xs text-white text-center truncate font-medium">{name}</p>
+const NameOverlay: React.FC<{ name: string; subtitle?: string; isHovered?: boolean }> = ({ name, subtitle, isHovered }) => (
+  <div style={{
+    position: "absolute",
+    inset: "auto 0 0 0",
+    background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
+    padding: 6,
+    borderRadius: "0 0 8px 8px",
+    opacity: isHovered ? 1 : 0,
+    transition: "opacity 150ms ease"
+  }}>
+    <p style={{ fontSize: 10, color: "white", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{name}</p>
     {subtitle && (
-      <p className="text-[9px] text-white/70 text-center truncate">{subtitle}</p>
+      <p style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{subtitle}</p>
     )}
   </div>
 );
 
 /** Media type badge component */
 const MediaBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white flex items-center gap-0.5">
+  <div style={{
+    position: "absolute",
+    top: 4,
+    left: 4,
+    padding: "2px 4px",
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 4,
+    fontSize: 8,
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    gap: 2
+  }}>
     {children}
   </div>
 );
 
 /** Renders the appropriate media content based on item type */
-const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
+const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) => {
   const displayName = item.name ?? item.id;
   const hasVideo = !!item.videoUrl;
   const hasAudio = !!item.audioUrl;
@@ -188,7 +262,7 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
       <>
         <video
           src={item.videoUrl}
-          className="w-full h-full object-cover rounded-card"
+          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           loop
           muted
           playsInline
@@ -196,11 +270,11 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
           draggable={false}
         />
         <MediaBadge>
-          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+          <svg style={{ width: 8, height: 8 }} fill="currentColor" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
           </svg>
         </MediaBadge>
-        <NameOverlay name={displayName} subtitle={item.seasonString} />
+        <NameOverlay name={displayName} subtitle={item.seasonString} isHovered={isHovered} />
       </>
     );
   }
@@ -208,20 +282,20 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
   if (hasAudio) {
     return (
       <>
-        <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-2">
-          <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: 8 }}>
+          <svg style={{ width: 32, height: 32, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
-          <p className="text-2xs text-text-muted text-center truncate w-full font-medium">
+          <p style={{ fontSize: 10, color: "var(--spectrum-gray-700)", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", width: "100%", fontWeight: 500 }}>
             {displayName}
           </p>
         </div>
         <MediaBadge>
-          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+          <svg style={{ width: 8, height: 8 }} fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
           </svg>
         </MediaBadge>
-        <audio src={item.audioUrl} className="hidden" />
+        <audio src={item.audioUrl} style={{ display: "none" }} />
       </>
     );
   }
@@ -232,27 +306,37 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item }) => {
         <img
           src={item.imageUrl}
           alt={displayName}
-          className="w-full h-full object-cover rounded-card"
+          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           draggable={false}
         />
         {isGif && (
-          <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] text-white font-medium">
+          <div style={{
+            position: "absolute",
+            top: 4,
+            left: 4,
+            padding: "2px 4px",
+            backgroundColor: "rgba(0,0,0,0.6)",
+            borderRadius: 4,
+            fontSize: 8,
+            color: "white",
+            fontWeight: 500
+          }}>
             GIF
           </div>
         )}
-        <NameOverlay name={displayName} subtitle={item.seasonString} />
+        <NameOverlay name={displayName} subtitle={item.seasonString} isHovered={isHovered} />
       </>
     );
   }
 
   // Text-only fallback
   return (
-    <div className="flex flex-col items-center justify-center gap-0.5 p-1">
-      <span className="text-xs text-text text-center leading-tight font-medium">
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: 4 }}>
+      <span style={{ fontSize: 12, color: "var(--spectrum-gray-900)", textAlign: "center", lineHeight: 1.2, fontWeight: 500 }}>
         {displayName}
       </span>
       {item.seasonString && (
-        <span className="text-[9px] text-text-muted text-center leading-tight">
+        <span style={{ fontSize: 9, color: "var(--spectrum-gray-700)", textAlign: "center", lineHeight: 1.2 }}>
           {item.seasonString}
         </span>
       )}
@@ -296,6 +380,8 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   isRevealed = true,
   onReveal,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -360,46 +446,77 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
     return (
       <div
         ref={setNodeRef}
-        style={style}
+        style={{
+          ...style,
+          position: "relative",
+          width: 80,
+          height: 80,
+          borderRadius: 8,
+          cursor: "pointer",
+          transition: "all 300ms ease",
+        }}
         {...attributes}
         {...listeners}
         role="option"
         aria-selected={isSelected}
         data-testid={`item-card-${item.id}`}
         onClick={handleClick}
-        className="
-          relative w-20 h-20 sm:w-24 sm:h-24 rounded-card cursor-pointer
-          transition-all duration-300 hover:scale-105 group
-          opacity-0 animate-stagger-scale
-        "
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         {/* Mystery card back */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-indigo-800 rounded-card flex items-center justify-center overflow-hidden">
-          {/* Animated pattern */}
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2)_0%,transparent_50%)] animate-pulse" />
-          </div>
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(135deg, #7c3aed, #4338ca)",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          transform: isHovered ? "scale(1.05)" : "scale(1)",
+          transition: "transform 300ms ease"
+        }}>
           {/* Question mark */}
-          <span className="text-3xl font-bold text-white/90 group-hover:scale-110 transition-transform">
+          <span style={{
+            fontSize: 30,
+            fontWeight: 700,
+            color: "rgba(255,255,255,0.9)",
+            transform: isHovered ? "scale(1.1)" : "scale(1)",
+            transition: "transform 150ms ease"
+          }}>
             ?
           </span>
         </div>
         {/* Glow effect on hover */}
-        <div className="absolute inset-0 rounded-card ring-2 ring-transparent group-hover:ring-purple-400/50 transition-all" />
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: 8,
+          boxShadow: isHovered ? "0 0 0 2px rgba(167, 139, 250, 0.5)" : "none",
+          transition: "box-shadow 150ms ease"
+        }} />
       </div>
     );
   }
 
-  // Determine selection classes
-  // Research Doc: "Use box-shadow/outline, NOT border-width to prevent layout shifts"
-  const selectionClasses = isSelected
-    ? "ring-2 ring-accent shadow-[0_0_15px_rgba(99,102,241,0.3)]"
-    : "border border-border";
-
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{
+        ...style,
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        outline: "none",
+        ...(hasMedia
+          ? { width: 80, height: 80 }
+          : { padding: "8px 12px" }
+        ),
+        opacity: isDragging ? 0.3 : 1,
+      }}
       {...attributes}
       {...listeners}
       {...dragProps}
@@ -408,43 +525,72 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
       data-testid={`item-card-${item.id}`}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
-      className={`
-        relative flex flex-col items-center justify-center
-        outline-none
-        ${hasMedia ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
-        ${isDragging ? "opacity-30" : "opacity-100"}
-      `}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`
-          group w-full h-full relative flex flex-col items-center justify-center
-          cursor-grab active:cursor-grabbing
-          rounded-card bg-surface-raised shadow-card
-          transform-gpu
-          hover:shadow-card-hover hover:border-text-subtle hover:scale-[1.03]
-          active:scale-[0.98]
-          active:rotate-[2deg]
-          transition-all duration-200 ease-spring
-          ${selectionClasses}
-          ${isFileDragOver ? "ring-2 ring-success border-success shadow-glow-accent scale-105" : ""}
-        `}
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "grab",
+          borderRadius: 8,
+          backgroundColor: "var(--spectrum-gray-100)",
+          boxShadow: isHovered
+            ? "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)"
+            : "0 1px 3px rgba(0, 0, 0, 0.1)",
+          transform: isHovered ? "scale(1.03)" : "scale(1)",
+          transition: "all 200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+          border: isSelected
+            ? "2px solid var(--spectrum-blue-700)"
+            : isFileDragOver
+            ? "2px solid var(--spectrum-green-700)"
+            : "1px solid var(--spectrum-gray-300)",
+        }}
       >
         {/* File drop overlay */}
         {isFileDragOver && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-success/20 rounded-card border-2 border-dashed border-success">
-            <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(16, 185, 129, 0.2)",
+            borderRadius: 8,
+            border: "2px dashed var(--spectrum-green-700)"
+          }}>
+            <svg style={{ width: 24, height: 24, color: "var(--spectrum-green-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
           </div>
         )}
 
-        <ItemMediaContent item={item} />
+        <ItemMediaContent item={item} isHovered={isHovered} />
 
         {/* Selection indicator with pop animation */}
         {isSelected && !isFileDragOver && (
-          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-glow-accent animate-pop z-20">
+          <div style={{
+            position: "absolute",
+            top: -6,
+            right: -6,
+            width: 20,
+            height: 20,
+            backgroundColor: "var(--spectrum-blue-700)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 0 10px rgba(99, 102, 241, 0.5)",
+            zIndex: 20
+          }}>
             <svg
-              className="w-3 h-3 text-white"
+              style={{ width: 12, height: 12, color: "white" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

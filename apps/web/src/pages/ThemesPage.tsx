@@ -20,10 +20,10 @@ export function ThemesPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
       <div>
-        <h1 className="text-2xl font-bold text-text">Themes</h1>
-        <p className="text-text-muted mt-1">
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--spectrum-gray-900)" }}>Themes</h1>
+        <p style={{ color: "var(--spectrum-gray-700)", marginTop: 4 }}>
           Choose a color theme for your tier list
         </p>
       </div>
@@ -31,20 +31,31 @@ export function ThemesPage() {
       {currentTheme && (
         <div
           data-testid="current-theme"
-          className="p-4 bg-surface-raised rounded-lg border border-border"
+          style={{
+            padding: 16,
+            backgroundColor: "var(--spectrum-gray-100)",
+            borderRadius: 8,
+            border: "1px solid var(--spectrum-gray-300)"
+          }}
         >
-          <h2 className="text-lg font-semibold text-text mb-3">Current Theme</h2>
-          <div className="flex items-center gap-4">
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 12 }}>
+            Current Theme
+          </h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <ThemePreview theme={currentTheme} />
             <div>
-              <div className="font-medium text-text">{currentTheme.displayName}</div>
-              <div className="text-sm text-text-muted">{currentTheme.shortDescription}</div>
+              <div style={{ fontWeight: 500, color: "var(--spectrum-gray-900)" }}>{currentTheme.displayName}</div>
+              <div style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>{currentTheme.shortDescription}</div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gap: 16
+      }}>
         {BUNDLED_THEMES.map((theme) => {
           const isSelected = theme.id === currentThemeId;
           return (
@@ -52,25 +63,34 @@ export function ThemesPage() {
               key={theme.id}
               data-testid={`theme-card-${theme.id}`}
               onClick={() => handleSelectTheme(theme.id)}
-              className={`
-                p-4 rounded-lg border-2 transition-all text-left
-                hover:scale-[1.02] active:scale-[0.98] transform-gpu
-                ${
-                  isSelected
-                    ? "border-accent bg-accent/10 ring-2 ring-accent/50 shadow-glow-gradient"
-                    : "border-border bg-surface-raised hover:border-accent/50 hover:bg-surface-soft"
-                }
-              `}
+              style={{
+                padding: 16,
+                borderRadius: 8,
+                textAlign: "left",
+                cursor: "pointer",
+                transition: "transform 150ms, border-color 150ms",
+                backgroundColor: isSelected ? "var(--spectrum-blue-100)" : "var(--spectrum-gray-100)",
+                border: isSelected
+                  ? "2px solid var(--spectrum-blue-700)"
+                  : "2px solid var(--spectrum-gray-300)",
+                boxShadow: isSelected ? "0 0 0 2px var(--spectrum-blue-400)" : "none"
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) e.currentTarget.style.borderColor = "var(--spectrum-blue-500)";
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) e.currentTarget.style.borderColor = "var(--spectrum-gray-300)";
+              }}
             >
               <ThemePreview theme={theme} />
-              <div className="mt-3">
-                <div className="font-medium text-text flex items-center gap-2">
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontWeight: 500, color: "var(--spectrum-gray-900)", display: "flex", alignItems: "center", gap: 8 }}>
                   {theme.displayName}
                   {isSelected && (
-                    <span className="text-xs text-accent font-semibold">✓ Active</span>
+                    <span style={{ fontSize: 12, color: "var(--spectrum-blue-800)", fontWeight: 600 }}>✓ Active</span>
                   )}
                 </div>
-                <div className="text-sm text-text-muted mt-1">
+                <div style={{ fontSize: 14, color: "var(--spectrum-gray-700)", marginTop: 4 }}>
                   {theme.shortDescription}
                 </div>
               </div>
@@ -86,12 +106,11 @@ function ThemePreview({ theme }: { theme: TierTheme }) {
   const rankedTiers = theme.tiers.filter((t) => !t.isUnranked);
 
   return (
-    <div data-testid="theme-preview" className="flex gap-1 h-8">
+    <div data-testid="theme-preview" style={{ display: "flex", gap: 4, height: 32 }}>
       {rankedTiers.map((tier) => (
         <div
           key={tier.id}
-          className="flex-1 rounded"
-          style={{ backgroundColor: tier.colorHex }}
+          style={{ flex: 1, borderRadius: 4, backgroundColor: tier.colorHex }}
           title={tier.name}
         />
       ))}

@@ -1,10 +1,40 @@
 /**
  * Motion/animation tokens for Tiercade
- * Framer Motion variants for web, can be adapted for React Native Reanimated
+ * Platform-agnostic motion definitions that can be used on web (CSS) or native (Reanimated)
+ *
+ * Note: This file no longer depends on framer-motion. Types are defined locally.
  */
-import type { Variants, Transition } from "framer-motion";
 
-// Timing presets
+// Local type definitions (replacing framer-motion types)
+export interface MotionVariant {
+  opacity?: number;
+  scale?: number;
+  x?: number;
+  y?: number;
+  borderColor?: string;
+  backgroundColor?: string;
+  boxShadow?: string;
+  height?: number | "auto";
+  zIndex?: number;
+  transition?: TransitionConfig;
+}
+
+export interface TransitionConfig {
+  duration?: number;
+  ease?: readonly number[] | string;
+  type?: "spring" | "tween";
+  stiffness?: number;
+  damping?: number;
+  mass?: number;
+  staggerChildren?: number;
+  delayChildren?: number;
+}
+
+export interface Variants {
+  [key: string]: MotionVariant;
+}
+
+// Timing presets (in seconds for legacy compatibility, use S2_DURATION for ms)
 export const timing = {
   instant: 0.1,
   fast: 0.15,
@@ -13,18 +43,18 @@ export const timing = {
   deliberate: 0.4,
 } as const;
 
-// Easing curves
+// Easing curves (Bezier format)
 export const easing = {
   // Standard easing for most transitions
-  standard: [0.4, 0, 0.2, 1],
+  standard: [0.4, 0, 0.2, 1] as const,
   // Deceleration for elements entering
-  easeOut: [0, 0, 0.2, 1],
+  easeOut: [0, 0, 0.2, 1] as const,
   // Acceleration for elements leaving
-  easeIn: [0.4, 0, 1, 1],
+  easeIn: [0.4, 0, 1, 1] as const,
   // Sharp for elements that may return
-  sharp: [0.4, 0, 0.6, 1],
+  sharp: [0.4, 0, 0.6, 1] as const,
   // Spring-like bounce
-  bounce: [0.34, 1.56, 0.64, 1],
+  bounce: [0.34, 1.56, 0.64, 1] as const,
 } as const;
 
 // Reusable spring configurations
@@ -234,7 +264,7 @@ export const popoverVariants: Variants = {
 };
 
 // Default transition for simple animations
-export const defaultTransition: Transition = {
+export const defaultTransition: TransitionConfig = {
   duration: timing.normal,
   ease: easing.standard,
 };

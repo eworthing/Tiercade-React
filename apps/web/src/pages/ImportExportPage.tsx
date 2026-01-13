@@ -8,7 +8,7 @@ import {
   captureSnapshot,
 } from "@tiercade/state";
 import { ExportFormatter } from "@tiercade/core";
-import { Button, Modal } from "@tiercade/ui";
+import { Button, Dialog, DialogTrigger, Heading, Content, ButtonGroup, AlertDialog } from "@react-spectrum/s2";
 import { exportElementAsPNG, copyElementToClipboard } from "../utils/exportImage";
 import { generateShareUrl, copyToClipboard } from "../utils/urlSharing";
 
@@ -19,7 +19,7 @@ const EXPORT_FORMATS = [
     name: "Share Link",
     description: "Copy a link others can open to view",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg style={{ width: 24, height: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
       </svg>
     ),
@@ -30,7 +30,7 @@ const EXPORT_FORMATS = [
     name: "PNG Image",
     description: "Share as an image on social media",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg style={{ width: 24, height: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
@@ -40,7 +40,7 @@ const EXPORT_FORMATS = [
     name: "JSON",
     description: "Full data backup, import to other devices",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg style={{ width: 24, height: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
       </svg>
     ),
@@ -50,7 +50,7 @@ const EXPORT_FORMATS = [
     name: "CSV",
     description: "Open in Excel or Google Sheets",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg style={{ width: 24, height: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     ),
@@ -60,7 +60,7 @@ const EXPORT_FORMATS = [
     name: "Markdown",
     description: "For Reddit, Discord, or documentation",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg style={{ width: 24, height: 24 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
       </svg>
     ),
@@ -82,6 +82,7 @@ export function ImportExportPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [hoveredFormat, setHoveredFormat] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tierBoardRef = useRef<HTMLDivElement>(null);
 
@@ -333,11 +334,11 @@ export function ImportExportPage() {
   const totalItems = Object.values(tiers).flat().length;
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-text">Import / Export</h1>
-        <p className="text-text-muted mt-1">
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--spectrum-gray-900)" }}>Import / Export</h1>
+        <p style={{ color: "var(--spectrum-gray-700)", marginTop: 4 }}>
           Save, share, or import your tier lists
         </p>
       </div>
@@ -345,19 +346,28 @@ export function ImportExportPage() {
       {/* Status message */}
       {statusMessage && (
         <div
-          className={`p-4 rounded-lg border ${
-            statusMessage.type === "success"
-              ? "bg-success/10 border-success/30 text-success"
-              : "bg-danger/10 border-danger/30 text-danger"
-          }`}
+          style={{
+            padding: 16,
+            borderRadius: 8,
+            border: "1px solid",
+            backgroundColor: statusMessage.type === "success"
+              ? "rgba(16, 185, 129, 0.1)"
+              : "rgba(239, 68, 68, 0.1)",
+            borderColor: statusMessage.type === "success"
+              ? "rgba(16, 185, 129, 0.3)"
+              : "rgba(239, 68, 68, 0.3)",
+            color: statusMessage.type === "success"
+              ? "var(--spectrum-green-800)"
+              : "var(--spectrum-red-800)"
+          }}
         >
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {statusMessage.type === "success" ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg style={{ width: 20, height: 20 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg style={{ width: 20, height: 20 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             )}
@@ -368,40 +378,92 @@ export function ImportExportPage() {
 
       {/* Export Section */}
       <section>
-        <h2 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <h2 style={{
+          fontSize: 18,
+          fontWeight: 600,
+          color: "var(--spectrum-gray-900)",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          gap: 8
+        }}>
+          <svg style={{ width: 20, height: 20, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
           Export
         </h2>
 
         {totalItems === 0 ? (
-          <div className="text-center py-8 bg-surface-raised rounded-lg border border-border">
-            <p className="text-text-muted">
+          <div style={{
+            textAlign: "center",
+            padding: "32px 16px",
+            backgroundColor: "var(--spectrum-gray-100)",
+            borderRadius: 8,
+            border: "1px solid var(--spectrum-gray-300)"
+          }}>
+            <p style={{ color: "var(--spectrum-gray-700)" }}>
               Add some items to your tier list first to export
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+            gap: 16
+          }}>
             {EXPORT_FORMATS.map((format) => (
               <button
                 key={format.id}
                 onClick={() => handleExport(format.id)}
                 disabled={isExporting}
-                className="group relative p-4 bg-surface-raised hover:bg-surface-soft border border-border hover:border-accent rounded-lg text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                onMouseEnter={() => setHoveredFormat(format.id)}
+                onMouseLeave={() => setHoveredFormat(null)}
+                style={{
+                  position: "relative",
+                  padding: 16,
+                  backgroundColor: hoveredFormat === format.id
+                    ? "var(--spectrum-gray-200)"
+                    : "var(--spectrum-gray-100)",
+                  border: hoveredFormat === format.id
+                    ? "1px solid var(--spectrum-blue-700)"
+                    : "1px solid var(--spectrum-gray-300)",
+                  borderRadius: 8,
+                  textAlign: "left",
+                  cursor: isExporting ? "not-allowed" : "pointer",
+                  opacity: isExporting ? 0.5 : 1,
+                  transition: "all 150ms ease"
+                }}
               >
                 {format.badge && (
-                  <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-accent text-white text-xs font-medium rounded-full">
+                  <span style={{
+                    position: "absolute",
+                    top: -8,
+                    right: -8,
+                    padding: "2px 8px",
+                    backgroundColor: "var(--spectrum-blue-700)",
+                    color: "white",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    borderRadius: 9999
+                  }}>
                     {format.badge}
                   </span>
                 )}
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-surface text-text-muted group-hover:text-accent transition-colors">
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <div style={{
+                    padding: 8,
+                    borderRadius: 8,
+                    backgroundColor: "var(--spectrum-gray-200)",
+                    color: hoveredFormat === format.id
+                      ? "var(--spectrum-blue-700)"
+                      : "var(--spectrum-gray-700)",
+                    transition: "color 150ms ease"
+                  }}>
                     {format.icon}
                   </div>
                   <div>
-                    <h3 className="font-medium text-text">{format.name}</h3>
-                    <p className="text-xs text-text-muted mt-0.5">
+                    <h3 style={{ fontWeight: 500, color: "var(--spectrum-gray-900)" }}>{format.name}</h3>
+                    <p style={{ fontSize: 12, color: "var(--spectrum-gray-700)", marginTop: 2 }}>
                       {format.description}
                     </p>
                   </div>
@@ -413,21 +475,19 @@ export function ImportExportPage() {
 
         {/* Quick copy button for PNG */}
         {totalItems > 0 && (
-          <div className="mt-4 flex items-center gap-2">
+          <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 8 }}>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopyImage}
-              disabled={isExporting}
-              icon={
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                </svg>
-              }
+              variant="secondary"
+              size="S"
+              onPress={handleCopyImage}
+              isDisabled={isExporting}
             >
+              <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
               Copy Image to Clipboard
             </Button>
-            <span className="text-xs text-text-subtle">
+            <span style={{ fontSize: 12, color: "var(--spectrum-gray-600)" }}>
               Paste directly into social media or chat
             </span>
           </div>
@@ -436,8 +496,16 @@ export function ImportExportPage() {
 
       {/* Import Section */}
       <section>
-        <h2 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <h2 style={{
+          fontSize: 18,
+          fontWeight: 600,
+          color: "var(--spectrum-gray-900)",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          gap: 8
+        }}>
+          <svg style={{ width: 20, height: 20, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           Import
@@ -447,31 +515,47 @@ export function ImportExportPage() {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`relative p-8 border-2 border-dashed rounded-lg text-center transition-colors ${
-            dragOver
-              ? "border-accent bg-accent/10"
-              : "border-border hover:border-text-subtle"
-          }`}
+          style={{
+            position: "relative",
+            padding: 32,
+            border: "2px dashed",
+            borderRadius: 8,
+            textAlign: "center",
+            transition: "all 150ms ease",
+            borderColor: dragOver ? "var(--spectrum-blue-700)" : "var(--spectrum-gray-400)",
+            backgroundColor: dragOver ? "rgba(37, 99, 235, 0.1)" : "transparent"
+          }}
         >
           <input
             ref={fileInputRef}
             type="file"
             accept=".json,.csv"
             onChange={handleFileChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              opacity: 0,
+              cursor: "pointer"
+            }}
           />
-          <div className="space-y-2">
-            <div className="flex justify-center">
-              <div className="p-3 rounded-full bg-surface-raised">
-                <svg className="w-8 h-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <div style={{
+                padding: 12,
+                borderRadius: "50%",
+                backgroundColor: "var(--spectrum-gray-100)"
+              }}>
+                <svg style={{ width: 32, height: 32, color: "var(--spectrum-gray-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
             </div>
-            <p className="text-text font-medium">
+            <p style={{ color: "var(--spectrum-gray-900)", fontWeight: 500 }}>
               Drop a file here or click to browse
             </p>
-            <p className="text-sm text-text-muted">
+            <p style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>
               Supports JSON and CSV files
             </p>
           </div>
@@ -480,44 +564,67 @@ export function ImportExportPage() {
 
       {/* Data Management Section */}
       <section>
-        <h2 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <h2 style={{
+          fontSize: 18,
+          fontWeight: 600,
+          color: "var(--spectrum-gray-900)",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          gap: 8
+        }}>
+          <svg style={{ width: 20, height: 20, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
           Data Management
         </h2>
 
-        <div className="p-4 bg-surface-raised rounded-lg border border-border">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-medium text-text">Reset to Default</h3>
-              <p className="text-sm text-text-muted mt-0.5">
-                Clear your current tier list and start fresh with example data
-              </p>
-            </div>
-            <Button
-              variant="danger"
-              onClick={() => setShowResetConfirm(true)}
-              icon={
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div style={{
+          padding: 16,
+          backgroundColor: "var(--spectrum-gray-100)",
+          borderRadius: 8,
+          border: "1px solid var(--spectrum-gray-300)"
+        }}>
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+              <div>
+                <h3 style={{ fontWeight: 500, color: "var(--spectrum-gray-900)" }}>Reset to Default</h3>
+                <p style={{ fontSize: 14, color: "var(--spectrum-gray-700)", marginTop: 2 }}>
+                  Clear your current tier list and start fresh with example data
+                </p>
+              </div>
+              <Button
+                variant="negative"
+                onPress={() => setShowResetConfirm(true)}
+              >
+                <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-              }
-            >
-              Reset
-            </Button>
+                Reset
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Storage info */}
-        <div className="mt-4 p-4 bg-surface-soft rounded-lg border border-border-soft">
-          <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-text-muted mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div style={{
+          marginTop: 16,
+          padding: 16,
+          backgroundColor: "var(--spectrum-gray-75)",
+          borderRadius: 8,
+          border: "1px solid var(--spectrum-gray-200)"
+        }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <svg style={{ width: 20, height: 20, color: "var(--spectrum-gray-700)", marginTop: 2 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <div className="text-sm text-text-muted">
-              <p className="font-medium text-text">Your data is stored locally</p>
-              <p className="mt-1">
+            <div style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>
+              <p style={{ fontWeight: 500, color: "var(--spectrum-gray-900)" }}>Your data is stored locally</p>
+              <p style={{ marginTop: 4 }}>
                 All tier list data is saved in your browser's local storage.
                 Export to JSON to create a backup or transfer to another device.
               </p>
@@ -527,27 +634,20 @@ export function ImportExportPage() {
       </section>
 
       {/* Reset Confirmation Modal */}
-      <Modal
-        open={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        title="Reset to Default?"
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-text-muted">
-            This will clear your current tier list and load the example project.
-            This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-3">
-            <Button variant="ghost" onClick={() => setShowResetConfirm(false)}>
-              Cancel
-            </Button>
-            <Button variant="danger" onClick={handleReset}>
-              Reset
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <DialogTrigger isOpen={showResetConfirm} onOpenChange={(isOpen) => !isOpen && setShowResetConfirm(false)}>
+        <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+        <AlertDialog
+          title="Reset to Default?"
+          variant="destructive"
+          primaryActionLabel="Reset"
+          cancelLabel="Cancel"
+          onPrimaryAction={handleReset}
+          onCancel={() => setShowResetConfirm(false)}
+        >
+          This will clear your current tier list and load the example project.
+          This action cannot be undone.
+        </AlertDialog>
+      </DialogTrigger>
     </div>
   );
 }

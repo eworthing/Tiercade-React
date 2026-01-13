@@ -12,9 +12,9 @@ export function AnalyticsPage() {
 
   if (!tierOrder || tierOrder.length === 0) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold text-text">Analytics</h1>
-        <p className="text-text-muted">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--spectrum-gray-900)" }}>Analytics</h1>
+        <p style={{ color: "var(--spectrum-gray-700)" }}>
           No tier list loaded. Load or create a tier list to view analytics.
         </p>
       </div>
@@ -27,33 +27,40 @@ export function AnalyticsPage() {
   const summary = generateAnalyticsSummary(analytics);
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, maxWidth: 896 }}>
       <div>
-        <h1 className="text-2xl font-bold text-text">Analytics</h1>
-        <p className="text-text-muted mt-1">Insights about your tier list distribution</p>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--spectrum-gray-900)" }}>Analytics</h1>
+        <p style={{ color: "var(--spectrum-gray-700)", marginTop: 4 }}>Insights about your tier list distribution</p>
       </div>
 
       {/* Balance Score */}
-      <section className="p-4 bg-surface-raised rounded-lg border border-border">
-        <h2 className="text-xl font-semibold text-text mb-3">Balance Score</h2>
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <div className="h-8 bg-surface rounded-full overflow-hidden">
+      <section style={{
+        padding: 16,
+        backgroundColor: "var(--spectrum-gray-100)",
+        borderRadius: 8,
+        border: "1px solid var(--spectrum-gray-300)"
+      }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 12 }}>Balance Score</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ height: 32, backgroundColor: "var(--spectrum-gray-200)", borderRadius: 16, overflow: "hidden" }}>
               <div
-                className={`h-full transition-all duration-500 ease-out ${
-                  balanceScore >= 80
-                    ? "bg-success"
+                style={{
+                  height: "100%",
+                  transition: "all 500ms ease-out",
+                  width: `${balanceScore}%`,
+                  backgroundColor: balanceScore >= 80
+                    ? "var(--spectrum-green-700)"
                     : balanceScore >= 50
-                    ? "bg-warning"
-                    : "bg-danger"
-                }`}
-                style={{ width: `${balanceScore}%` }}
+                    ? "var(--spectrum-orange-700)"
+                    : "var(--spectrum-red-700)"
+                }}
               />
             </div>
           </div>
-          <div className="text-2xl font-bold w-16 text-right text-text">{balanceScore}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, width: 64, textAlign: "right", color: "var(--spectrum-gray-900)" }}>{balanceScore}</div>
         </div>
-        <p className="text-sm text-text-muted mt-2">
+        <p style={{ fontSize: 14, color: "var(--spectrum-gray-700)", marginTop: 8 }}>
           {balanceScore >= 80
             ? "Well balanced tier distribution"
             : balanceScore >= 50
@@ -63,53 +70,82 @@ export function AnalyticsPage() {
       </section>
 
       {/* Overview Stats */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-surface-raised rounded-lg border border-border hover:border-accent/50 transition-colors">
-          <div className="text-3xl font-bold text-accent">
+      <section style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+        gap: 16
+      }}>
+        <div style={{
+          padding: 16,
+          backgroundColor: "var(--spectrum-gray-100)",
+          borderRadius: 8,
+          border: "1px solid var(--spectrum-gray-300)"
+        }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--spectrum-blue-800)" }}>
             {analytics.totalItems}
           </div>
-          <div className="text-sm text-text-muted">Total Items</div>
+          <div style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>Total Items</div>
         </div>
-        <div className="p-4 bg-surface-raised rounded-lg border border-border hover:border-success/50 transition-colors">
-          <div className="text-3xl font-bold text-success">
+        <div style={{
+          padding: 16,
+          backgroundColor: "var(--spectrum-gray-100)",
+          borderRadius: 8,
+          border: "1px solid var(--spectrum-gray-300)"
+        }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--spectrum-green-800)" }}>
             {analytics.totalTiers}
           </div>
-          <div className="text-sm text-text-muted">Total Tiers</div>
+          <div style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>Total Tiers</div>
         </div>
-        <div className="p-4 bg-surface-raised rounded-lg border border-border hover:border-purple-500/50 transition-colors">
-          <div className="text-3xl font-bold text-purple-400">
+        <div style={{
+          padding: 16,
+          backgroundColor: "var(--spectrum-gray-100)",
+          borderRadius: 8,
+          border: "1px solid var(--spectrum-gray-300)"
+        }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--spectrum-purple-800)" }}>
             {analytics.averageItemsPerTier.toFixed(1)}
           </div>
-          <div className="text-sm text-text-muted">Avg per Tier</div>
+          <div style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>Avg per Tier</div>
         </div>
-        <div className="p-4 bg-surface-raised rounded-lg border border-border hover:border-warning/50 transition-colors">
-          <div className="text-3xl font-bold text-warning">
+        <div style={{
+          padding: 16,
+          backgroundColor: "var(--spectrum-gray-100)",
+          borderRadius: 8,
+          border: "1px solid var(--spectrum-gray-300)"
+        }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--spectrum-orange-800)" }}>
             {seasonStats.totalSeasons}
           </div>
-          <div className="text-sm text-text-muted">Unique Seasons</div>
+          <div style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>Unique Seasons</div>
         </div>
       </section>
 
       {/* Tier Distribution Chart */}
-      <section className="p-4 bg-surface-raised rounded-lg border border-border">
-        <h2 className="text-xl font-semibold text-text mb-4">Tier Distribution</h2>
-        <div className="space-y-3">
-          {analytics.distribution.map((tier, index) => (
-            <div
-              key={tier.tierName}
-              className="opacity-0 animate-stagger-fade"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-medium text-text">{tier.tierName}</span>
-                <span className="text-sm text-text-muted">
+      <section style={{
+        padding: 16,
+        backgroundColor: "var(--spectrum-gray-100)",
+        borderRadius: 8,
+        border: "1px solid var(--spectrum-gray-300)"
+      }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 16 }}>Tier Distribution</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {analytics.distribution.map((tier) => (
+            <div key={tier.tierName}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                <span style={{ fontWeight: 500, color: "var(--spectrum-gray-900)" }}>{tier.tierName}</span>
+                <span style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>
                   {tier.itemCount} items ({tier.percentage.toFixed(1)}%)
                 </span>
               </div>
-              <div className="h-6 bg-surface rounded-full overflow-hidden">
+              <div style={{ height: 24, backgroundColor: "var(--spectrum-gray-200)", borderRadius: 12, overflow: "hidden" }}>
                 <div
-                  className="h-full bg-accent transition-all duration-500 ease-out"
-                  style={{ width: `${tier.percentage}%` }}
+                  style={{
+                    height: "100%",
+                    backgroundColor: "var(--spectrum-blue-700)",
+                    transition: "all 500ms ease-out",
+                    width: `${tier.percentage}%`
+                  }}
                 />
               </div>
             </div>
@@ -119,20 +155,25 @@ export function AnalyticsPage() {
 
       {/* Season Distribution */}
       {seasonStats.totalSeasons > 0 && (
-        <section className="p-4 bg-surface-raised rounded-lg border border-border">
-          <h2 className="text-xl font-semibold text-text mb-4">Season Distribution</h2>
-          <div className="space-y-2">
+        <section style={{
+          padding: 16,
+          backgroundColor: "var(--spectrum-gray-100)",
+          borderRadius: 8,
+          border: "1px solid var(--spectrum-gray-300)"
+        }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 16 }}>Season Distribution</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {Object.entries(seasonStats.seasonDistribution)
               .sort(([, a], [, b]) => b - a)
               .map(([season, count]) => (
-                <div key={season} className="flex justify-between text-text">
+                <div key={season} style={{ display: "flex", justifyContent: "space-between", color: "var(--spectrum-gray-900)" }}>
                   <span>Season {season}</span>
-                  <span className="text-text-muted">{count} items</span>
+                  <span style={{ color: "var(--spectrum-gray-700)" }}>{count} items</span>
                 </div>
               ))}
           </div>
           {seasonStats.mostCommonSeason && (
-            <p className="mt-4 text-sm text-text-muted">
+            <p style={{ marginTop: 16, fontSize: 14, color: "var(--spectrum-gray-700)" }}>
               Most common: Season {seasonStats.mostCommonSeason}
             </p>
           )}
@@ -140,9 +181,22 @@ export function AnalyticsPage() {
       )}
 
       {/* Text Summary */}
-      <section className="p-4 bg-surface-raised rounded-lg border border-border">
-        <h2 className="text-xl font-semibold text-text mb-4">Summary</h2>
-        <pre className="text-sm text-text-muted whitespace-pre-wrap font-mono bg-surface p-4 rounded-lg">
+      <section style={{
+        padding: 16,
+        backgroundColor: "var(--spectrum-gray-100)",
+        borderRadius: 8,
+        border: "1px solid var(--spectrum-gray-300)"
+      }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 16 }}>Summary</h2>
+        <pre style={{
+          fontSize: 14,
+          color: "var(--spectrum-gray-700)",
+          whiteSpace: "pre-wrap",
+          fontFamily: "monospace",
+          backgroundColor: "var(--spectrum-gray-200)",
+          padding: 16,
+          borderRadius: 8
+        }}>
           {summary}
         </pre>
       </section>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@tiercade/ui";
+import { Button } from "@react-spectrum/s2";
 
 interface BatchActionBarProps {
   selectedCount: number;
@@ -59,54 +59,127 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-200">
-      <div className="flex items-center gap-3 px-4 py-3 bg-surface-raised border border-border rounded-xl shadow-modal backdrop-blur-sm">
+    <div style={{
+      position: "fixed",
+      bottom: 16,
+      left: "50%",
+      transform: "translateX(-50%)",
+      zIndex: 50
+    }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "12px 16px",
+        backgroundColor: "var(--spectrum-gray-100)",
+        border: "1px solid var(--spectrum-gray-300)",
+        borderRadius: 12,
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)"
+      }}>
         {/* Selection count */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-            <span className="text-sm font-bold text-accent">{selectedCount}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            backgroundColor: "var(--spectrum-blue-200)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--spectrum-blue-900)" }}>
+              {selectedCount}
+            </span>
           </div>
-          <span className="text-sm text-text font-medium">
+          <span style={{ fontSize: 14, color: "var(--spectrum-gray-900)", fontWeight: 500 }}>
             {selectedCount === 1 ? "item" : "items"} selected
           </span>
         </div>
 
-        <div className="w-px h-6 bg-border" />
+        <div style={{ width: 1, height: 24, backgroundColor: "var(--spectrum-gray-300)" }} />
 
         {/* Move to tier dropdown */}
-        <div className="relative" ref={moveMenuRef}>
+        <div style={{ position: "relative" }} ref={moveMenuRef}>
           <Button
             variant="secondary"
-            size="sm"
-            onClick={() => setShowMoveMenu(!showMoveMenu)}
-            icon={<MoveIcon />}
+            size="S"
+            onPress={() => setShowMoveMenu(!showMoveMenu)}
           >
-            Move to...
+            <MoveIcon /> Move to...
           </Button>
 
           {showMoveMenu && (
-            <div className="absolute bottom-full left-0 mb-2 py-1 bg-surface-raised border border-border rounded-lg shadow-modal min-w-[160px] max-h-[300px] overflow-y-auto">
+            <div style={{
+              position: "absolute",
+              bottom: "100%",
+              left: 0,
+              marginBottom: 8,
+              padding: "4px 0",
+              backgroundColor: "var(--spectrum-gray-100)",
+              border: "1px solid var(--spectrum-gray-300)",
+              borderRadius: 8,
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              minWidth: 160,
+              maxHeight: 300,
+              overflowY: "auto"
+            }}>
               {tierOrder.map((tierId) => (
                 <button
                   key={tierId}
                   onClick={() => handleMoveToTier(tierId)}
-                  className="w-full px-3 py-2 text-left text-sm text-text hover:bg-surface-soft flex items-center gap-2"
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    textAlign: "left",
+                    fontSize: 14,
+                    color: "var(--spectrum-gray-900)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--spectrum-gray-200)"}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                 >
                   <div
-                    className="w-3 h-3 rounded-sm"
-                    style={{ backgroundColor: tierColors[tierId] ?? "#374151" }}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 2,
+                      backgroundColor: tierColors[tierId] ?? "#374151"
+                    }}
                   />
                   {tierLabels[tierId] ?? tierId}
                 </button>
               ))}
-              <div className="border-t border-border my-1" />
+              <div style={{ borderTop: "1px solid var(--spectrum-gray-300)", margin: "4px 0" }} />
               <button
                 onClick={() => handleMoveToTier("unranked")}
-                className="w-full px-3 py-2 text-left text-sm text-text-muted hover:bg-surface-soft flex items-center gap-2"
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  textAlign: "left",
+                  fontSize: 14,
+                  color: "var(--spectrum-gray-700)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--spectrum-gray-200)"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
               >
                 <div
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: tierColors["unranked"] ?? "#374151" }}
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 2,
+                    backgroundColor: tierColors["unranked"] ?? "#374151"
+                  }}
                 />
                 Unranked
               </button>
@@ -116,18 +189,18 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
 
         {/* Delete button */}
         <Button
-          variant={showDeleteConfirm ? "danger" : "ghost"}
-          size="sm"
-          onClick={handleDelete}
-          icon={<TrashIcon />}
+          variant={showDeleteConfirm ? "negative" : "secondary"}
+          fillStyle={showDeleteConfirm ? "fill" : "outline"}
+          size="S"
+          onPress={handleDelete}
         >
-          {showDeleteConfirm ? "Confirm Delete" : "Delete"}
+          <TrashIcon /> {showDeleteConfirm ? "Confirm Delete" : "Delete"}
         </Button>
 
-        <div className="w-px h-6 bg-border" />
+        <div style={{ width: 1, height: 24, backgroundColor: "var(--spectrum-gray-300)" }} />
 
         {/* Clear selection */}
-        <Button variant="ghost" size="sm" onClick={onClear}>
+        <Button variant="secondary" fillStyle="outline" size="S" onPress={onClear}>
           Clear
         </Button>
       </div>
@@ -139,7 +212,7 @@ BatchActionBar.displayName = "BatchActionBar";
 
 // Icons
 const MoveIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -150,7 +223,7 @@ const MoveIcon = () => (
 );
 
 const TrashIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"

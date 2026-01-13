@@ -1,5 +1,5 @@
 import React, { Component, type ReactNode } from "react";
-import { Button } from "@tiercade/ui";
+import { Button } from "@react-spectrum/s2";
 
 interface Props {
   children: ReactNode;
@@ -41,11 +41,27 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-          <div className="max-w-md w-full text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-danger-muted flex items-center justify-center">
+        <div style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "var(--spectrum-gray-50)",
+          padding: 16
+        }}>
+          <div style={{ maxWidth: 448, width: "100%", textAlign: "center" }}>
+            <div style={{
+              width: 64,
+              height: 64,
+              margin: "0 auto 24px",
+              borderRadius: "50%",
+              backgroundColor: "var(--spectrum-red-200)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}>
               <svg
-                className="w-8 h-8 text-danger"
+                style={{ width: 32, height: 32, color: "var(--spectrum-red-900)" }}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -59,21 +75,38 @@ export class ErrorBoundary extends Component<Props, State> {
               </svg>
             </div>
 
-            <h1 className="text-xl font-semibold text-text mb-2">
+            <h1 style={{
+              fontSize: 20,
+              fontWeight: 600,
+              color: "var(--spectrum-gray-900)",
+              marginBottom: 8
+            }}>
               Something went wrong
             </h1>
 
-            <p className="text-text-muted mb-6">
+            <p style={{ color: "var(--spectrum-gray-700)", marginBottom: 24 }}>
               Don't worry — your tier list data is saved locally and should be
               restored when you refresh the page.
             </p>
 
             {this.state.error && (
-              <details className="mb-6 text-left">
-                <summary className="text-sm text-text-subtle cursor-pointer hover:text-text-muted">
+              <details style={{ marginBottom: 24, textAlign: "left" }}>
+                <summary style={{
+                  fontSize: 14,
+                  color: "var(--spectrum-gray-600)",
+                  cursor: "pointer"
+                }}>
                   Error details
                 </summary>
-                <pre className="mt-2 p-3 bg-surface-raised rounded-lg text-xs text-danger overflow-x-auto">
+                <pre style={{
+                  marginTop: 8,
+                  padding: 12,
+                  backgroundColor: "var(--spectrum-gray-100)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  color: "var(--spectrum-red-900)",
+                  overflowX: "auto"
+                }}>
                   {this.state.error.message}
                   {this.state.error.stack && (
                     <>
@@ -85,11 +118,11 @@ export class ErrorBoundary extends Component<Props, State> {
               </details>
             )}
 
-            <div className="flex items-center justify-center gap-3">
-              <Button variant="secondary" onClick={this.handleReset}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+              <Button variant="secondary" onPress={this.handleReset}>
                 Try Again
               </Button>
-              <Button variant="primary" onClick={this.handleReload}>
+              <Button variant="accent" onPress={this.handleReload}>
                 Refresh Page
               </Button>
             </div>
@@ -109,10 +142,27 @@ export const PageErrorBoundary: React.FC<{ children: ReactNode }> = ({
   return (
     <ErrorBoundary
       fallback={
-        <div className="flex flex-col items-center justify-center min-h-[300px] p-4 text-center">
-          <div className="w-12 h-12 mb-4 rounded-full bg-danger-muted flex items-center justify-center">
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 300,
+          padding: 16,
+          textAlign: "center"
+        }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            marginBottom: 16,
+            borderRadius: "50%",
+            backgroundColor: "var(--spectrum-red-200)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
             <svg
-              className="w-6 h-6 text-danger"
+              style={{ width: 24, height: 24, color: "var(--spectrum-red-900)" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -125,16 +175,25 @@ export const PageErrorBoundary: React.FC<{ children: ReactNode }> = ({
               />
             </svg>
           </div>
-          <h2 className="text-lg font-medium text-text mb-1">
+          <h2 style={{
+            fontSize: 18,
+            fontWeight: 500,
+            color: "var(--spectrum-gray-900)",
+            marginBottom: 4
+          }}>
             This section couldn't load
           </h2>
-          <p className="text-text-muted text-sm mb-4">
+          <p style={{
+            color: "var(--spectrum-gray-700)",
+            fontSize: 14,
+            marginBottom: 16
+          }}>
             Try refreshing the page or navigating elsewhere.
           </p>
           <Button
             variant="secondary"
-            size="sm"
-            onClick={() => window.location.reload()}
+            size="S"
+            onPress={() => window.location.reload()}
           >
             Refresh
           </Button>

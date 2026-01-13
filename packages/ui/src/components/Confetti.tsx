@@ -138,11 +138,16 @@ const ParticleElement: React.FC<{ particle: Particle; duration: number }> = ({
     return () => cancelAnimationFrame(frame);
   }, [particle, duration]);
 
+  const absolutePointerNone: React.CSSProperties = {
+    position: "absolute",
+    pointerEvents: "none",
+  };
+
   if (particle.type === "sparkle") {
     return (
       <svg
-        className="absolute pointer-events-none"
         style={{
+          ...absolutePointerNone,
           left: position.x,
           top: position.y,
           transform: `translate(-50%, -50%) rotate(${rotation}deg) scale(${particle.scale})`,
@@ -161,13 +166,14 @@ const ParticleElement: React.FC<{ particle: Particle; duration: number }> = ({
 
   return (
     <div
-      className="absolute pointer-events-none rounded-sm"
       style={{
+        ...absolutePointerNone,
         left: position.x,
         top: position.y,
         width: 10 * particle.scale,
         height: 6 * particle.scale,
         backgroundColor: particle.color,
+        borderRadius: 2,
         transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
         opacity,
         transition: "opacity 0.1s ease-out",
@@ -182,35 +188,60 @@ export const SuccessAnimation: React.FC<{ show: boolean; onComplete?: () => void
   onComplete,
 }) => {
   const [phase, setPhase] = useState<"idle" | "check" | "confetti">("idle");
+  const [scale, setScale] = useState(0);
 
   useEffect(() => {
     if (show) {
       setPhase("check");
+      setScale(0);
+      // Animate in
+      requestAnimationFrame(() => {
+        setScale(1);
+      });
       const timer = setTimeout(() => {
         setPhase("confetti");
       }, 300);
       return () => clearTimeout(timer);
     } else {
       setPhase("idle");
+      setScale(0);
     }
   }, [show]);
 
   if (!show && phase === "idle") return null;
 
+  const overlayStyle: React.CSSProperties = {
+    position: "fixed",
+    inset: 0,
+    zIndex: 50,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    pointerEvents: "none",
+  };
+
+  const checkCircleStyle: React.CSSProperties = {
+    width: 80,
+    height: 80,
+    borderRadius: "50%",
+    backgroundColor: "var(--spectrum-positive-visual-color, #12805c)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 0 40px rgba(16, 185, 129, 0.5)",
+    transform: `scale(${scale})`,
+    opacity: phase === "idle" ? 0 : 1,
+    transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease-out",
+  };
+
   return (
     <>
       {/* Checkmark overlay */}
       {phase !== "idle" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div
-            className={`
-              w-20 h-20 rounded-full bg-success flex items-center justify-center
-              shadow-glow-success
-              ${phase === "check" || phase === "confetti" ? "animate-success-check" : "opacity-0 scale-0"}
-            `}
-          >
+        <div style={overlayStyle}>
+          <div style={checkCircleStyle}>
             <svg
-              className="w-10 h-10 text-white"
+              style={{ width: 40, height: 40, color: "white" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

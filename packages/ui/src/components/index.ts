@@ -1,13 +1,26 @@
-export * from "./Button";
-export * from "./Input";
-export * from "./Modal";
-export * from "./Toast";
-export * from "./ImageUpload";
-export * from "./MediaUpload";
+// Re-export S2 components directly for use in consuming apps
+export {
+  Button,
+  ActionButton,
+  TextField,
+  TextArea,
+  Dialog,
+  DialogTrigger,
+  AlertDialog,
+  Heading,
+  Content,
+  ButtonGroup,
+  ToastQueue,
+  ToastContainer,
+  Tooltip,
+  TooltipTrigger,
+} from "@react-spectrum/s2";
+
+// Domain-specific components
 export * from "./Confetti";
-export * from "./EmptyState";
-export * from "./Tooltip";
-export * from "./SortFilterBar";
+export * from "./MediaUpload";
+export * from "./ImageUpload";
 export * from "./PresentationControls";
 export * from "./StreamingOverlay";
+export * from "./SortFilterBar";
 export * from "./ErrorBoundary";

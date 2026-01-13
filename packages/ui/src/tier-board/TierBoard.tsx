@@ -205,13 +205,13 @@ export const TierBoard: React.FC<TierBoardProps> = ({
         },
       }}
     >
-      <div className="flex flex-col gap-tier-gap" role="list" data-tier-board>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }} role="list" data-tier-board>
         {orderedIds.map((tierId) => (
           <SortableContext
             key={tierId}
             items={optimisticTiers[tierId]?.map(i => i.id) ?? []}
             strategy={verticalListSortingStrategy}
-            id={tierId} // Context ID helps with collision? No, SortableContext needs items. Explicit container helps.
+            id={tierId}
           >
             <TierRow
               tierId={tierId}
@@ -270,42 +270,53 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
   const hasAudio = !!item.audioUrl;
   const hasMedia = hasImage || hasVideo || hasAudio;
 
+  const containerStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    backgroundColor: "var(--spectrum-gray-100)",
+    border: "1px solid var(--spectrum-blue-700)",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
+    cursor: "grabbing",
+    ...(hasMedia
+      ? { width: 80, height: 80 }
+      : { padding: "8px 12px" }
+    ),
+  };
+
   return (
-    <div
-      className={`
-        flex flex-col items-center justify-center
-        rounded-card bg-surface-raised border border-accent shadow-card-lifted
-        cursor-grabbing
-        ${hasMedia ? "w-20 h-20 sm:w-24 sm:h-24" : "px-3 py-2"}
-      `}
-      style={{
-        animation: "var(--animate-lift) forwards",
-        transformOrigin: "center center",
-      }}
-    >
+    <div style={containerStyle}>
       {hasVideo ? (
         <>
           <video
             src={item.videoUrl}
-            className="w-full h-full object-cover rounded-card"
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
             loop
             muted
             playsInline
             autoPlay
             draggable={false}
           />
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card">
-            <p className="text-2xs text-white text-center truncate font-medium">
+          <div style={{
+            position: "absolute",
+            inset: "auto 0 0 0",
+            background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
+            padding: 6,
+            borderRadius: "0 0 8px 8px"
+          }}>
+            <p style={{ fontSize: 10, color: "white", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
               {item.name ?? item.id}
             </p>
           </div>
         </>
       ) : hasAudio ? (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-2">
-          <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: 8 }}>
+          <svg style={{ width: 32, height: 32, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
-          <p className="text-2xs text-text-muted text-center truncate w-full font-medium">
+          <p style={{ fontSize: 10, color: "var(--spectrum-gray-700)", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", width: "100%", fontWeight: 500 }}>
             {item.name ?? item.id}
           </p>
         </div>
@@ -314,17 +325,23 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
           <img
             src={item.imageUrl}
             alt={item.name ?? item.id}
-            className="w-full h-full object-cover rounded-card"
+            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
             draggable={false}
           />
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 rounded-b-card">
-            <p className="text-2xs text-white text-center truncate font-medium">
+          <div style={{
+            position: "absolute",
+            inset: "auto 0 0 0",
+            background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
+            padding: 6,
+            borderRadius: "0 0 8px 8px"
+          }}>
+            <p style={{ fontSize: 10, color: "white", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
               {item.name ?? item.id}
             </p>
           </div>
         </>
       ) : (
-        <span className="text-sm text-text font-medium">
+        <span style={{ fontSize: 14, color: "var(--spectrum-gray-900)", fontWeight: 500 }}>
           {item.name ?? item.id}
         </span>
       )}

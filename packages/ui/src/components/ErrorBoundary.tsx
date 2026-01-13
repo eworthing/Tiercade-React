@@ -1,5 +1,5 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
-import { Button } from "./Button";
+import { Button } from "@react-spectrum/s2";
 
 interface ErrorBoundaryProps {
   /** Child components to render */
@@ -59,10 +59,31 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default error UI
       return (
-        <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
-          <div className="w-12 h-12 mb-4 rounded-full bg-danger/10 flex items-center justify-center">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 200,
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              marginBottom: 16,
+              borderRadius: "50%",
+              backgroundColor: "rgba(var(--spectrum-negative-visual-color-rgb, 211, 21, 16), 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <svg
-              className="w-6 h-6 text-danger"
+              style={{ width: 24, height: 24, color: "var(--spectrum-negative-visual-color, #d31510)" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -75,14 +96,28 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-text mb-2">
+          <h3
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: "var(--spectrum-gray-900)",
+              marginBottom: 8,
+            }}
+          >
             {this.props.title ?? "Something went wrong"}
           </h3>
-          <p className="text-sm text-text-muted mb-4 max-w-sm">
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--spectrum-gray-600)",
+              marginBottom: 16,
+              maxWidth: 384,
+            }}
+          >
             {this.state.error?.message ?? "An unexpected error occurred"}
           </p>
           {(this.props.showRetry ?? true) && (
-            <Button variant="secondary" onClick={this.handleRetry}>
+            <Button variant="secondary" onPress={this.handleRetry}>
               Try Again
             </Button>
           )}
@@ -101,10 +136,31 @@ export const ErrorFallback: React.FC<{
   error?: Error | null;
   onRetry?: () => void;
 }> = ({ error, onRetry }) => (
-  <div className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center">
-    <div className="w-12 h-12 mb-4 rounded-full bg-danger/10 flex items-center justify-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 200,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        width: 48,
+        height: 48,
+        marginBottom: 16,
+        borderRadius: "50%",
+        backgroundColor: "rgba(var(--spectrum-negative-visual-color-rgb, 211, 21, 16), 0.1)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <svg
-        className="w-6 h-6 text-danger"
+        style={{ width: 24, height: 24, color: "var(--spectrum-negative-visual-color, #d31510)" }}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -117,12 +173,28 @@ export const ErrorFallback: React.FC<{
         />
       </svg>
     </div>
-    <h3 className="text-lg font-semibold text-text mb-2">Error</h3>
-    <p className="text-sm text-text-muted mb-4 max-w-sm">
+    <h3
+      style={{
+        fontSize: 18,
+        fontWeight: 600,
+        color: "var(--spectrum-gray-900)",
+        marginBottom: 8,
+      }}
+    >
+      Error
+    </h3>
+    <p
+      style={{
+        fontSize: 14,
+        color: "var(--spectrum-gray-600)",
+        marginBottom: 16,
+        maxWidth: 384,
+      }}
+    >
       {error?.message ?? "Something went wrong"}
     </p>
     {onRetry && (
-      <Button variant="secondary" onClick={onRetry}>
+      <Button variant="secondary" onPress={onRetry}>
         Retry
       </Button>
     )}
@@ -138,10 +210,31 @@ export const PageErrorFallback: React.FC<{
   error?: Error | null;
   onRetry?: () => void;
 }> = ({ error, onRetry }) => (
-  <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
-    <div className="w-16 h-16 mb-6 rounded-full bg-danger/10 flex items-center justify-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 400,
+      padding: 32,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        width: 64,
+        height: 64,
+        marginBottom: 24,
+        borderRadius: "50%",
+        backgroundColor: "rgba(var(--spectrum-negative-visual-color-rgb, 211, 21, 16), 0.1)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <svg
-        className="w-8 h-8 text-danger"
+        style={{ width: 32, height: 32, color: "var(--spectrum-negative-visual-color, #d31510)" }}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -154,31 +247,69 @@ export const PageErrorFallback: React.FC<{
         />
       </svg>
     </div>
-    <h2 className="text-xl font-semibold text-text mb-2">
+    <h2
+      style={{
+        fontSize: 20,
+        fontWeight: 600,
+        color: "var(--spectrum-gray-900)",
+        marginBottom: 8,
+      }}
+    >
       Oops! Something went wrong
     </h2>
-    <p className="text-text-muted mb-6 max-w-md">
+    <p
+      style={{
+        color: "var(--spectrum-gray-600)",
+        marginBottom: 24,
+        maxWidth: 448,
+      }}
+    >
       We encountered an unexpected error while loading this page.
       You can try refreshing or contact support if the problem persists.
     </p>
     {error && (
-      <details className="mb-6 text-left w-full max-w-md">
-        <summary className="text-sm text-text-subtle cursor-pointer hover:text-text-muted">
+      <details
+        style={{
+          marginBottom: 24,
+          textAlign: "left",
+          width: "100%",
+          maxWidth: 448,
+        }}
+      >
+        <summary
+          style={{
+            fontSize: 14,
+            color: "var(--spectrum-gray-500)",
+            cursor: "pointer",
+          }}
+        >
           Technical details
         </summary>
-        <pre className="mt-2 p-3 bg-surface-raised rounded-lg text-xs text-text-muted overflow-auto">
+        <pre
+          style={{
+            marginTop: 8,
+            padding: 12,
+            backgroundColor: "var(--spectrum-gray-100)",
+            borderRadius: 8,
+            fontSize: 12,
+            color: "var(--spectrum-gray-600)",
+            overflow: "auto",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
           {error.message}
           {error.stack && `\n\n${error.stack}`}
         </pre>
       </details>
     )}
-    <div className="flex gap-3">
+    <div style={{ display: "flex", gap: 12 }}>
       {onRetry && (
-        <Button variant="primary" onClick={onRetry}>
+        <Button variant="accent" onPress={onRetry}>
           Try Again
         </Button>
       )}
-      <Button variant="secondary" onClick={() => window.location.reload()}>
+      <Button variant="secondary" onPress={() => window.location.reload()}>
         Refresh Page
       </Button>
     </div>

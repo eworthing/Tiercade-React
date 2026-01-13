@@ -21,7 +21,7 @@ import {
   selectProjectName,
   selectHasCompletedOnboarding,
 } from "@tiercade/state";
-import { IconButton } from "@tiercade/ui";
+import { ActionButton } from "@react-spectrum/s2";
 import { PageErrorBoundary } from "../components/ErrorBoundary";
 import { OnboardingWizard } from "../components/OnboardingWizard";
 import { PWAInstallPrompt } from "../components/PWAInstallPrompt";
@@ -118,20 +118,44 @@ export const AppShell: React.FC = () => {
       {/* Onboarding Wizard */}
       {!hasCompletedOnboarding && <OnboardingWizard />}
 
-      <div className="min-h-screen flex flex-col bg-surface text-text">
-        {/* Header with gradient accent and glass effect */}
-        <header className="sticky top-0 z-40 border-b border-border-subtle/50 bg-surface-soft/70 backdrop-blur-xl noise-overlay relative">
-          {/* Gradient accent line at top */}
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-accent opacity-80" />
-          <div className="mx-auto max-w-6xl flex items-center gap-4 px-4 py-3">
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "var(--spectrum-gray-50)",
+        color: "var(--spectrum-gray-900)"
+      }}>
+        {/* Header */}
+        <header style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          borderBottom: "1px solid var(--spectrum-gray-200)",
+          backgroundColor: "var(--spectrum-gray-75)"
+        }}>
+          <div style={{
+            maxWidth: 1152,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            padding: "12px 16px"
+          }}>
             {/* Logo & Project Name */}
-            <div className="flex items-center gap-3">
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <NavLink
                 to="/"
-                className="flex items-center gap-2 text-text font-semibold hover:text-accent transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  color: "var(--spectrum-gray-900)",
+                  fontWeight: 600,
+                  textDecoration: "none"
+                }}
               >
                 <svg
-                  className="w-6 h-6 text-accent"
+                  style={{ width: 24, height: 24, color: "var(--spectrum-blue-800)" }}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -143,12 +167,12 @@ export const AppShell: React.FC = () => {
                     d="M4 6h16M4 10h16M4 14h16M4 18h16"
                   />
                 </svg>
-                <span className="hidden sm:inline">Tiercade</span>
+                <span>Tiercade</span>
               </NavLink>
 
               {isOnBoard && (
                 <>
-                  <span className="text-text-subtle">/</span>
+                  <span style={{ color: "var(--spectrum-gray-500)" }}>/</span>
                   {isEditingName ? (
                     <input
                       type="text"
@@ -156,18 +180,34 @@ export const AppShell: React.FC = () => {
                       onChange={(e) => setEditedName(e.target.value)}
                       onBlur={handleSaveName}
                       onKeyDown={handleNameKeyDown}
-                      className="px-2 py-1 bg-surface-raised border border-border rounded text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                      style={{
+                        padding: "4px 8px",
+                        backgroundColor: "var(--spectrum-gray-100)",
+                        border: "1px solid var(--spectrum-gray-300)",
+                        borderRadius: 4,
+                        fontSize: 14,
+                        color: "var(--spectrum-gray-900)"
+                      }}
                       autoFocus
                     />
                   ) : (
                     <button
                       onClick={() => setIsEditingName(true)}
-                      className="text-sm text-text-muted hover:text-text transition-colors flex items-center gap-1"
+                      style={{
+                        fontSize: 14,
+                        color: "var(--spectrum-gray-700)",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4
+                      }}
                       title="Click to rename"
                     >
                       {projectName}
                       <svg
-                        className="w-3 h-3 opacity-50"
+                        style={{ width: 12, height: 12, opacity: 0.5 }}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -185,116 +225,112 @@ export const AppShell: React.FC = () => {
               )}
             </div>
 
-            {/* Navigation with staggered entrance */}
-            <nav className="hidden md:flex items-center gap-1 ml-6" role="navigation">
-              <NavItem to="/" end index={0}>
-                Board
-              </NavItem>
-              <NavItem to="/templates" index={1}>Templates</NavItem>
-              <NavItem to="/head-to-head" index={2}>Head-to-Head</NavItem>
-              <NavItem to="/themes" index={3}>Themes</NavItem>
-              <NavItem to="/analytics" index={4}>Analytics</NavItem>
-              <NavItem to="/import-export" index={5}>Import/Export</NavItem>
+            {/* Navigation */}
+            <nav style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: 24 }} role="navigation">
+              <NavItem to="/" end>Board</NavItem>
+              <NavItem to="/templates">Templates</NavItem>
+              <NavItem to="/head-to-head">Head-to-Head</NavItem>
+              <NavItem to="/themes">Themes</NavItem>
+              <NavItem to="/analytics">Analytics</NavItem>
+              <NavItem to="/import-export">Import/Export</NavItem>
             </nav>
 
-            {/* Mobile nav dropdown would go here */}
-
             {/* Right side actions */}
-            <div className="ml-auto flex items-center gap-2">
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
               {/* Undo/Redo */}
-              <div className="flex items-center gap-1 border-r border-border pr-2 mr-1">
-                <IconButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => dispatch(performUndo())}
-                  disabled={!canUndo}
-                  label="Undo (Cmd+Z)"
-                  icon={
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                      />
-                    </svg>
-                  }
-                />
-                <IconButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => dispatch(performRedo())}
-                  disabled={!canRedo}
-                  label="Redo (Cmd+Shift+Z)"
-                  icon={
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
-                      />
-                    </svg>
-                  }
-                />
+              <div style={{ display: "flex", alignItems: "center", gap: 4, borderRight: "1px solid var(--spectrum-gray-300)", paddingRight: 8, marginRight: 4 }}>
+                <ActionButton
+                  isQuiet
+                  size="S"
+                  onPress={() => dispatch(performUndo())}
+                  isDisabled={!canUndo}
+                  aria-label="Undo (Cmd+Z)"
+                >
+                  <svg
+                    width={16}
+                    height={16}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                    />
+                  </svg>
+                </ActionButton>
+                <ActionButton
+                  isQuiet
+                  size="S"
+                  onPress={() => dispatch(performRedo())}
+                  isDisabled={!canRedo}
+                  aria-label="Redo (Cmd+Shift+Z)"
+                >
+                  <svg
+                    width={16}
+                    height={16}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
+                    />
+                  </svg>
+                </ActionButton>
               </div>
 
               {/* Saved indicator */}
-              <span className="text-xs text-success flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              <span style={{ fontSize: 12, color: "var(--spectrum-green-800)", display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  backgroundColor: "var(--spectrum-green-700)"
+                }} />
                 Saved
               </span>
             </div>
           </div>
-
-          {/* Mobile navigation with stagger */}
-          <nav className="md:hidden flex items-center gap-1 px-4 pb-3 overflow-x-auto">
-            <NavItem to="/" end index={0}>
-              Board
-            </NavItem>
-            <NavItem to="/templates" index={1}>Templates</NavItem>
-            <NavItem to="/head-to-head" index={2}>H2H</NavItem>
-            <NavItem to="/themes" index={3}>Themes</NavItem>
-            <NavItem to="/analytics" index={4}>Stats</NavItem>
-            <NavItem to="/import-export" index={5}>I/O</NavItem>
-          </nav>
         </header>
 
-        {/* Main Content with page transitions */}
-        <main className="flex-1 mx-auto max-w-6xl w-full px-4 py-6">
+        {/* Main Content */}
+        <main style={{
+          flex: 1,
+          maxWidth: 1152,
+          width: "100%",
+          margin: "0 auto",
+          padding: "24px 16px",
+          opacity: isTransitioning ? 0 : 1,
+          transition: "opacity 300ms"
+        }}>
           <PageErrorBoundary>
             <Suspense fallback={<PageSkeleton />}>
-              <div
-                className={`
-                  transform-gpu transition-all duration-300 ease-spring
-                  ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}
-                `}
-              >
-                <Routes>
-                  <Route path="/" element={<TierBoardPage />} />
-                  <Route path="/templates" element={<TemplatesPage />} />
-                  <Route path="/head-to-head" element={<HeadToHeadPage />} />
-                  <Route path="/themes" element={<ThemesPage />} />
-                  <Route path="/analytics" element={<AnalyticsPage />} />
-                  <Route path="/import-export" element={<ImportExportPage />} />
-                </Routes>
-              </div>
+              <Routes>
+                <Route path="/" element={<TierBoardPage />} />
+                <Route path="/templates" element={<TemplatesPage />} />
+                <Route path="/head-to-head" element={<HeadToHeadPage />} />
+                <Route path="/themes" element={<ThemesPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/import-export" element={<ImportExportPage />} />
+              </Routes>
             </Suspense>
           </PageErrorBoundary>
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-border-soft py-4 px-4 text-center text-xs text-text-subtle">
+        <footer style={{
+          borderTop: "1px solid var(--spectrum-gray-200)",
+          padding: "16px",
+          textAlign: "center",
+          fontSize: 12,
+          color: "var(--spectrum-gray-600)"
+        }}>
           Tiercade • Your data is stored locally in this browser
         </footer>
       </div>
@@ -305,46 +341,51 @@ export const AppShell: React.FC = () => {
   );
 };
 
-// Navigation item component with gradient active state
+// Navigation item component
 const NavItem: React.FC<{
   to: string;
   end?: boolean;
   children: React.ReactNode;
-  index?: number;
-}> = ({ to, end, children, index = 0 }) => (
+}> = ({ to, end, children }) => (
   <NavLink
     to={to}
     end={end}
-    className={({ isActive }) =>
-      `px-3 py-1.5 rounded-lg text-sm font-medium
-      transform-gpu transition-all duration-200 ease-spring
-      hover:scale-[1.03] active:scale-[0.97]
-      opacity-0 animate-stagger-fade
-      ${
-        isActive
-          ? "btn-gradient text-white shadow-glow-gradient"
-          : "text-text-muted hover:text-text hover:bg-surface-raised/80"
-      }`
-    }
-    style={{ animationDelay: `${index * 50}ms` }}
+    style={({ isActive }) => ({
+      padding: "6px 12px",
+      borderRadius: 8,
+      fontSize: 14,
+      fontWeight: 500,
+      textDecoration: "none",
+      transition: "background-color 150ms",
+      backgroundColor: isActive ? "var(--spectrum-blue-100)" : "transparent",
+      color: isActive ? "var(--spectrum-blue-900)" : "var(--spectrum-gray-700)"
+    })}
   >
     {children}
   </NavLink>
 );
 
-// Enhanced loading skeleton with shimmer effect
+// Loading skeleton
 const PageSkeleton: React.FC = () => (
-  <div className="space-y-4">
+  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     {/* Title skeleton */}
-    <div className="h-8 w-48 rounded-lg bg-gradient-to-r from-surface-raised via-surface-soft to-surface-raised bg-[length:200%_100%] animate-shimmer" />
+    <div style={{
+      height: 32,
+      width: 192,
+      borderRadius: 8,
+      backgroundColor: "var(--spectrum-gray-200)"
+    }} />
 
-    {/* Content skeletons with stagger */}
-    <div className="space-y-3">
+    {/* Content skeletons */}
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="h-20 rounded-tier bg-gradient-to-r from-surface-raised via-surface-soft to-surface-raised bg-[length:200%_100%] animate-shimmer"
-          style={{ animationDelay: `${i * 100}ms` }}
+          style={{
+            height: 80,
+            borderRadius: 8,
+            backgroundColor: "var(--spectrum-gray-200)"
+          }}
         />
       ))}
     </div>

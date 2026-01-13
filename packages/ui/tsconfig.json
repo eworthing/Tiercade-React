@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "declaration": true,
     "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": "dist",
-    "lib": ["DOM", "DOM.Iterable", "ES2019"]
+    "lib": ["DOM", "DOM.Iterable", "ESNext"]
   },
   "include": ["src"]
 }

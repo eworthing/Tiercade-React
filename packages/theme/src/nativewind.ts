@@ -3,9 +3,39 @@
  * These are used by apps/native/tailwind.config.js and can be imported
  * directly in components for programmatic access to tokens.
  */
-import { palette, paletteLight } from "./palette";
-import { metrics } from "./metrics";
+import { palette } from "./palette";
 import { timing, easing, springs } from "./motion";
+
+// Light palette (inverted colors for light mode)
+const paletteLight = {
+  background: "#ffffff",
+  surface: "#ffffff",
+  surfaceSoft: "#f8fafc",
+  surfaceElevated: "#ffffff",
+  border: "#e2e8f0",
+  text: "#1e293b",
+  tierDefault: "#e2e8f0",
+} as const;
+
+// Extended metrics for native
+const nativeMetrics = {
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    xxl: 32,
+  },
+  radii: {
+    none: 0,
+    sm: 4,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    full: 9999,
+  },
+} as const;
 
 /**
  * Reanimated-compatible spring configurations
@@ -165,8 +195,8 @@ export const nativewindTheme = {
     dark: palette,
     light: paletteLight,
   },
-  spacing: metrics.spacing,
-  radii: metrics.radii,
+  spacing: nativeMetrics.spacing,
+  radii: nativeMetrics.radii,
   animation: {
     springs: reanimatedSprings,
     timing: reanimatedTiming,

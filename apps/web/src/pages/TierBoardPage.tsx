@@ -3,13 +3,18 @@ import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import {
   TierBoard,
-  Button,
-  Modal,
   SortFilterBar,
   PresentationControls,
   StreamingOverlay,
   type FileDropResult,
 } from "@tiercade/ui";
+import {
+  Button,
+  Dialog,
+  DialogTrigger,
+  Heading,
+  Content,
+} from "@react-spectrum/s2";
 import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
@@ -342,14 +347,30 @@ export const TierBoardPage: React.FC = () => {
   // Empty state
   if (!tierOrder.length) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <div className="w-16 h-16 mb-4 rounded-full bg-surface-raised flex items-center justify-center">
-          <svg className="w-8 h-8 text-text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 400,
+        textAlign: "center"
+      }}>
+        <div style={{
+          width: 64,
+          height: 64,
+          marginBottom: 16,
+          borderRadius: "50%",
+          backgroundColor: "var(--spectrum-gray-200)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <svg style={{ width: 32, height: 32, color: "var(--spectrum-gray-600)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-text mb-2">Loading your tier list...</h2>
-        <p className="text-text-muted text-sm max-w-xs">Setting up your tiers. This should only take a moment.</p>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>Loading your tier list...</h2>
+        <p style={{ color: "var(--spectrum-gray-700)", fontSize: 14, maxWidth: 280 }}>Setting up your tiers. This should only take a moment.</p>
       </div>
     );
   }
@@ -357,7 +378,7 @@ export const TierBoardPage: React.FC = () => {
   const chromaKeyClass = presentation.chromaKey !== "none" ? `chroma-${presentation.chromaKey}` : "";
 
   return (
-    <div className={`space-y-4 ${presentation.isPresenting ? "min-h-screen" : ""} ${chromaKeyClass}`}>
+    <div className={chromaKeyClass} style={{ display: "flex", flexDirection: "column", gap: 16, minHeight: presentation.isPresenting ? "100vh" : undefined }}>
       {/* Streaming Overlay */}
       <StreamingOverlay
         isPresenting={presentation.isPresenting}
@@ -430,18 +451,18 @@ export const TierBoardPage: React.FC = () => {
 
       {/* Empty state hint */}
       {totalItems === 0 && (
-        <div className="text-center py-8">
-          <p className="text-text-muted text-sm mb-2">Your tier list is empty</p>
-          <Button variant="primary" onClick={() => setShowAddItem(true)}>
+        <div style={{ textAlign: "center", padding: "32px 0" }}>
+          <p style={{ color: "var(--spectrum-gray-600)", fontSize: 14, marginBottom: 8 }}>Your tier list is empty</p>
+          <Button variant="accent" onPress={() => setShowAddItem(true)}>
             Add your first item
           </Button>
         </div>
       )}
 
       {totalItems > 0 && (
-        <p className="text-center text-text-subtle text-xs">
+        <p style={{ textAlign: "center", color: "var(--spectrum-gray-600)", fontSize: 12 }}>
           Drag items between tiers • Drop files to add • Double-click to edit •{" "}
-          <button onClick={() => setShowKeyboardHelp(true)} className="underline hover:text-text-muted">
+          <button onClick={() => setShowKeyboardHelp(true)} style={{ textDecoration: "underline", background: "none", border: "none", color: "inherit", cursor: "pointer" }}>
             Keyboard shortcuts
           </button>
         </p>
@@ -452,37 +473,49 @@ export const TierBoardPage: React.FC = () => {
       <ItemModal open={!!editingItem} onClose={() => setEditingItem(null)} item={editingItem} mode="edit" />
       <TierSettingsModal open={showTierSettings} onClose={() => setShowTierSettings(false)} />
 
-      {/* Keyboard Shortcuts Help Modal */}
-      <Modal open={showKeyboardHelp} onClose={() => setShowKeyboardHelp(false)} title="Keyboard Shortcuts" size="sm">
-        <KeyboardShortcutsContent />
-      </Modal>
+      {/* Keyboard Shortcuts Help Dialog */}
+      <DialogTrigger isOpen={showKeyboardHelp} onOpenChange={(open) => !open && setShowKeyboardHelp(false)}>
+        <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+        <Dialog size="S">
+          <Heading>Keyboard Shortcuts</Heading>
+          <Content>
+            <KeyboardShortcutsContent />
+          </Content>
+        </Dialog>
+      </DialogTrigger>
 
-      {/* Streaming Panel Modal */}
-      <Modal open={showStreamingPanel} onClose={() => setShowStreamingPanel(false)} title="Stream Mode" size="sm">
-        <PresentationControls
-          isPresenting={presentation.isPresenting}
-          chromaKey={presentation.chromaKey}
-          revealMode={presentation.revealMode}
-          showProgress={presentation.showProgress}
-          celebrateSTier={presentation.celebrateSTier}
-          itemScale={presentation.itemScale}
-          queueLength={presentation.itemQueue.length}
-          currentQueueItem={presentation.currentQueueItem}
-          watermarkText={presentation.watermarkText}
-          showWatermark={presentation.showWatermark}
-          onTogglePresentation={presentation.handleTogglePresentation}
-          onChromaKeyChange={presentation.handleChromaKeyChange}
-          onRevealModeChange={presentation.handleRevealModeChange}
-          onShowProgressChange={presentation.handleShowProgressChange}
-          onCelebrateSTierChange={presentation.handleCelebrateSTierChange}
-          onItemScaleChange={presentation.handleItemScaleChange}
-          onDrawNext={presentation.handleDrawNext}
-          onShuffleQueue={presentation.handleShuffleQueue}
-          onStartQueue={presentation.handleStartQueue}
-          onWatermarkTextChange={presentation.handleWatermarkTextChange}
-          onShowWatermarkChange={presentation.handleShowWatermarkChange}
-        />
-      </Modal>
+      {/* Streaming Panel Dialog */}
+      <DialogTrigger isOpen={showStreamingPanel} onOpenChange={(open) => !open && setShowStreamingPanel(false)}>
+        <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+        <Dialog size="S">
+          <Heading>Stream Mode</Heading>
+          <Content>
+            <PresentationControls
+              isPresenting={presentation.isPresenting}
+              chromaKey={presentation.chromaKey}
+              revealMode={presentation.revealMode}
+              showProgress={presentation.showProgress}
+              celebrateSTier={presentation.celebrateSTier}
+              itemScale={presentation.itemScale}
+              queueLength={presentation.itemQueue.length}
+              currentQueueItem={presentation.currentQueueItem}
+              watermarkText={presentation.watermarkText}
+              showWatermark={presentation.showWatermark}
+              onTogglePresentation={presentation.handleTogglePresentation}
+              onChromaKeyChange={presentation.handleChromaKeyChange}
+              onRevealModeChange={presentation.handleRevealModeChange}
+              onShowProgressChange={presentation.handleShowProgressChange}
+              onCelebrateSTierChange={presentation.handleCelebrateSTierChange}
+              onItemScaleChange={presentation.handleItemScaleChange}
+              onDrawNext={presentation.handleDrawNext}
+              onShuffleQueue={presentation.handleShuffleQueue}
+              onStartQueue={presentation.handleStartQueue}
+              onWatermarkTextChange={presentation.handleWatermarkTextChange}
+              onShowWatermarkChange={presentation.handleShowWatermarkChange}
+            />
+          </Content>
+        </Dialog>
+      </DialogTrigger>
 
       {/* Batch Action Bar - appears when items are selected */}
       <BatchActionBar
@@ -529,46 +562,35 @@ const TierBoardToolbar: React.FC<TierBoardToolbarProps> = ({
   onStreamMode,
   onClearSelection,
 }) => (
-  <div className="flex items-center justify-between gap-4 flex-wrap">
-    <div className="flex items-center gap-2">
-      <Button variant="primary" size="sm" onClick={onAddItem} icon={<PlusIcon />}>
-        Add Item
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <Button variant="accent" size="S" onPress={onAddItem}>
+        <PlusIcon /> Add Item
       </Button>
-      <Button variant="secondary" size="sm" onClick={onTierSettings} icon={<SettingsIcon />}>
-        Tiers
+      <Button variant="secondary" size="S" onPress={onTierSettings}>
+        <SettingsIcon /> Tiers
       </Button>
 
       {totalItems > 0 && (
-        <div className="relative group">
-          <Button variant="secondary" size="sm" disabled={isExporting} icon={<ShareIcon />}>
-            Share
-          </Button>
-          <div className="absolute top-full left-0 mt-1 py-1 bg-surface-raised border border-border rounded-lg shadow-modal opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 min-w-[160px]">
-            <DropdownButton onClick={onExportPNG} disabled={isExporting} icon={<DownloadIcon />}>
-              Download PNG
-            </DropdownButton>
-            <DropdownButton onClick={onCopyImage} disabled={isExporting} icon={<ClipboardIcon />}>
-              Copy Image
-            </DropdownButton>
-            <div className="border-t border-border my-1" />
-            <DropdownButton onClick={onCopyLink} icon={<LinkIcon />}>
-              Copy Link
-            </DropdownButton>
-          </div>
-        </div>
+        <ShareDropdown
+          isExporting={isExporting}
+          onExportPNG={onExportPNG}
+          onCopyImage={onCopyImage}
+          onCopyLink={onCopyLink}
+        />
       )}
 
-      <Button variant={isPresenting ? "primary" : "secondary"} size="sm" onClick={onStreamMode} icon={<VideoIcon />}>
-        {isPresenting ? "Live" : "Stream"}
+      <Button variant={isPresenting ? "accent" : "secondary"} size="S" onPress={onStreamMode}>
+        <VideoIcon /> {isPresenting ? "Live" : "Stream"}
       </Button>
     </div>
 
-    <div className="flex items-center gap-4 text-sm text-text-muted">
+    <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 14, color: "var(--spectrum-gray-600)" }}>
       <span>{totalItems} items</span>
       {selectionCount > 0 && (
         <>
-          <span className="text-accent">{selectionCount} selected</span>
-          <Button variant="ghost" size="sm" onClick={onClearSelection}>
+          <span style={{ color: "var(--spectrum-blue-800)" }}>{selectionCount} selected</span>
+          <Button variant="secondary" fillStyle="outline" size="S" onPress={onClearSelection}>
             Clear
           </Button>
         </>
@@ -579,6 +601,60 @@ const TierBoardToolbar: React.FC<TierBoardToolbarProps> = ({
 
 TierBoardToolbar.displayName = "TierBoardToolbar";
 
+interface ShareDropdownProps {
+  isExporting: boolean;
+  onExportPNG: () => void;
+  onCopyImage: () => void;
+  onCopyLink: () => void;
+}
+
+const ShareDropdown: React.FC<ShareDropdownProps> = ({
+  isExporting,
+  onExportPNG,
+  onCopyImage,
+  onCopyLink,
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  return (
+    <div
+      style={{ position: "relative" }}
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <Button variant="secondary" size="S" isDisabled={isExporting}>
+        <ShareIcon /> Share
+      </Button>
+      {isOpen && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          marginTop: 4,
+          padding: "4px 0",
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "1px solid var(--spectrum-gray-300)",
+          borderRadius: 8,
+          minWidth: 160,
+          zIndex: 20,
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+        }}>
+          <DropdownButton onClick={onExportPNG} disabled={isExporting} icon={<DownloadIcon />}>
+            Download PNG
+          </DropdownButton>
+          <DropdownButton onClick={onCopyImage} disabled={isExporting} icon={<ClipboardIcon />}>
+            Copy Image
+          </DropdownButton>
+          <div style={{ borderTop: "1px solid var(--spectrum-gray-300)", margin: "4px 0" }} />
+          <DropdownButton onClick={onCopyLink} icon={<LinkIcon />}>
+            Copy Link
+          </DropdownButton>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DropdownButton: React.FC<{
   onClick: () => void;
   disabled?: boolean;
@@ -588,7 +664,22 @@ const DropdownButton: React.FC<{
   <button
     onClick={onClick}
     disabled={disabled}
-    className="w-full px-3 py-2 text-left text-sm text-text hover:bg-surface-soft flex items-center gap-2 disabled:opacity-50"
+    style={{
+      width: "100%",
+      padding: "8px 12px",
+      textAlign: "left",
+      fontSize: 14,
+      color: "var(--spectrum-gray-900)",
+      background: "none",
+      border: "none",
+      cursor: disabled ? "not-allowed" : "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      opacity: disabled ? 0.5 : 1
+    }}
+    onMouseEnter={(e) => !disabled && (e.currentTarget.style.backgroundColor = "var(--spectrum-gray-200)")}
+    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
   >
     {icon}
     {children}
@@ -596,10 +687,10 @@ const DropdownButton: React.FC<{
 );
 
 const KeyboardShortcutsContent: React.FC = () => (
-  <div className="space-y-4">
+  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <div>
-      <h4 className="text-sm font-medium text-text mb-2">General</h4>
-      <div className="space-y-1.5 text-sm">
+      <h4 style={{ fontSize: 14, fontWeight: 500, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>General</h4>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 14 }}>
         <ShortcutRow keys={["⌘", "Z"]} description="Undo" />
         <ShortcutRow keys={["⌘", "⇧", "Z"]} description="Redo" />
         <ShortcutRow keys={["⌘", "N"]} description="Add new item" />
@@ -610,24 +701,31 @@ const KeyboardShortcutsContent: React.FC = () => (
       </div>
     </div>
     <div>
-      <h4 className="text-sm font-medium text-text mb-2">Head-to-Head</h4>
-      <div className="space-y-1.5 text-sm">
+      <h4 style={{ fontSize: 14, fontWeight: 500, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>Head-to-Head</h4>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 14 }}>
         <ShortcutRow keys={["←"]} description="Vote for left item" />
         <ShortcutRow keys={["→"]} description="Vote for right item" />
         <ShortcutRow keys={["Space"]} description="Skip pair" />
         <ShortcutRow keys={["Esc"]} description="Finish & apply" />
       </div>
     </div>
-    <p className="text-xs text-text-subtle">Tip: Use ⌘ on Mac or Ctrl on Windows/Linux</p>
+    <p style={{ fontSize: 12, color: "var(--spectrum-gray-600)" }}>Tip: Use ⌘ on Mac or Ctrl on Windows/Linux</p>
   </div>
 );
 
 const ShortcutRow: React.FC<{ keys: string[]; description: string }> = ({ keys, description }) => (
-  <div className="flex items-center justify-between">
-    <span className="text-text-muted">{description}</span>
-    <div className="flex items-center gap-1">
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <span style={{ color: "var(--spectrum-gray-700)" }}>{description}</span>
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
       {keys.map((key, i) => (
-        <kbd key={i} className="px-1.5 py-0.5 bg-surface rounded border border-border text-xs font-mono">
+        <kbd key={i} style={{
+          padding: "2px 6px",
+          backgroundColor: "var(--spectrum-gray-200)",
+          borderRadius: 4,
+          border: "1px solid var(--spectrum-gray-300)",
+          fontSize: 12,
+          fontFamily: "monospace"
+        }}>
           {key}
         </kbd>
       ))}
@@ -640,44 +738,44 @@ const ShortcutRow: React.FC<{ keys: string[]; description: string }> = ({ keys, 
 // ============================================================================
 
 const PlusIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
   </svg>
 );
 
 const SettingsIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
 
 const ShareIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
   </svg>
 );
 
 const DownloadIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
   </svg>
 );
 
 const ClipboardIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
   </svg>
 );
 
 const LinkIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
   </svg>
 );
 
 const VideoIcon = () => (
-  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
   </svg>
 );
@@ -702,21 +800,34 @@ const CelebrationEffect: React.FC<{ onComplete: () => void }> = React.memo(({ on
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[100]">
-      <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in-0 fade-in duration-300">
-        <div className="relative">
-          <div className="absolute inset-0 blur-3xl bg-yellow-500/30 rounded-full animate-pulse" />
-          <div className="text-6xl animate-bounce">⭐</div>
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 100 }}>
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
+        <div style={{ position: "relative" }}>
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            filter: "blur(48px)",
+            backgroundColor: "rgba(234, 179, 8, 0.3)",
+            borderRadius: "50%"
+          }} />
+          <div style={{ fontSize: 48, animation: "bounce 1s infinite" }}>⭐</div>
         </div>
       </div>
       {CELEBRATION_PARTICLES.map((particle) => (
         <div
           key={particle.id}
-          className="absolute text-2xl"
           style={{
+            position: "absolute",
+            fontSize: 24,
             left: particle.left,
             top: particle.top,
-            animation: `float ${particle.duration}s ease-out forwards`,
+            animation: `confetti ${particle.duration}s ease-out forwards`,
             animationDelay: `${particle.delay}s`,
           }}
         >

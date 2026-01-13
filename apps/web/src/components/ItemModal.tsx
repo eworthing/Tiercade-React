@@ -1,5 +1,16 @@
 import React, { useCallback, useState } from "react";
-import { Modal, Button, Input, MediaUpload, ConfirmDialog } from "@tiercade/ui";
+import { MediaUpload, type MediaType as UIMediaType } from "@tiercade/ui";
+import {
+  Button,
+  TextField,
+  TextArea,
+  Dialog,
+  DialogTrigger,
+  Heading,
+  Content,
+  ButtonGroup,
+  AlertDialog,
+} from "@react-spectrum/s2";
 import { generateId } from "@tiercade/core";
 import { MAX_IMAGE_SIZE_KB, MAX_VIDEO_SIZE_KB } from "@tiercade/core";
 import { useAppDispatch } from "../hooks/useAppDispatch";
@@ -54,8 +65,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   } = useItemForm({ initialItem: item });
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
+    (e?: React.FormEvent) => {
+      e?.preventDefault();
 
       if (!validate()) return;
 
@@ -156,116 +167,84 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
   return (
     <>
-      <Modal
-        open={open && !showDeleteConfirm}
-        onClose={handleClose}
-        title={title}
-        description={description}
-        size="md"
-        className="!bg-slate-950/90 !backdrop-blur-2xl !border-white/10 !shadow-2xl overflow-hidden ring-1 ring-white/5"
-        footer={
-          isEditMode ? (
-            <div className="flex items-center justify-end w-full gap-3 pt-2">
-              <Button
-                variant="ghost"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="mr-auto text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl"
-              >
+      <DialogTrigger isOpen={open && !showDeleteConfirm} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+        <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+        <Dialog size="M">
+          <Heading>{title}</Heading>
+          <Content>
+            {description && (
+              <p style={{ marginBottom: 16, color: "var(--spectrum-gray-700)" }}>
+                {description}
+              </p>
+            )}
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <TextField
+                label="Item Name"
+                placeholder="Enter item name..."
+                value={values.name}
+                onChange={setName}
+                errorMessage={error ?? undefined}
+                isInvalid={!!error}
+                autoFocus
+              />
+
+              <TextField
+                label="Season / Subtitle"
+                placeholder="e.g., Season 1, (2019)..."
+                value={values.seasonString}
+                onChange={setSeasonString}
+              />
+
+              <TextArea
+                label="Notes"
+                placeholder="Add notes about this item..."
+                value={values.description}
+                onChange={setDescription}
+              />
+
+              <MediaUpload
+                value={values.mediaUrl}
+                mediaType={values.mediaType as UIMediaType | undefined}
+                onChange={handleMediaChange}
+                maxSizeKB={MAX_IMAGE_SIZE_KB}
+                maxVideoSizeKB={MAX_VIDEO_SIZE_KB}
+                allowVideo={true}
+              />
+
+              {/* Hidden submit button for form submission on Enter */}
+              <button type="submit" style={{ display: "none" }} />
+            </form>
+          </Content>
+          <ButtonGroup>
+            {isEditMode && (
+              <Button variant="negative" fillStyle="outline" onPress={() => setShowDeleteConfirm(true)}>
                 Delete
               </Button>
-              <Button
-                variant="ghost"
-                onClick={handleClose}
-                className="text-white/50 hover:text-white hover:bg-white/5 rounded-xl"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSubmit}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-indigo-500/20 text-white font-medium tracking-wide rounded-xl border-t border-white/10"
-              >
-                {submitLabel}
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                onClick={handleClose}
-                className="text-white/50 hover:text-white hover:bg-white/5 rounded-xl"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSubmit}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-indigo-500/20 text-white font-medium tracking-wide rounded-xl border-t border-white/10"
-              >
-                {submitLabel}
-              </Button>
-            </>
-          )
-        }
-      >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            label="Item Name"
-            placeholder="Enter item name..."
-            value={values.name}
-            onChange={(e) => setName(e.target.value)}
-            error={error ?? undefined}
-            autoFocus
-            className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/20 focus:!ring-purple-500/50 focus:!border-purple-500/50 hover:!border-white/20 !rounded-xl transition-all"
-          />
-
-          <Input
-            label="Season / Subtitle"
-            placeholder="e.g., Season 1, (2019)..."
-            value={values.seasonString}
-            onChange={(e) => setSeasonString(e.target.value)}
-            className="!bg-white/5 !border-white/10 !text-white placeholder:!text-white/20 focus:!ring-purple-500/50 focus:!border-purple-500/50 hover:!border-white/20 !rounded-xl transition-all"
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2 pl-1">
-              Notes
-            </label>
-            <textarea
-              placeholder="Add notes about this item..."
-              value={values.description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-3 !bg-white/5 border !border-white/10 !rounded-xl !text-white placeholder:!text-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none transition-all hover:border-white/20"
-              rows={3}
-            />
-          </div>
-
-          <MediaUpload
-            value={values.mediaUrl}
-            mediaType={values.mediaType as any}
-            onChange={handleMediaChange}
-            maxSizeKB={MAX_IMAGE_SIZE_KB}
-            maxVideoSizeKB={MAX_VIDEO_SIZE_KB}
-            allowVideo={true}
-            className="rounded-xl overflow-hidden"
-            dropzoneClassName="!bg-white/5 !border-white/10 hover:!border-purple-500/50 hover:!bg-white/10 transition-all !rounded-xl !text-white/60"
-          />
-
-          {/* Hidden submit button for form submission on Enter */}
-          <button type="submit" className="hidden" />
-        </form>
-      </Modal>
+            )}
+            <Button variant="secondary" onPress={handleClose}>
+              Cancel
+            </Button>
+            <Button variant="accent" onPress={() => handleSubmit()}>
+              {submitLabel}
+            </Button>
+          </ButtonGroup>
+        </Dialog>
+      </DialogTrigger>
 
       {isEditMode && item && (
-        <ConfirmDialog
-          open={showDeleteConfirm}
-          onConfirm={handleDelete}
-          onCancel={() => setShowDeleteConfirm(false)}
-          title="Delete Item"
-          message={`Are you sure you want to delete "${item.name ?? item.id}"? This action can be undone.`}
-          confirmLabel="Delete"
-          variant="danger"
-        />
+        <DialogTrigger isOpen={showDeleteConfirm} onOpenChange={(isOpen) => !isOpen && setShowDeleteConfirm(false)}>
+          <span style={{ display: "none" }}><Button aria-hidden="true">Open</Button></span>
+          <AlertDialog
+            title="Delete Item"
+            variant="destructive"
+            primaryActionLabel="Delete"
+            cancelLabel="Cancel"
+            onPrimaryAction={handleDelete}
+            onCancel={() => setShowDeleteConfirm(false)}
+          >
+            {`Are you sure you want to delete "${item.name ?? item.id}"? This action can be undone.`}
+          </AlertDialog>
+        </DialogTrigger>
       )}
     </>
   );

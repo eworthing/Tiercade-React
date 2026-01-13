@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@tiercade/ui";
+import { Button } from "@react-spectrum/s2";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -83,17 +83,43 @@ export const PWAInstallPrompt: React.FC = () => {
 
   return (
     <div
-      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-slide-up"
+      style={{
+        position: "fixed",
+        bottom: 16,
+        left: 16,
+        right: 16,
+        zIndex: 50,
+        maxWidth: 384,
+        marginLeft: "auto"
+      }}
       role="dialog"
       aria-labelledby="pwa-install-title"
       aria-describedby="pwa-install-description"
     >
-      <div className="bg-surface-raised border border-border rounded-xl shadow-modal p-4 space-y-3">
+      <div style={{
+        backgroundColor: "var(--spectrum-gray-100)",
+        border: "1px solid var(--spectrum-gray-300)",
+        borderRadius: 12,
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
+        padding: 16,
+        display: "flex",
+        flexDirection: "column",
+        gap: 12
+      }}>
         {/* Header */}
-        <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-accent flex items-center justify-center shrink-0 shadow-glow-gradient">
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            backgroundColor: "var(--spectrum-blue-200)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0
+          }}>
             <svg
-              className="w-6 h-6 text-white"
+              style={{ width: 24, height: 24, color: "var(--spectrum-blue-900)" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -106,27 +132,34 @@ export const PWAInstallPrompt: React.FC = () => {
               />
             </svg>
           </div>
-          <div className="flex-1 min-w-0">
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h3
               id="pwa-install-title"
-              className="text-sm font-semibold text-text"
+              style={{ fontSize: 14, fontWeight: 600, color: "var(--spectrum-gray-900)" }}
             >
               Install Tiercade
             </h3>
             <p
               id="pwa-install-description"
-              className="text-xs text-text-muted mt-0.5"
+              style={{ fontSize: 12, color: "var(--spectrum-gray-700)", marginTop: 2 }}
             >
               Add to your home screen for quick access and offline support
             </p>
           </div>
           <button
             onClick={handleDismiss}
-            className="text-text-subtle hover:text-text p-1 -m-1 transition-colors"
+            style={{
+              color: "var(--spectrum-gray-600)",
+              padding: 4,
+              margin: -4,
+              background: "none",
+              border: "none",
+              cursor: "pointer"
+            }}
             aria-label="Dismiss"
           >
             <svg
-              className="w-4 h-4"
+              style={{ width: 16, height: 16 }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -142,10 +175,10 @@ export const PWAInstallPrompt: React.FC = () => {
         </div>
 
         {/* Features */}
-        <ul className="space-y-1.5 text-xs text-text-muted">
-          <li className="flex items-center gap-2">
+        <ul style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: "var(--spectrum-gray-700)", listStyle: "none", margin: 0, padding: 0 }}>
+          <li style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <svg
-              className="w-3.5 h-3.5 text-success"
+              style={{ width: 14, height: 14, color: "var(--spectrum-green-800)" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -159,9 +192,9 @@ export const PWAInstallPrompt: React.FC = () => {
             </svg>
             Works offline
           </li>
-          <li className="flex items-center gap-2">
+          <li style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <svg
-              className="w-3.5 h-3.5 text-success"
+              style={{ width: 14, height: 14, color: "var(--spectrum-green-800)" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -175,9 +208,9 @@ export const PWAInstallPrompt: React.FC = () => {
             </svg>
             Faster loading
           </li>
-          <li className="flex items-center gap-2">
+          <li style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <svg
-              className="w-3.5 h-3.5 text-success"
+              style={{ width: 14, height: 14, color: "var(--spectrum-green-800)" }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -194,11 +227,11 @@ export const PWAInstallPrompt: React.FC = () => {
         </ul>
 
         {/* Actions */}
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={handleDismiss}>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button variant="secondary" size="S" onPress={handleDismiss}>
             Not now
           </Button>
-          <Button variant="primary" size="sm" onClick={handleInstall}>
+          <Button variant="accent" size="S" onPress={handleInstall}>
             Install
           </Button>
         </div>
@@ -213,26 +246,53 @@ export const IOSInstallInstructions: React.FC<{ onClose: () => void }> = ({
 }) => {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.6)"
+      }}
       onClick={onClose}
     >
       <div
-        className="bg-surface-raised border border-border rounded-xl shadow-modal p-5 m-4 max-w-sm animate-modal-in"
+        style={{
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "1px solid var(--spectrum-gray-300)",
+          borderRadius: 12,
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
+          padding: 20,
+          margin: 16,
+          maxWidth: 384
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold text-text mb-3">
+        <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 12 }}>
           Install Tiercade
         </h3>
 
-        <ol className="space-y-4 text-sm text-text-muted">
-          <li className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-accent text-white text-xs flex items-center justify-center shrink-0">
+        <ol style={{ display: "flex", flexDirection: "column", gap: 16, fontSize: 14, color: "var(--spectrum-gray-700)", margin: 0, padding: 0, listStyle: "none" }}>
+          <li style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              backgroundColor: "var(--spectrum-blue-700)",
+              color: "white",
+              fontSize: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
               1
             </span>
             <span>
               Tap the{" "}
               <svg
-                className="w-5 h-5 inline-block align-text-bottom"
+                style={{ width: 20, height: 20, display: "inline-block", verticalAlign: "text-bottom" }}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -247,23 +307,47 @@ export const IOSInstallInstructions: React.FC<{ onClose: () => void }> = ({
               Share button at the bottom of Safari
             </span>
           </li>
-          <li className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-accent text-white text-xs flex items-center justify-center shrink-0">
+          <li style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              backgroundColor: "var(--spectrum-blue-700)",
+              color: "white",
+              fontSize: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
               2
             </span>
             <span>Scroll down and tap "Add to Home Screen"</span>
           </li>
-          <li className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-accent text-white text-xs flex items-center justify-center shrink-0">
+          <li style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <span style={{
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              backgroundColor: "var(--spectrum-blue-700)",
+              color: "white",
+              fontSize: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
               3
             </span>
             <span>Tap "Add" in the top right corner</span>
           </li>
         </ol>
 
-        <Button variant="primary" className="w-full mt-4" onClick={onClose}>
-          Got it
-        </Button>
+        <div style={{ marginTop: 16, width: "100%" }}>
+          <Button variant="accent" onPress={onClose}>
+            Got it
+          </Button>
+        </div>
       </div>
     </div>
   );

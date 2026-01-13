@@ -8,7 +8,7 @@ import {
   captureSnapshot,
 } from "@tiercade/state";
 import { selectTiers, selectSelection } from "@tiercade/state";
-import { useToast } from "@tiercade/ui";
+import { ToastQueue } from "@react-spectrum/s2";
 
 interface UseTierBoardKeyboardOptions {
   onAddItem?: () => void;
@@ -30,7 +30,6 @@ export function useTierBoardKeyboard({
   onShowHelp,
 }: UseTierBoardKeyboardOptions = {}) {
   const dispatch = useAppDispatch();
-  const toast = useToast();
   const tiers = useAppSelector(selectTiers);
   const selection = useAppSelector(selectSelection);
 
@@ -73,7 +72,7 @@ export function useTierBoardKeyboard({
         e.preventDefault();
         dispatch(captureSnapshot("Delete Items"));
         dispatch(deleteItems(selection));
-        toast.success(`Deleted ${selection.length} item(s)`);
+        ToastQueue.positive(`Deleted ${selection.length} item(s)`);
         return;
       }
 
@@ -84,7 +83,7 @@ export function useTierBoardKeyboard({
         return;
       }
     },
-    [dispatch, tiers, selection, toast, onAddItem, onShowHelp]
+    [dispatch, tiers, selection, onAddItem, onShowHelp]
   );
 
   useEffect(() => {

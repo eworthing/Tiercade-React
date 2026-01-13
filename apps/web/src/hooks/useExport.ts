@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useToast } from "@tiercade/ui";
+import { ToastQueue } from "@react-spectrum/s2";
 import { exportElementAsPNG, copyElementToClipboard } from "../utils/exportImage";
 
 /** Element selector for tier board export */
@@ -27,7 +27,6 @@ interface UseExportResult {
 export function useExport({
   defaultFilename = "tier-list",
 }: UseExportOptions = {}): UseExportResult {
-  const toast = useToast();
   const [isExporting, setIsExporting] = useState(false);
 
   const getElement = useCallback((): HTMLElement | null => {
@@ -37,7 +36,7 @@ export function useExport({
   const exportAsPNG = useCallback(async () => {
     const element = getElement();
     if (!element) {
-      toast.error("Could not find tier board to export");
+      ToastQueue.negative("Could not find tier board to export");
       return;
     }
 
@@ -47,21 +46,21 @@ export function useExport({
         filename: `${defaultFilename}.png`,
         scale: 2,
       });
-      toast.success("Image downloaded!");
+      ToastQueue.positive("Image downloaded!");
     } catch (error) {
       console.error("Export failed:", error);
-      toast.error(
+      ToastQueue.negative(
         `Export failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     } finally {
       setIsExporting(false);
     }
-  }, [getElement, defaultFilename, toast]);
+  }, [getElement, defaultFilename]);
 
   const copyToClipboard = useCallback(async () => {
     const element = getElement();
     if (!element) {
-      toast.error("Could not find tier board to copy");
+      ToastQueue.negative("Could not find tier board to copy");
       return;
     }
 
@@ -69,17 +68,17 @@ export function useExport({
     try {
       const success = await copyElementToClipboard(element);
       if (success) {
-        toast.success("Image copied to clipboard!");
+        ToastQueue.positive("Image copied to clipboard!");
       } else {
-        toast.error("Failed to copy - try downloading instead");
+        ToastQueue.negative("Failed to copy - try downloading instead");
       }
     } catch (error) {
       console.error("Copy failed:", error);
-      toast.error("Clipboard access denied");
+      ToastQueue.negative("Clipboard access denied");
     } finally {
       setIsExporting(false);
     }
-  }, [getElement, toast]);
+  }, [getElement]);
 
   return {
     isExporting,

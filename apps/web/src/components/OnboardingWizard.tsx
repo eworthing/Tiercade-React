@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@tiercade/ui";
+import { Button } from "@react-spectrum/s2";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
 import {
@@ -48,44 +48,60 @@ const STEPS = [
 const StepIllustration: React.FC<{ step: string }> = ({ step }) => {
   const illustrations: Record<string, React.ReactNode> = {
     welcome: (
-      <div className="relative w-48 h-48">
+      <div style={{ position: "relative", width: 192, height: 192 }}>
         {/* Animated tier list icon */}
-        <div className="absolute inset-0 flex flex-col gap-2 p-4">
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", gap: 8, padding: 16 }}>
           {["#ff7f7f", "#ffbf7f", "#ffdf7f", "#bfff7f"].map((color, i) => (
             <div
               key={color}
-              className="h-8 rounded-md flex items-center gap-2 px-2 animate-slide-in-left"
               style={{
+                height: 32,
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "0 8px",
                 backgroundColor: `${color}20`,
                 borderLeft: `4px solid ${color}`,
-                animationDelay: `${i * 100}ms`,
               }}
             >
               <div
-                className="w-5 h-5 rounded-sm"
-                style={{ backgroundColor: color }}
+                style={{ width: 20, height: 20, borderRadius: 4, backgroundColor: color }}
               />
-              <div className="flex-1 h-2 bg-surface-soft rounded" />
+              <div style={{ flex: 1, height: 8, backgroundColor: "var(--spectrum-gray-200)", borderRadius: 4 }} />
             </div>
           ))}
         </div>
         {/* Floating sparkles */}
-        <div className="absolute -top-2 -right-2 text-warning animate-pulse-soft">
-          <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+        <div style={{ position: "absolute", top: -8, right: -8, color: "var(--spectrum-orange-700)" }}>
+          <svg style={{ width: 32, height: 32 }} fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </div>
       </div>
     ),
     "drag-drop": (
-      <div className="relative w-48 h-48">
+      <div style={{ position: "relative", width: 192, height: 192 }}>
         {/* Card being dragged */}
-        <div className="absolute top-6 left-8 w-16 h-16 bg-surface-raised border-2 border-accent rounded-lg shadow-modal flex items-center justify-center animate-bounce-gentle">
-          <div className="w-10 h-10 bg-gradient-accent rounded-md" />
+        <div style={{
+          position: "absolute",
+          top: 24,
+          left: 32,
+          width: 64,
+          height: 64,
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "2px solid var(--spectrum-blue-700)",
+          borderRadius: 8,
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <div style={{ width: 40, height: 40, backgroundColor: "var(--spectrum-blue-700)", borderRadius: 6 }} />
         </div>
         {/* Arrow showing movement */}
         <svg
-          className="absolute top-16 left-24 w-20 h-10 text-accent animate-pulse-soft"
+          style={{ position: "absolute", top: 64, left: 96, width: 80, height: 40, color: "var(--spectrum-blue-700)" }}
           fill="none"
           viewBox="0 0 80 40"
         >
@@ -99,58 +115,119 @@ const StepIllustration: React.FC<{ step: string }> = ({ step }) => {
           <path d="M70 12 L75 20 L68 24" fill="currentColor" />
         </svg>
         {/* Target tier */}
-        <div className="absolute bottom-4 right-4 w-24 h-12 rounded-md border-2 border-dashed border-success bg-success/10 flex items-center justify-center">
-          <span className="text-success text-sm font-medium">S Tier</span>
+        <div style={{
+          position: "absolute",
+          bottom: 16,
+          right: 16,
+          width: 96,
+          height: 48,
+          borderRadius: 6,
+          border: "2px dashed var(--spectrum-green-700)",
+          backgroundColor: "rgba(16, 185, 129, 0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <span style={{ color: "var(--spectrum-green-800)", fontSize: 14, fontWeight: 500 }}>S Tier</span>
         </div>
       </div>
     ),
     "head-to-head": (
-      <div className="relative w-48 h-48">
+      <div style={{ position: "relative", width: 192, height: 192 }}>
         {/* VS badge */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-12 h-12 bg-gradient-accent rounded-full flex items-center justify-center shadow-glow-gradient z-10 animate-pulse-soft">
-            <span className="text-white font-bold text-sm">VS</span>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            backgroundColor: "var(--spectrum-blue-700)",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 0 20px rgba(99, 102, 241, 0.5)",
+            zIndex: 10
+          }}>
+            <span style={{ color: "white", fontWeight: 700, fontSize: 14 }}>VS</span>
           </div>
         </div>
         {/* Left contender */}
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 w-16 h-20 bg-surface-raised border border-border rounded-lg flex items-center justify-center animate-slide-in-left">
-          <div className="w-10 h-10 bg-amber-500 rounded-md" />
+        <div style={{
+          position: "absolute",
+          left: 8,
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: 64,
+          height: 80,
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "1px solid var(--spectrum-gray-300)",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <div style={{ width: 40, height: 40, backgroundColor: "#f59e0b", borderRadius: 6 }} />
         </div>
         {/* Right contender */}
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 w-16 h-20 bg-surface-raised border border-border rounded-lg flex items-center justify-center animate-slide-in-right">
-          <div className="w-10 h-10 bg-cyan-500 rounded-md" />
+        <div style={{
+          position: "absolute",
+          right: 8,
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: 64,
+          height: 80,
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "1px solid var(--spectrum-gray-300)",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <div style={{ width: 40, height: 40, backgroundColor: "#06b6d4", borderRadius: 6 }} />
         </div>
       </div>
     ),
     customize: (
-      <div className="relative w-48 h-48">
+      <div style={{ position: "relative", width: 192, height: 192 }}>
         {/* Color palette */}
-        <div className="absolute top-4 left-4 flex gap-1">
+        <div style={{ position: "absolute", top: 16, left: 16, display: "flex", gap: 4 }}>
           {["#ff7f7f", "#ffbf7f", "#ffdf7f", "#bfff7f", "#7fbfff", "#bf7fff"].map(
             (color, i) => (
               <div
                 key={color}
-                className="w-6 h-6 rounded-full border-2 border-white shadow-sm animate-pop"
                 style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  border: "2px solid white",
+                  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
                   backgroundColor: color,
-                  animationDelay: `${i * 50}ms`,
                 }}
               />
             )
           )}
         </div>
         {/* Theme card */}
-        <div className="absolute bottom-4 inset-x-4 h-24 bg-surface-raised border border-border rounded-lg overflow-hidden">
-          <div className="h-2 bg-gradient-accent" />
-          <div className="p-3 space-y-2">
-            <div className="h-3 w-20 bg-surface-soft rounded" />
-            <div className="h-3 w-full bg-surface-soft rounded" />
-            <div className="h-3 w-16 bg-surface-soft rounded" />
+        <div style={{
+          position: "absolute",
+          bottom: 16,
+          left: 16,
+          right: 16,
+          height: 96,
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "1px solid var(--spectrum-gray-300)",
+          borderRadius: 8,
+          overflow: "hidden"
+        }}>
+          <div style={{ height: 8, backgroundColor: "var(--spectrum-blue-700)" }} />
+          <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ height: 12, width: 80, backgroundColor: "var(--spectrum-gray-200)", borderRadius: 4 }} />
+            <div style={{ height: 12, width: "100%", backgroundColor: "var(--spectrum-gray-200)", borderRadius: 4 }} />
+            <div style={{ height: 12, width: 64, backgroundColor: "var(--spectrum-gray-200)", borderRadius: 4 }} />
           </div>
         </div>
         {/* Paint brush icon */}
         <svg
-          className="absolute top-1/2 right-6 w-8 h-8 text-accent animate-wiggle"
+          style={{ position: "absolute", top: "50%", right: 24, width: 32, height: 32, color: "var(--spectrum-blue-700)" }}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -165,15 +242,25 @@ const StepIllustration: React.FC<{ step: string }> = ({ step }) => {
       </div>
     ),
     ready: (
-      <div className="relative w-48 h-48 flex items-center justify-center">
+      <div style={{ position: "relative", width: 192, height: 192, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {/* Celebratory circle */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-32 h-32 rounded-full bg-gradient-accent opacity-20 animate-pulse-soft" />
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 128, height: 128, borderRadius: "50%", backgroundColor: "var(--spectrum-blue-700)", opacity: 0.2 }} />
         </div>
         {/* Checkmark */}
-        <div className="relative w-20 h-20 bg-success rounded-full flex items-center justify-center shadow-lg animate-pop">
+        <div style={{
+          position: "relative",
+          width: 80,
+          height: 80,
+          backgroundColor: "var(--spectrum-green-700)",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)"
+        }}>
           <svg
-            className="w-10 h-10 text-white"
+            style={{ width: 40, height: 40, color: "white" }}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -190,12 +277,14 @@ const StepIllustration: React.FC<{ step: string }> = ({ step }) => {
         {[...Array(8)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-2 h-2 rounded-full animate-confetti"
             style={{
+              position: "absolute",
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
               backgroundColor: ["#ff7f7f", "#ffbf7f", "#ffdf7f", "#bfff7f", "#7fbfff", "#bf7fff"][i % 6],
               top: "50%",
               left: "50%",
-              animationDelay: `${i * 100}ms`,
               transform: `rotate(${i * 45}deg) translateY(-60px)`,
             }}
           />
@@ -204,7 +293,7 @@ const StepIllustration: React.FC<{ step: string }> = ({ step }) => {
     ),
   };
 
-  return <div className="flex items-center justify-center">{illustrations[step]}</div>;
+  return <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>{illustrations[step]}</div>;
 };
 
 export const OnboardingWizard: React.FC = () => {
@@ -213,6 +302,7 @@ export const OnboardingWizard: React.FC = () => {
   const { currentStep, hasCompletedOnboarding } = useAppSelector(
     (state) => state.onboarding
   );
+  const [skipHovered, setSkipHovered] = useState(false);
 
   const currentStepData = STEPS[currentStep];
   const isLastStep = currentStep === STEPS.length - 1;
@@ -260,106 +350,144 @@ export const OnboardingWizard: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/95 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg mx-4">
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 50,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(0, 0, 0, 0.9)",
+      backdropFilter: "blur(4px)"
+    }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 512, margin: "0 16px" }}>
         {/* Skip button */}
         <button
           onClick={handleSkip}
-          className="absolute -top-10 right-0 text-sm text-text-subtle hover:text-text transition-colors"
+          onMouseEnter={() => setSkipHovered(true)}
+          onMouseLeave={() => setSkipHovered(false)}
+          style={{
+            position: "absolute",
+            top: -40,
+            right: 0,
+            fontSize: 14,
+            color: skipHovered ? "var(--spectrum-gray-900)" : "var(--spectrum-gray-600)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            transition: "color 150ms ease"
+          }}
         >
           Skip
         </button>
 
         {/* Card */}
-        <div className="bg-surface-raised border border-border rounded-2xl shadow-modal overflow-hidden">
+        <div style={{
+          backgroundColor: "var(--spectrum-gray-100)",
+          border: "1px solid var(--spectrum-gray-300)",
+          borderRadius: 16,
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1), 0 20px 25px rgba(0, 0, 0, 0.1)",
+          overflow: "hidden"
+        }}>
           {/* Progress bar */}
-          <div className="h-1 bg-surface-soft">
+          <div style={{ height: 4, backgroundColor: "var(--spectrum-gray-200)" }}>
             <div
-              className="h-full bg-gradient-accent transition-all duration-300 ease-spring"
-              style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+              style={{
+                height: "100%",
+                backgroundColor: "var(--spectrum-blue-700)",
+                transition: "width 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+                width: `${((currentStep + 1) / STEPS.length) * 100}%`
+              }}
             />
           </div>
 
           {/* Content */}
-          <div className="p-8 space-y-6">
+          <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 24 }}>
             {/* Illustration */}
-            <div className="flex justify-center">
+            <div style={{ display: "flex", justifyContent: "center" }}>
               <StepIllustration step={currentStepData.illustration} />
             </div>
 
             {/* Text */}
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold text-text">{currentStepData.title}</h2>
-              <p className="text-text-muted">{currentStepData.description}</p>
+            <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 8 }}>
+              <h2 style={{ fontSize: 24, fontWeight: 700, color: "var(--spectrum-gray-900)" }}>{currentStepData.title}</h2>
+              <p style={{ color: "var(--spectrum-gray-700)" }}>{currentStepData.description}</p>
             </div>
 
             {/* Navigation dots */}
-            <div className="flex justify-center gap-2">
+            <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
               {STEPS.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => dispatch(goToStep(index))}
-                  className={`
-                    w-2 h-2 rounded-full transition-all duration-200
-                    ${
-                      index === currentStep
-                        ? "w-6 bg-accent"
-                        : index < currentStep
-                        ? "bg-accent/50"
-                        : "bg-surface-soft"
-                    }
-                  `}
+                  style={{
+                    width: index === currentStep ? 24 : 8,
+                    height: 8,
+                    borderRadius: 4,
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 200ms ease",
+                    backgroundColor: index === currentStep
+                      ? "var(--spectrum-blue-700)"
+                      : index < currentStep
+                      ? "rgba(99, 102, 241, 0.5)"
+                      : "var(--spectrum-gray-200)"
+                  }}
                   aria-label={`Go to step ${index + 1}`}
                 />
               ))}
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div style={{ display: "flex", gap: 12 }}>
               {currentStep > 0 && (
-                <Button
-                  variant="ghost"
-                  onClick={() => dispatch(prevStep())}
-                  className="flex-1"
-                >
-                  Back
-                </Button>
+                <div style={{ flex: 1 }}>
+                  <Button
+                    variant="secondary"
+                    onPress={() => dispatch(prevStep())}
+                  >
+                    Back
+                  </Button>
+                </div>
               )}
 
               {isLastStep ? (
                 <>
-                  <Button
-                    variant="secondary"
-                    onClick={handleStartFromScratch}
-                    className="flex-1"
-                  >
-                    Start Fresh
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={handleBrowseTemplates}
-                    className="flex-1"
-                  >
-                    Browse Templates
-                  </Button>
+                  <div style={{ flex: 1 }}>
+                    <Button
+                      variant="secondary"
+                      onPress={handleStartFromScratch}
+                    >
+                      Start Fresh
+                    </Button>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Button
+                      variant="accent"
+                      onPress={handleBrowseTemplates}
+                    >
+                      Browse Templates
+                    </Button>
+                  </div>
                 </>
               ) : (
-                <Button
-                  variant="primary"
-                  onClick={() => dispatch(nextStep())}
-                  className="flex-1"
-                >
-                  Next
-                </Button>
+                <div style={{ flex: 1 }}>
+                  <Button
+                    variant="accent"
+                    onPress={() => dispatch(nextStep())}
+                  >
+                    Next
+                  </Button>
+                </div>
               )}
             </div>
           </div>
         </div>
 
         {/* Keyboard hint */}
-        <p className="text-center text-xs text-text-subtle mt-4">
-          Press <kbd className="px-1.5 py-0.5 bg-surface-raised rounded text-text-muted">Enter</kbd> to continue or{" "}
-          <kbd className="px-1.5 py-0.5 bg-surface-raised rounded text-text-muted">Esc</kbd> to skip
+        <p style={{ textAlign: "center", fontSize: 12, color: "var(--spectrum-gray-600)", marginTop: 16 }}>
+          Press <kbd style={{ padding: "2px 6px", backgroundColor: "var(--spectrum-gray-100)", borderRadius: 4, color: "var(--spectrum-gray-700)" }}>Enter</kbd> to continue or{" "}
+          <kbd style={{ padding: "2px 6px", backgroundColor: "var(--spectrum-gray-100)", borderRadius: 4, color: "var(--spectrum-gray-700)" }}>Esc</kbd> to skip
         </p>
       </div>
     </div>

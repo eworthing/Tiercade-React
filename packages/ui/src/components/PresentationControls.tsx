@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 export type ChromaKeyColor = "none" | "green" | "magenta" | "blue";
 
@@ -56,64 +56,96 @@ export const PresentationControls: React.FC<PresentationControlsProps> = ({
   onWatermarkTextChange,
   onShowWatermarkChange,
 }) => {
+  const containerStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  };
+
+  const rowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  };
+
+  const labelGroupStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "var(--spectrum-gray-900)",
+  };
+
+  const descStyle: React.CSSProperties = {
+    fontSize: 12,
+    color: "var(--spectrum-gray-600)",
+  };
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontSize: 11,
+    fontWeight: 500,
+    color: "var(--spectrum-gray-600)",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    borderTop: "1px solid var(--spectrum-gray-300)",
+    paddingTop: 16,
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  };
+
+  const buttonGroupStyle: React.CSSProperties = {
+    display: "flex",
+    gap: 8,
+    marginTop: 8,
+  };
+
   return (
-    <div className="space-y-4">
+    <div style={containerStyle}>
       {/* Main toggle */}
-      <div className="flex items-center justify-between">
+      <div style={rowStyle}>
         <div>
-          <h3 className="text-sm font-semibold text-text">Presentation Mode</h3>
-          <p className="text-xs text-text-muted">Optimized for streaming & recording</p>
+          <h3 style={titleStyle}>Presentation Mode</h3>
+          <p style={descStyle}>Optimized for streaming & recording</p>
         </div>
-        <button
-          onClick={onTogglePresentation}
-          className={`relative w-12 h-6 rounded-full transition-colors ${
-            isPresenting ? "bg-accent" : "bg-surface-raised"
-          }`}
-          role="switch"
-          aria-checked={isPresenting}
-        >
-          <span
-            className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-              isPresenting ? "translate-x-7" : "translate-x-1"
-            }`}
-          />
-        </button>
+        <ToggleSwitch
+          checked={isPresenting}
+          onChange={onTogglePresentation}
+          size="large"
+        />
       </div>
 
       {isPresenting && (
         <>
-          <div className="border-t border-border pt-4 space-y-4">
+          <div style={sectionStyle}>
             {/* Chroma Key */}
             <div>
-              <label className="text-xs font-medium text-text-muted uppercase tracking-wide">
+              <label style={sectionLabelStyle}>
                 Chroma Key Background
               </label>
-              <div className="flex gap-2 mt-2">
+              <div style={buttonGroupStyle}>
                 {CHROMA_COLORS.map(({ value, label, color }) => (
-                  <button
+                  <ChromaButton
                     key={value}
+                    value={value}
+                    label={label}
+                    color={color}
+                    isActive={chromaKey === value}
                     onClick={() => onChromaKeyChange(value)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-button border transition-all ${
-                      chromaKey === value
-                        ? "bg-accent/10 border-accent text-accent"
-                        : "bg-surface-raised border-border text-text-muted hover:border-text-subtle"
-                    }`}
-                  >
-                    {value !== "none" && (
-                      <span
-                        className="w-3 h-3 rounded-full border border-black/20"
-                        style={{ backgroundColor: color }}
-                      />
-                    )}
-                    {label}
-                  </button>
+                  />
                 ))}
               </div>
             </div>
 
             {/* Item Scale */}
             <div>
-              <label className="text-xs font-medium text-text-muted uppercase tracking-wide">
+              <label style={sectionLabelStyle}>
                 Item Size: {Math.round(itemScale * 100)}%
               </label>
               <input
@@ -123,111 +155,95 @@ export const PresentationControls: React.FC<PresentationControlsProps> = ({
                 step="0.25"
                 value={itemScale}
                 onChange={(e) => onItemScaleChange(parseFloat(e.target.value))}
-                className="w-full mt-2 accent-accent"
+                style={{
+                  width: "100%",
+                  marginTop: 8,
+                  accentColor: "var(--spectrum-blue-700)",
+                }}
               />
             </div>
 
             {/* Reveal Mode */}
-            <div className="flex items-center justify-between">
+            <div style={rowStyle}>
               <div>
-                <span className="text-sm text-text">Mystery Reveal Mode</span>
-                <p className="text-xs text-text-muted">Items hidden until clicked</p>
+                <span style={{ fontSize: 14, color: "var(--spectrum-gray-900)" }}>Mystery Reveal Mode</span>
+                <p style={descStyle}>Items hidden until clicked</p>
               </div>
-              <button
-                onClick={() => onRevealModeChange(!revealMode)}
-                className={`relative w-10 h-5 rounded-full transition-colors ${
-                  revealMode ? "bg-accent" : "bg-surface-raised"
-                }`}
-                role="switch"
-                aria-checked={revealMode}
-              >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                    revealMode ? "translate-x-5" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
+              <ToggleSwitch checked={revealMode} onChange={() => onRevealModeChange(!revealMode)} />
             </div>
 
             {/* Progress Bar */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-text">Show Progress Bar</span>
-              <button
-                onClick={() => onShowProgressChange(!showProgress)}
-                className={`relative w-10 h-5 rounded-full transition-colors ${
-                  showProgress ? "bg-accent" : "bg-surface-raised"
-                }`}
-                role="switch"
-                aria-checked={showProgress}
-              >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                    showProgress ? "translate-x-5" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
+            <div style={rowStyle}>
+              <span style={{ fontSize: 14, color: "var(--spectrum-gray-900)" }}>Show Progress Bar</span>
+              <ToggleSwitch checked={showProgress} onChange={() => onShowProgressChange(!showProgress)} />
             </div>
 
             {/* Celebrate S-Tier */}
-            <div className="flex items-center justify-between">
+            <div style={rowStyle}>
               <div>
-                <span className="text-sm text-text">S-Tier Celebrations</span>
-                <p className="text-xs text-text-muted">Confetti for top tier</p>
+                <span style={{ fontSize: 14, color: "var(--spectrum-gray-900)" }}>S-Tier Celebrations</span>
+                <p style={descStyle}>Confetti for top tier</p>
               </div>
-              <button
-                onClick={() => onCelebrateSTierChange(!celebrateSTier)}
-                className={`relative w-10 h-5 rounded-full transition-colors ${
-                  celebrateSTier ? "bg-accent" : "bg-surface-raised"
-                }`}
-                role="switch"
-                aria-checked={celebrateSTier}
-              >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                    celebrateSTier ? "translate-x-5" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
+              <ToggleSwitch checked={celebrateSTier} onChange={() => onCelebrateSTierChange(!celebrateSTier)} />
             </div>
           </div>
 
           {/* Queue Controls */}
-          <div className="border-t border-border pt-4">
-            <label className="text-xs font-medium text-text-muted uppercase tracking-wide">
+          <div style={sectionStyle}>
+            <label style={sectionLabelStyle}>
               Item Queue
             </label>
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={onStartQueue}
-                className="flex-1 px-3 py-2 text-sm rounded-button bg-surface-raised border border-border text-text hover:border-text-subtle transition-all"
-              >
+            <div style={{ display: "flex", gap: 8 }}>
+              <ActionButton onClick={onStartQueue} style={{ flex: 1 }}>
                 Start Queue
-              </button>
-              <button
-                onClick={onShuffleQueue}
-                disabled={queueLength === 0}
-                className="px-3 py-2 text-sm rounded-button bg-surface-raised border border-border text-text hover:border-text-subtle transition-all disabled:opacity-50"
-              >
+              </ActionButton>
+              <ActionButton onClick={onShuffleQueue} disabled={queueLength === 0}>
                 Shuffle
-              </button>
+              </ActionButton>
             </div>
             {queueLength > 0 && (
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs text-text-muted">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 12, color: "var(--spectrum-gray-600)" }}>
                   {queueLength} items in queue
                 </span>
                 <button
                   onClick={onDrawNext}
-                  className="px-3 py-1.5 text-xs font-medium rounded-button bg-accent text-white hover:bg-accent/90 transition-all"
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    borderRadius: 6,
+                    backgroundColor: "var(--spectrum-blue-700)",
+                    color: "white",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "background-color 0.15s ease",
+                  }}
                 >
                   Draw Next
                 </button>
               </div>
             )}
             {currentQueueItem && (
-              <div className="mt-2 p-2 bg-accent/10 rounded-card border border-accent/20">
-                <span className="text-xs text-text-muted">Now ranking:</span>
-                <p className="text-sm font-medium text-accent truncate">
+              <div
+                style={{
+                  padding: 8,
+                  backgroundColor: "rgba(var(--spectrum-blue-900-rgb, 20, 115, 230), 0.1)",
+                  borderRadius: 8,
+                  border: "1px solid rgba(var(--spectrum-blue-900-rgb, 20, 115, 230), 0.2)",
+                }}
+              >
+                <span style={{ fontSize: 12, color: "var(--spectrum-gray-600)" }}>Now ranking:</span>
+                <p
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: "var(--spectrum-blue-700)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {currentQueueItem}
                 </p>
               </div>
@@ -235,36 +251,165 @@ export const PresentationControls: React.FC<PresentationControlsProps> = ({
           </div>
 
           {/* Watermark */}
-          <div className="border-t border-border pt-4">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-text-muted uppercase tracking-wide">
+          <div style={sectionStyle}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <label style={sectionLabelStyle}>
                 Watermark
               </label>
-              <button
-                onClick={() => onShowWatermarkChange(!showWatermark)}
-                className={`relative w-10 h-5 rounded-full transition-colors ${
-                  showWatermark ? "bg-accent" : "bg-surface-raised"
-                }`}
-                role="switch"
-                aria-checked={showWatermark}
-              >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                    showWatermark ? "translate-x-5" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
+              <ToggleSwitch checked={showWatermark} onChange={() => onShowWatermarkChange(!showWatermark)} />
             </div>
             <input
               type="text"
               value={watermarkText}
               onChange={(e) => onWatermarkTextChange(e.target.value)}
               placeholder="@YourChannel"
-              className="w-full px-3 py-1.5 text-sm rounded-button bg-surface-raised border border-border text-text placeholder:text-text-subtle focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              style={{
+                width: "100%",
+                padding: "6px 12px",
+                fontSize: 14,
+                borderRadius: 6,
+                backgroundColor: "var(--spectrum-gray-100)",
+                border: "1px solid var(--spectrum-gray-300)",
+                color: "var(--spectrum-gray-900)",
+                outline: "none",
+              }}
             />
           </div>
         </>
       )}
     </div>
+  );
+};
+
+// Toggle switch component
+const ToggleSwitch: React.FC<{
+  checked: boolean;
+  onChange: () => void;
+  size?: "small" | "large";
+}> = ({ checked, onChange, size = "small" }) => {
+  const isLarge = size === "large";
+  const trackWidth = isLarge ? 48 : 40;
+  const trackHeight = isLarge ? 24 : 20;
+  const thumbSize = isLarge ? 16 : 16;
+  const thumbOffset = isLarge ? 4 : 2;
+
+  return (
+    <button
+      onClick={onChange}
+      role="switch"
+      aria-checked={checked}
+      style={{
+        position: "relative",
+        width: trackWidth,
+        height: trackHeight,
+        borderRadius: 9999,
+        backgroundColor: checked ? "var(--spectrum-blue-700)" : "var(--spectrum-gray-300)",
+        border: "none",
+        cursor: "pointer",
+        transition: "background-color 0.15s ease",
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          top: thumbOffset,
+          width: thumbSize,
+          height: thumbSize,
+          borderRadius: "50%",
+          backgroundColor: "white",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.2)",
+          transition: "transform 0.15s ease",
+          transform: checked
+            ? `translateX(${trackWidth - thumbSize - thumbOffset * 2}px)`
+            : `translateX(${thumbOffset}px)`,
+        }}
+      />
+    </button>
+  );
+};
+
+// Chroma button component
+const ChromaButton: React.FC<{
+  value: ChromaKeyColor;
+  label: string;
+  color: string;
+  isActive: boolean;
+  onClick: () => void;
+}> = ({ value, label, color, isActive, onClick }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "6px 12px",
+        fontSize: 12,
+        borderRadius: 6,
+        border: "1px solid",
+        cursor: "pointer",
+        transition: "all 0.15s ease",
+        backgroundColor: isActive
+          ? "rgba(var(--spectrum-blue-900-rgb, 20, 115, 230), 0.1)"
+          : "var(--spectrum-gray-100)",
+        borderColor: isActive
+          ? "var(--spectrum-blue-700)"
+          : isHovered
+          ? "var(--spectrum-gray-500)"
+          : "var(--spectrum-gray-300)",
+        color: isActive ? "var(--spectrum-blue-700)" : "var(--spectrum-gray-600)",
+      }}
+    >
+      {value !== "none" && (
+        <span
+          style={{
+            width: 12,
+            height: 12,
+            borderRadius: "50%",
+            border: "1px solid rgba(0, 0, 0, 0.2)",
+            backgroundColor: color,
+          }}
+        />
+      )}
+      {label}
+    </button>
+  );
+};
+
+// Action button component
+const ActionButton: React.FC<{
+  onClick: () => void;
+  disabled?: boolean;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}> = ({ onClick, disabled, style, children }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        padding: "8px 12px",
+        fontSize: 14,
+        borderRadius: 6,
+        backgroundColor: "var(--spectrum-gray-100)",
+        border: "1px solid",
+        borderColor: isHovered && !disabled ? "var(--spectrum-gray-500)" : "var(--spectrum-gray-300)",
+        color: "var(--spectrum-gray-900)",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        transition: "all 0.15s ease",
+        ...style,
+      }}
+    >
+      {children}
+    </button>
   );
 };

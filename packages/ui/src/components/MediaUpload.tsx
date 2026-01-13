@@ -28,8 +28,6 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
   onChange,
   maxSizeKB = 500,
   maxVideoSizeKB = 5000, // 5MB for videos
-  className = "",
-  dropzoneClassName = "",
   allowVideo = true,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,6 +35,7 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const acceptedTypes = allowVideo
     ? [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES]
@@ -177,22 +176,133 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
   const isVideo = mediaType === "video";
   const isGif = mediaType === "gif";
 
+  const containerStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 500,
+    color: "var(--spectrum-gray-900)",
+  };
+
+  const subtleStyle: React.CSSProperties = {
+    color: "var(--spectrum-gray-600)",
+    fontWeight: 400,
+  };
+
+  const previewContainerStyle: React.CSSProperties = {
+    position: "relative",
+  };
+
+  const previewWrapperStyle: React.CSSProperties = {
+    position: "relative",
+    width: "100%",
+    height: 128,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "var(--spectrum-gray-100)",
+    border: "1px solid var(--spectrum-gray-300)",
+  };
+
+  const mediaStyle: React.CSSProperties = {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+  };
+
+  const badgeStyle: React.CSSProperties = {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    padding: "2px 6px",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    borderRadius: 4,
+    fontSize: 12,
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+  };
+
+  const playButtonStyle: React.CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    opacity: isHovered ? 1 : 0,
+    transition: "opacity 0.15s ease",
+    border: "none",
+    cursor: "pointer",
+  };
+
+  const overlayStyle: React.CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    opacity: isHovered ? 1 : 0,
+    transition: "opacity 0.15s ease",
+    borderRadius: 8,
+  };
+
+  const overlayButtonStyle: React.CSSProperties = {
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 500,
+    borderRadius: 8,
+    border: "none",
+    cursor: "pointer",
+    transition: "background-color 0.15s ease",
+  };
+
+  const dropzoneStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: 24,
+    borderRadius: 8,
+    border: "2px dashed",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    borderColor: isDragging ? "var(--spectrum-blue-700)" : "var(--spectrum-gray-400)",
+    backgroundColor: isDragging ? "rgba(var(--spectrum-blue-900-rgb, 20, 115, 230), 0.1)" : "transparent",
+  };
+
+  const errorStyle: React.CSSProperties = {
+    fontSize: 12,
+    color: "var(--spectrum-negative-visual-color, #d31510)",
+  };
+
   return (
-    <div className={`flex flex-col gap-2 ${className}`}>
-      <label className="text-sm font-medium text-text">
-        Media {allowVideo && <span className="text-text-subtle font-normal">(image, GIF, or video)</span>}
+    <div style={containerStyle}>
+      <label style={labelStyle}>
+        Media {allowVideo && <span style={subtleStyle}>(image, GIF, or video)</span>}
       </label>
 
       {value ? (
         // Media preview
-        <div className="relative group">
-          <div className="relative w-full h-32 rounded-lg overflow-hidden bg-surface-raised border border-border">
+        <div
+          style={previewContainerStyle}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div style={previewWrapperStyle}>
             {isVideo ? (
               <>
                 <video
                   ref={videoRef}
                   src={value}
-                  className="w-full h-full object-contain"
+                  style={mediaStyle}
                   loop
                   muted
                   playsInline
@@ -203,21 +313,21 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
                 <button
                   type="button"
                   onClick={toggleVideoPlay}
-                  className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={playButtonStyle}
                 >
                   {isVideoPlaying ? (
-                    <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <svg style={{ width: 48, height: 48, color: "white" }} fill="currentColor" viewBox="0 0 24 24">
                       <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                     </svg>
                   ) : (
-                    <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <svg style={{ width: 48, height: 48, color: "white" }} fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   )}
                 </button>
                 {/* Video badge */}
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-black/60 rounded text-xs text-white flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <div style={badgeStyle}>
+                  <svg style={{ width: 12, height: 12 }} fill="currentColor" viewBox="0 0 24 24">
                     <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4zM5 6h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" />
                   </svg>
                   Video
@@ -228,11 +338,11 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
                 <img
                   src={value}
                   alt="Item preview"
-                  className="w-full h-full object-contain"
+                  style={mediaStyle}
                 />
                 {/* GIF badge */}
                 {isGif && (
-                  <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-black/60 rounded text-xs text-white font-medium">
+                  <div style={{ ...badgeStyle, fontWeight: 500 }}>
                     GIF
                   </div>
                 )}
@@ -240,18 +350,26 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
             )}
           </div>
           {/* Action overlay */}
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+          <div style={overlayStyle}>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="px-3 py-1.5 text-xs font-medium bg-surface-raised rounded-lg text-text hover:bg-surface-soft transition-colors"
+              style={{
+                ...overlayButtonStyle,
+                backgroundColor: "var(--spectrum-gray-100)",
+                color: "var(--spectrum-gray-900)",
+              }}
             >
               Replace
             </button>
             <button
               type="button"
               onClick={handleRemove}
-              className="px-3 py-1.5 text-xs font-medium bg-danger rounded-lg text-white hover:bg-danger-soft transition-colors"
+              style={{
+                ...overlayButtonStyle,
+                backgroundColor: "var(--spectrum-negative-visual-color, #d31510)",
+                color: "white",
+              }}
             >
               Remove
             </button>
@@ -264,19 +382,10 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onClick={() => inputRef.current?.click()}
-          className={`
-            flex flex-col items-center justify-center gap-2 p-6
-            rounded-lg border-2 border-dashed cursor-pointer
-            transition-colors
-            ${isDragging
-              ? "border-accent bg-accent/10"
-              : "border-border hover:border-text-subtle hover:bg-surface-raised/50"
-            }
-            ${dropzoneClassName}
-          `}
+          style={dropzoneStyle}
         >
           <svg
-            className="w-8 h-8 text-text-subtle"
+            style={{ width: 32, height: 32, color: "var(--spectrum-gray-600)" }}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -288,11 +397,11 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <div className="text-center">
-            <p className="text-sm text-text-muted">
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontSize: 14, color: "var(--spectrum-gray-700)" }}>
               Drop file here, click to browse, or paste
             </p>
-            <p className="text-xs text-text-subtle mt-1">
+            <p style={{ fontSize: 12, color: "var(--spectrum-gray-600)", marginTop: 4 }}>
               {allowVideo
                 ? `Images: max ${maxSizeKB}KB • Videos: max ${maxVideoSizeKB >= 1000 ? `${maxVideoSizeKB / 1000}MB` : `${maxVideoSizeKB}KB`}, 30s`
                 : `Max ${maxSizeKB}KB • PNG, JPG, GIF, WebP`}
@@ -306,11 +415,11 @@ export const MediaUpload: React.FC<MediaUploadProps> = ({
         type="file"
         accept={acceptedTypes.join(",")}
         onChange={handleFileSelect}
-        className="hidden"
+        style={{ display: "none" }}
       />
 
       {error && (
-        <p className="text-xs text-danger" role="alert">
+        <p style={errorStyle} role="alert">
           {error}
         </p>
       )}
