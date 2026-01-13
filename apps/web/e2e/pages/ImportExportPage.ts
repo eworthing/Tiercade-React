@@ -49,35 +49,35 @@ export class ImportExportPage extends BasePage {
    * Get JSON export card/button
    */
   get exportJsonButton(): Locator {
-    return this.page.locator('button:has-text("JSON")').first();
+    return this.getByTestId("export-format-json");
   }
 
   /**
    * Get CSV export card/button
    */
   get exportCsvButton(): Locator {
-    return this.page.locator('button:has-text("CSV")').first();
+    return this.getByTestId("export-format-csv");
   }
 
   /**
    * Get Markdown export card/button
    */
   get exportMarkdownButton(): Locator {
-    return this.page.locator('button:has-text("Markdown")').first();
+    return this.getByTestId("export-format-markdown");
   }
 
   /**
    * Get Share Link export card/button
    */
   get exportLinkButton(): Locator {
-    return this.page.locator('button:has-text("Share Link")').first();
+    return this.getByTestId("export-format-link");
   }
 
   /**
    * Get PNG export card/button
    */
   get exportPngButton(): Locator {
-    return this.page.locator('button:has-text("PNG")').first();
+    return this.getByTestId("export-format-png");
   }
 
   /**
@@ -94,29 +94,26 @@ export class ImportExportPage extends BasePage {
   /**
    * Get file input element
    */
-  get fileInput(): Locator {
-    return this.page.locator('input[type="file"]');
+  get browseButton(): Locator {
+    return this.page.getByRole("button", { name: /browse/i });
   }
 
-  /**
-   * Get import button (if separate from file input)
-   */
-  get importButton(): Locator {
-    return this.page.locator('button:has-text("Import"), button:has-text("Choose File")');
+  get fileInput(): Locator {
+    return this.getByTestId("import-file-input");
   }
 
   /**
    * Check if file input exists
    */
   async hasFileInput(): Promise<boolean> {
-    return (await this.fileInput.count()) > 0;
+    return (await this.fileInput.count()) > 0 || (await this.browseButton.count()) > 0;
   }
 
   /**
    * Check if import button exists
    */
   async hasImportButton(): Promise<boolean> {
-    return (await this.importButton.count()) > 0;
+    return (await this.browseButton.count()) > 0;
   }
 
   // ============================================================================
@@ -214,7 +211,15 @@ export class ImportExportPage extends BasePage {
    * Import a JSON file from path
    */
   async importJsonFile(filepath: string): Promise<void> {
-    await this.fileInput.setInputFiles(filepath);
+    await this.fileInput.first().waitFor({ state: "attached" });
+    if ((await this.fileInput.count()) > 0) {
+      await this.fileInput.first().setInputFiles(filepath);
+    } else {
+      const chooserPromise = this.page.waitForEvent("filechooser");
+      await this.browseButton.click({ force: true });
+      const chooser = await chooserPromise;
+      await chooser.setFiles(filepath);
+    }
     await this.waitForContentUpdate();
   }
 
@@ -230,7 +235,15 @@ export class ImportExportPage extends BasePage {
    * Import a CSV file from path
    */
   async importCsvFile(filepath: string): Promise<void> {
-    await this.fileInput.setInputFiles(filepath);
+    await this.fileInput.first().waitFor({ state: "attached" });
+    if ((await this.fileInput.count()) > 0) {
+      await this.fileInput.first().setInputFiles(filepath);
+    } else {
+      const chooserPromise = this.page.waitForEvent("filechooser");
+      await this.browseButton.click({ force: true });
+      const chooser = await chooserPromise;
+      await chooser.setFiles(filepath);
+    }
     await this.waitForContentUpdate();
   }
 
@@ -247,7 +260,15 @@ export class ImportExportPage extends BasePage {
    */
   async importInvalidFile(content: string): Promise<void> {
     const tempFile = this.createTempFile("invalid.txt", content);
-    await this.fileInput.setInputFiles(tempFile);
+    await this.fileInput.first().waitFor({ state: "attached" });
+    if ((await this.fileInput.count()) > 0) {
+      await this.fileInput.first().setInputFiles(tempFile);
+    } else {
+      const chooserPromise = this.page.waitForEvent("filechooser");
+      await this.browseButton.click({ force: true });
+      const chooser = await chooserPromise;
+      await chooser.setFiles(tempFile);
+    }
     await this.waitForContentUpdate();
   }
 

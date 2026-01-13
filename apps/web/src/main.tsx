@@ -6,7 +6,6 @@ import { BrowserRouter } from "react-router-dom";
 import { store } from "@tiercade/state";
 import { AppShell } from "./shell/AppShell";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import "@react-spectrum/s2/page.css"; // S2 page styles for full-page app
 import "./index.css";
 
 const rootElement = document.getElementById("root") as HTMLElement;

@@ -99,5 +99,5 @@ Components use `data-testid` attributes:
 - Tier rows: `tier-row-{tierId}` (e.g., `tier-row-S`)
 - Item cards: `item-card-{itemId}` (e.g., `item-card-123`)
 - Theme cards: `theme-card-{themeId}` (e.g., `theme-card-smash-classic`)
-- Current theme: `current-theme`
+- Theme selection: `theme-card-*` with `aria-selected`
 - Theme preview: `theme-preview`

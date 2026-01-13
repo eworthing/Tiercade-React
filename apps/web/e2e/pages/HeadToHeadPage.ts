@@ -29,7 +29,7 @@ export class HeadToHeadPage extends BasePage {
    */
   get startButton(): Locator {
     return this.page.locator(
-      '[data-testid="h2h-start"], button:has-text("Start Comparing"), button:has-text("Start"), button:has-text("Begin")'
+      '[data-testid="h2h-start"], button:has-text("Start Comparing"), button:has-text("Start comparing"), button:has-text("Start"), button:has-text("Begin")'
     );
   }
 
@@ -191,7 +191,16 @@ export class HeadToHeadPage extends BasePage {
    */
   get applyButton(): Locator {
     return this.page.locator(
-      '[data-testid="h2h-apply"], button:has-text("Apply Results"), button:has-text("End & Apply"), button:has-text("Apply"), button:has-text("Finalize"), button:has-text("Done")'
+      '[data-testid="h2h-apply"], button:has-text("Apply Results"), button:has-text("Finalize"), button:has-text("Done")'
+    );
+  }
+
+  /**
+   * Get the "End & Apply" button (early termination)
+   */
+  get endAndApplyButton(): Locator {
+    return this.page.locator(
+      '[data-testid="h2h-end-apply"], button:has-text("End & Apply Results")'
     );
   }
 
@@ -206,7 +215,25 @@ export class HeadToHeadPage extends BasePage {
    * Apply the H2H results
    */
   async apply(): Promise<void> {
-    await this.applyButton.click({ timeout: 3000 });
+    if (await this.endAndApplyButton.isVisible({ timeout: 500 })) {
+      await this.endAndApplyButton.first().click({ timeout: 3000 });
+    } else {
+      await this.applyButton.first().click({ timeout: 3000 });
+    }
+
+    // If we're ending early, confirm the AlertDialog.
+    const endConfirmDialog = this.page
+      .locator('[role="dialog"]')
+      .filter({ hasText: /End Session\\?/i });
+
+    if (await endConfirmDialog.isVisible({ timeout: 2000 })) {
+      await endConfirmDialog.getByRole("button", { name: /End & Apply/i }).click();
+    }
+
+    await this.waitForContentUpdate();
+
+    // Ensure we're on the board afterwards (some flows remain on the H2H route).
+    await this.navigateTo("/");
     await this.waitForContentUpdate();
   }
 
@@ -218,8 +245,13 @@ export class HeadToHeadPage extends BasePage {
    * Complete all comparisons by always selecting the left item
    * @param maxIterations Maximum number of iterations to prevent infinite loops
    */
-  async completeAllComparisons(maxIterations = 30): Promise<void> {
+  async completeAllComparisons(maxIterations = 200): Promise<void> {
     for (let i = 0; i < maxIterations; i++) {
+      // Stop once completion UI appears
+      if (await this.isComplete()) {
+        break;
+      }
+
       const cardCount = await this.getComparisonCardCount();
 
       if (cardCount === 0) {
@@ -238,7 +270,7 @@ export class HeadToHeadPage extends BasePage {
    */
   async runFullSession(): Promise<void> {
     await this.start();
-    await this.completeAllComparisons();
+    await this.completeAllComparisons(200);
     await this.apply();
   }
 

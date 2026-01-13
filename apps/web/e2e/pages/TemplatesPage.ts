@@ -57,24 +57,18 @@ export class TemplatesPage extends BasePage {
   }
 
   /**
-   * Get the "All Templates" category button
+   * Get the category picker
    */
-  get allTemplatesButton(): Locator {
-    return this.page.locator('button:has-text("All Templates")');
-  }
-
-  /**
-   * Get a category filter button by name
-   */
-  getCategoryButton(category: string): Locator {
-    return this.page.locator(`button:has-text("${category}")`);
+  get categoryPicker(): Locator {
+    return this.page.getByLabel("Category");
   }
 
   /**
    * Select a category filter
    */
   async selectCategory(category: string): Promise<void> {
-    await this.getCategoryButton(category).click();
+    await this.categoryPicker.click();
+    await this.page.getByRole("option", { name: category }).click();
     await this.waitForContentUpdate();
   }
 
@@ -82,7 +76,8 @@ export class TemplatesPage extends BasePage {
    * Reset to all templates
    */
   async showAllTemplates(): Promise<void> {
-    await this.allTemplatesButton.click();
+    await this.categoryPicker.click();
+    await this.page.getByRole("option", { name: "All templates" }).click();
     await this.waitForContentUpdate();
   }
 
@@ -91,10 +86,10 @@ export class TemplatesPage extends BasePage {
   // ============================================================================
 
   /**
-   * Get all template cards (articles with h3 headers and Preview button)
+   * Get all template cards
    */
   get templateCards(): Locator {
-    return this.page.locator('article:has(button:has-text("Preview"))');
+    return this.getByTestIdPrefix("template-card-");
   }
 
   /**
@@ -115,7 +110,7 @@ export class TemplatesPage extends BasePage {
    * Get template card by name
    */
   getTemplateByName(name: string): Locator {
-    return this.page.locator("article").filter({ hasText: name });
+    return this.templateCards.filter({ hasText: name });
   }
 
   /**
@@ -126,10 +121,10 @@ export class TemplatesPage extends BasePage {
   }
 
   /**
-   * Get the Use Template button on a template card
+   * Get the Use button on a template card
    */
   getUseButton(templateCard: Locator): Locator {
-    return templateCard.locator('button:has-text("Use Template")');
+    return templateCard.locator('button:has-text("Use")');
   }
 
   /**
@@ -176,7 +171,7 @@ export class TemplatesPage extends BasePage {
    * Get featured templates section
    */
   get featuredSection(): Locator {
-    return this.page.locator("section").filter({ hasText: "Featured Templates" });
+    return this.page.locator("section").filter({ hasText: "Featured templates" });
   }
 
   /**
@@ -201,7 +196,7 @@ export class TemplatesPage extends BasePage {
    * Get the preview modal
    */
   get previewModal(): Locator {
-    return this.page.locator(".fixed").filter({ has: this.page.locator("h2") });
+    return this.page.getByTestId("template-preview-dialog");
   }
 
   /**
@@ -245,14 +240,14 @@ export class TemplatesPage extends BasePage {
    * Get tier labels shown in preview
    */
   get previewTierLabels(): Locator {
-    return this.previewModal.locator(".rounded-md.text-white");
+    return this.previewModal.locator('[data-testid="template-preview-tier"]');
   }
 
   /**
    * Get included items shown in preview
    */
   get previewItems(): Locator {
-    return this.previewModal.locator(".bg-surface-soft.rounded.text-xs");
+    return this.previewModal.locator('[data-testid="template-preview-item"]');
   }
 
   // ============================================================================

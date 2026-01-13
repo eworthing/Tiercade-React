@@ -21,24 +21,26 @@ test.describe("Selection - Basic", () => {
     await firstItem.click();
     await tierBoardPage.waitForAnimation();
 
-    // Item should have visual selection indicator (ring styling)
-    // The item card should show selection via CSS class or visual change
-    const classAttr = await firstItem.getAttribute("class");
-    expect(classAttr).toMatch(/ring|selected|border/);
+    // Item should be selected via ARIA state
+    await expect(firstItem).toHaveAttribute("aria-selected", "true");
   });
 
   test("should toggle selection on click", async ({ tierBoardPage, page }) => {
     const firstItem = tierBoardPage.allItemCards.first();
-    const initialClass = await firstItem.getAttribute("class");
+    const initialSelected = await firstItem.getAttribute("aria-selected");
 
     // Click to select
     await firstItem.click();
     await tierBoardPage.waitForAnimation();
-    const selectedClass = await firstItem.getAttribute("class");
+    const selectedState = await firstItem.getAttribute("aria-selected");
 
-    // The class should change when selected
-    // Either adds ring styling or changes in some way
-    expect(selectedClass).not.toBe(initialClass);
+    expect(selectedState).not.toBe(initialSelected);
+    expect(selectedState).toBe("true");
+
+    // Click again to deselect
+    await firstItem.click();
+    await tierBoardPage.waitForAnimation();
+    await expect(firstItem).not.toHaveAttribute("aria-selected", "true");
   });
 
   test("should select multiple items with clicks", async ({ tierBoardPage }) => {
@@ -63,25 +65,19 @@ test.describe("Selection - Basic", () => {
 
   test("should deselect all with Escape", async ({ tierBoardPage, page }) => {
     const firstItem = tierBoardPage.allItemCards.first();
-    const initialClass = await firstItem.getAttribute("class");
 
     // Select an item
     await firstItem.click();
     await tierBoardPage.waitForAnimation();
+    await expect(firstItem).toHaveAttribute("aria-selected", "true");
 
     // Focus body and press Escape
     await page.click("body", { position: { x: 10, y: 10 } });
     await tierBoardPage.pressEscape();
     await tierBoardPage.waitForAnimation();
 
-    // Class should return to initial state or selection count should be gone
-    const afterEscapeClass = await firstItem.getAttribute("class");
-
-    // Either the class reverts OR the selection indicator is hidden
-    // This is a soft assertion since the exact behavior may vary
-    const selectionDisplay = tierBoardPage.selectionCountDisplay;
-    const selectionVisible = await selectionDisplay.count() > 0 && await selectionDisplay.isVisible();
-    expect(afterEscapeClass === initialClass || !selectionVisible).toBe(true);
+    await expect(firstItem).not.toHaveAttribute("aria-selected", "true");
+    await expect(tierBoardPage.batchActionBar).toBeHidden();
   });
 });
 
@@ -115,18 +111,16 @@ test.describe("Selection - Select All", () => {
     await tierBoardPage.pressSelectAll();
     await tierBoardPage.waitForAnimation();
 
-    // Try clear button (use first() to avoid strict mode), fallback to Escape
-    const clearBtn = page.locator('button:has-text("Clear")').first();
-    if (await clearBtn.count() > 0 && await clearBtn.isVisible()) {
+    // Try clear button, fallback to Escape
+    const clearBtn = tierBoardPage.clearSelectionButton;
+    if ((await clearBtn.count()) > 0 && (await clearBtn.isVisible())) {
       await clearBtn.click();
     } else {
       await page.keyboard.press("Escape");
     }
     await tierBoardPage.waitForAnimation();
 
-    // After clearing, selection count should not show selected items
-    // Just verify the action completed without error
-    expect(true).toBe(true);
+    await expect(tierBoardPage.batchActionBar).toBeHidden();
   });
 });
 

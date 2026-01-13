@@ -95,9 +95,10 @@ test.describe("Head-to-Head", () => {
     await headToHeadPage.completeAllComparisons();
     await headToHeadPage.apply();
 
-    // Navigate to tier board
-    await headToHeadPage.navigateViaNav("Board");
-    await page.waitForTimeout(500);
+    // Should navigate back to the board after applying
+    await expect(page.locator('[data-testid^="tier-row-"]').first()).toBeVisible({
+      timeout: 15000,
+    });
 
     // After H2H completion, items should be distributed across tiers
     // Wilson score algorithm places items based on their win rate
@@ -122,8 +123,13 @@ test.describe("Head-to-Head", () => {
     await headToHeadPage.undo();
     await headToHeadPage.waitForAnimation();
 
-    // Navigate to tier board
-    await headToHeadPage.navigateViaNav("Board");
+    // Ensure we're on the tier board
+    if (page.url().includes("/head-to-head")) {
+      await headToHeadPage.navigateTo("/");
+    }
+    await expect(page.locator('[data-testid^="tier-row-"]').first()).toBeVisible({
+      timeout: 15000,
+    });
 
     // Items should be back in unranked (undo worked)
     const unrankedRow = page.locator('[data-testid="tier-row-unranked"]');

@@ -23,8 +23,9 @@ test.describe("Themes", () => {
   });
 
   test("should display current theme indicator", async ({ themesPage }) => {
-    // Should show which theme is currently selected
-    await expect(themesPage.currentThemeIndicator).toBeVisible();
+    // At least one theme should be selected by default
+    const current = await themesPage.getCurrentThemeId();
+    expect(current).not.toBeNull();
   });
 
   test("should allow theme selection", async ({ themesPage }) => {
@@ -35,10 +36,9 @@ test.describe("Themes", () => {
       // Click on the second theme card
       await themesPage.selectThemeAt(1);
 
-      // Verify the theme card shows as selected (has ring class)
+      // Verify the theme card shows as selected
       const card = themesPage.getThemeCardAt(1);
-      const classes = await card.getAttribute("class");
-      expect(classes).toContain("ring");
+      await expect(card).toHaveAttribute("aria-selected", "true");
     }
   });
 
@@ -78,8 +78,7 @@ test.describe("Themes", () => {
       // Verify theme is still selected
       if (themeId) {
         const selectedCard = page.locator(`[data-testid="${themeId}"]`);
-        const classes = await selectedCard.getAttribute("class");
-        expect(classes).toContain("ring");
+        await expect(selectedCard).toHaveAttribute("aria-selected", "true");
       }
     }
   });
@@ -116,18 +115,15 @@ test.describe("Themes - Multiple Selections", () => {
       // Select first theme
       await themesPage.selectThemeAt(0);
       const card0 = themesPage.getThemeCardAt(0);
-      let classes = await card0.getAttribute("class");
-      expect(classes).toContain("ring");
+      await expect(card0).toHaveAttribute("aria-selected", "true");
 
       // Select second theme
       await themesPage.selectThemeAt(1);
       const card1 = themesPage.getThemeCardAt(1);
-      classes = await card1.getAttribute("class");
-      expect(classes).toContain("ring");
+      await expect(card1).toHaveAttribute("aria-selected", "true");
 
-      // First theme should no longer have ring
-      classes = await card0.getAttribute("class");
-      expect(classes).not.toContain("ring-2"); // ring-2 indicates selected
+      // First theme should no longer be selected
+      await expect(card0).toHaveAttribute("aria-selected", "false");
     }
   });
 });

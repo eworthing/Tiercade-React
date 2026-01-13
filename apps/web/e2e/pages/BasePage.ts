@@ -22,14 +22,14 @@ export abstract class BasePage {
    * Get the onboarding wizard overlay
    */
   get onboardingWizard(): Locator {
-    return this.page.locator(".fixed.inset-0.z-50").filter({ hasText: "Welcome to Tiercade" });
+    return this.page.getByTestId("onboarding-wizard");
   }
 
   /**
    * Get the skip button in the onboarding wizard
    */
   get onboardingSkipButton(): Locator {
-    return this.page.locator('button:has-text("Skip")');
+    return this.page.getByTestId("onboarding-skip");
   }
 
   /**
@@ -40,20 +40,13 @@ export abstract class BasePage {
       // Wait briefly to see if onboarding appears
       await this.page.waitForTimeout(500);
 
-      // Check for the overlay first
-      const overlay = this.page.locator(".fixed.inset-0.z-50");
-      const overlayCount = await overlay.count();
-
-      if (overlayCount > 0) {
-        // Try skip button first
-        const skipButton = this.page.locator('button:has-text("Skip")');
-        if (await skipButton.isVisible({ timeout: 500 })) {
-          await skipButton.click();
+      if (await this.onboardingWizard.isVisible({ timeout: 500 })) {
+        if (await this.onboardingSkipButton.isVisible({ timeout: 500 })) {
+          await this.onboardingSkipButton.click();
           await this.page.waitForTimeout(300);
           return;
         }
 
-        // Fallback to escape key
         await this.page.keyboard.press("Escape");
         await this.page.waitForTimeout(300);
       }
@@ -117,7 +110,7 @@ export abstract class BasePage {
    * Get the navigation link by name (uses first match for mobile/desktop nav)
    */
   getNavLink(name: string): Locator {
-    return this.page.locator(`nav a:has-text("${name}")`).first();
+    return this.page.locator("nav").getByRole("button", { name }).first();
   }
 
   /**
@@ -126,7 +119,8 @@ export abstract class BasePage {
   async navigateViaNav(linkText: string): Promise<void> {
     const link = this.getNavLink(linkText);
     await link.waitFor({ state: "visible", timeout: 3000 });
-    await link.click();
+    await this.page.keyboard.press("Escape").catch(() => undefined);
+    await link.click({ force: true });
   }
 
   /**
@@ -147,14 +141,17 @@ export abstract class BasePage {
    * Click undo
    */
   async undo(): Promise<void> {
-    await this.undoButton.click();
+    // Close any open popovers/dialogs that may intercept pointer events.
+    await this.page.keyboard.press("Escape").catch(() => undefined);
+    await this.undoButton.first().click({ force: true });
   }
 
   /**
    * Click redo
    */
   async redo(): Promise<void> {
-    await this.redoButton.click();
+    await this.page.keyboard.press("Escape").catch(() => undefined);
+    await this.redoButton.first().click({ force: true });
   }
 
   // ============================================================================

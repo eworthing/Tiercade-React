@@ -195,8 +195,8 @@ test.describe("Templates - Navigation", () => {
     // Wait for page to be fully interactive
     await page.waitForLoadState("domcontentloaded");
 
-    // Click templates link with force to bypass any animation issues
-    const templatesLink = page.locator('a:has-text("Templates")').first();
+    // Click templates button with force to bypass any animation issues
+    const templatesLink = page.locator("nav").getByRole("button", { name: "Templates" }).first();
     await expect(templatesLink).toBeVisible();
     await templatesLink.click({ force: true });
 

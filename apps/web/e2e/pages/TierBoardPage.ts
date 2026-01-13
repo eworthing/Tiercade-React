@@ -157,14 +157,14 @@ export class TierBoardPage extends BasePage {
    * Get selection count display
    */
   get selectionCountDisplay(): Locator {
-    return this.page.locator('text=/\\d+ selected/');
+    return this.batchActionBar.locator('text=/\\d+ selected/').first();
   }
 
   /**
    * Get clear selection button
    */
   get clearSelectionButton(): Locator {
-    return this.page.locator('button:has-text("Clear")');
+    return this.batchActionBar.locator('button[aria-label*="Clear"]');
   }
 
   // ============================================================================

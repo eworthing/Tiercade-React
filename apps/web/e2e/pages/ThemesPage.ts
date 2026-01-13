@@ -59,29 +59,17 @@ export class ThemesPage extends BasePage {
     await this.waitForAnimation();
   }
 
-  // ============================================================================
-  // Current Theme
-  // ============================================================================
-
-  /**
-   * Get the current theme indicator
-   */
-  get currentThemeIndicator(): Locator {
-    return this.getByTestId("current-theme");
-  }
-
   /**
    * Get the testid of the currently selected theme card
    */
   async getCurrentThemeId(): Promise<string | null> {
-    // Look for card with "ring" class (selected indicator)
     const cards = this.themeCards;
     const count = await cards.count();
 
     for (let i = 0; i < count; i++) {
       const card = cards.nth(i);
-      const classes = await card.getAttribute("class");
-      if (classes?.includes("ring")) {
+      const selected = await card.getAttribute("aria-selected");
+      if (selected === "true") {
         return card.getAttribute("data-testid");
       }
     }
@@ -93,8 +81,8 @@ export class ThemesPage extends BasePage {
    */
   async isThemeSelected(themeId: string): Promise<boolean> {
     const card = this.getThemeCard(themeId);
-    const classes = await card.getAttribute("class");
-    return classes?.includes("ring") ?? false;
+    const selected = await card.getAttribute("aria-selected");
+    return selected === "true";
   }
 
   // ============================================================================

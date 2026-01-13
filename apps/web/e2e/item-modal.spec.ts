@@ -283,8 +283,8 @@ test.describe("Item Modal - Undo/Redo Integration", () => {
     await deleteButton.click();
     await page.waitForTimeout(300);
 
-    // Confirm delete
-    const confirmDialog = page.locator('[role="dialog"]:has-text("Are you sure")');
+    // Confirm delete (AlertDialog)
+    const confirmDialog = page.locator('[role="alertdialog"], [role="dialog"]').filter({ hasText: /Delete Item/i });
     await expect(confirmDialog).toBeVisible({ timeout: 2000 });
     await confirmDialog.locator('button:has-text("Delete")').click();
 

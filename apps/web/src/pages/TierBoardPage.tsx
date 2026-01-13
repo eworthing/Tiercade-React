@@ -109,17 +109,15 @@ export const TierBoardPage: React.FC = () => {
     }
   }, [dispatch, selectedThemeId]);
 
-  // Load default project on mount only if no tier data exists
-  // Note: Empty deps is intentional - we only check initial state on mount
+  // Load default project on mount if no tier data exists.
   useEffect(() => {
-    const hasTierData = tierOrder && tierOrder.length > 0;
+    const hasTierData = tierOrder.length > 0;
     const hasTierItems = Object.keys(tiers).length > 0;
 
     if (!hasTierData && !hasTierItems) {
       dispatch(loadDefaultProject());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]); // dispatch is stable, tierOrder/tiers intentionally read from initial render
+  }, [dispatch, tierOrder.length, tiers]);
 
   // Check for shared tier list in URL on mount
   useEffect(() => {
@@ -405,7 +403,6 @@ export const TierBoardPage: React.FC = () => {
       {/* Toolbar */}
       <TierBoardToolbar
         totalItems={totalItems}
-        selectionCount={selection.length}
         isExporting={isExporting}
         isPresenting={presentation.isPresenting}
         onAddItem={() => setShowAddItem(true)}
@@ -414,7 +411,6 @@ export const TierBoardPage: React.FC = () => {
         onCopyImage={copyImageToClipboard}
         onCopyLink={handleCopyLink}
         onStreamMode={() => setShowStreamingPanel(true)}
-        onClearSelection={() => dispatch(clearSelection())}
       />
 
       {/* Sort and Filter Bar */}
@@ -537,7 +533,6 @@ export const TierBoardPage: React.FC = () => {
 
 interface TierBoardToolbarProps {
   totalItems: number;
-  selectionCount: number;
   isExporting: boolean;
   isPresenting: boolean;
   onAddItem: () => void;
@@ -546,12 +541,10 @@ interface TierBoardToolbarProps {
   onCopyImage: () => void;
   onCopyLink: () => void;
   onStreamMode: () => void;
-  onClearSelection: () => void;
 }
 
 const TierBoardToolbar: React.FC<TierBoardToolbarProps> = ({
   totalItems,
-  selectionCount,
   isExporting,
   isPresenting,
   onAddItem,
@@ -560,7 +553,6 @@ const TierBoardToolbar: React.FC<TierBoardToolbarProps> = ({
   onCopyImage,
   onCopyLink,
   onStreamMode,
-  onClearSelection,
 }) => (
   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -587,14 +579,6 @@ const TierBoardToolbar: React.FC<TierBoardToolbarProps> = ({
 
     <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 14, color: "var(--spectrum-gray-600)" }}>
       <span>{totalItems} items</span>
-      {selectionCount > 0 && (
-        <>
-          <span style={{ color: "var(--spectrum-blue-800)" }}>{selectionCount} selected</span>
-          <Button variant="secondary" fillStyle="outline" size="S" onPress={onClearSelection}>
-            Clear
-          </Button>
-        </>
-      )}
     </div>
   </div>
 );
