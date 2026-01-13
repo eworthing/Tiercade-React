@@ -21,6 +21,7 @@ import {
 } from "@dnd-kit/sortable";
 import { TierRow, type FileDropResult } from "./TierRow";
 import { tierListCollisionResult } from "./collision";
+import { Image, Text } from "@react-spectrum/s2";
 
 export interface TierBoardProps {
   tiers: Items;
@@ -322,11 +323,10 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
         </div>
       ) : hasImage ? (
         <>
-          <img
+          <Image
             src={item.imageUrl}
             alt={item.name ?? item.id}
-            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
-            draggable={false}
+            UNSAFE_style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           />
           <div style={{
             position: "absolute",
@@ -335,15 +335,15 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
             padding: 6,
             borderRadius: "0 0 8px 8px"
           }}>
-            <p style={{ fontSize: 10, color: "white", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
+            <Text UNSAFE_style={{ fontSize: 10, color: "white", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>
               {item.name ?? item.id}
-            </p>
+            </Text>
           </div>
         </>
       ) : (
-        <span style={{ fontSize: 14, color: "var(--spectrum-gray-900)", fontWeight: 500 }}>
+        <Text UNSAFE_style={{ fontSize: 14, color: "var(--spectrum-gray-900)", fontWeight: 600 }}>
           {item.name ?? item.id}
-        </span>
+        </Text>
       )}
     </div>
   );

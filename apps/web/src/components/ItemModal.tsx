@@ -10,6 +10,7 @@ import {
   Content,
   ButtonGroup,
   AlertDialog,
+  Text,
 } from "@react-spectrum/s2";
 import { generateId } from "@tiercade/core";
 import { MAX_IMAGE_SIZE_KB, MAX_VIDEO_SIZE_KB } from "@tiercade/core";
@@ -173,9 +174,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           <Heading>{title}</Heading>
           <Content>
             {description && (
-              <p style={{ marginBottom: 16, color: "var(--spectrum-gray-700)" }}>
-                {description}
-              </p>
+              <Text>{description}</Text>
             )}
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <TextField

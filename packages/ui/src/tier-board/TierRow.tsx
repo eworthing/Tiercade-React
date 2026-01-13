@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import type { Item } from "@tiercade/core";
-import { STAGGER } from "@tiercade/theme";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useFileDrag, type FileDropResult } from "../hooks";
+import { Badge, Image, Text } from "@react-spectrum/s2";
 
 /** Default tier background color when no theme color is provided */
 const DEFAULT_TIER_BACKGROUND = "#1E293B";
@@ -110,28 +110,22 @@ export const TierRow: React.FC<TierRowProps> = ({
         gap: 4,
         padding: "12px 8px"
       }}>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: 6,
-            padding: "6px 8px",
-            fontSize: 12,
-            fontWeight: 700,
+        <Badge
+          variant="neutral"
+          fillStyle="bold"
+          UNSAFE_style={{
+            backgroundColor: bgColor,
+            color: "white",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
-            color: "white",
-            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+            fontWeight: 700,
+            justifyContent: "center",
             minWidth: 40,
-            backgroundColor: bgColor
           }}
         >
           {label}
-        </div>
-        <div style={{ fontSize: 10, color: "var(--spectrum-gray-600)", textAlign: "center" }}>
-          {items.length} item{items.length === 1 ? "" : "s"}
-        </div>
+        </Badge>
+        <Text>{`${items.length} item${items.length === 1 ? "" : "s"}`}</Text>
       </header>
 
       {/* Items Container with sorted items */}
@@ -151,15 +145,14 @@ export const TierRow: React.FC<TierRowProps> = ({
             width: "100%",
             height: "100%",
             minHeight: 60,
-            color: "var(--spectrum-gray-600)",
-            fontSize: 12
+            color: "var(--spectrum-gray-600)"
           }}>
             {isHighlighted ? (
-              <span style={{ color: "var(--spectrum-blue-700)", fontWeight: 500 }}>
+              <Text UNSAFE_style={{ color: "var(--spectrum-blue-700)", fontWeight: 600 }}>
                 {showFileDrop ? "Drop file to add item" : "Drop here"}
-              </span>
+              </Text>
             ) : (
-              "Drag items or files here"
+              <Text>Drag items or files here</Text>
             )}
           </div>
         ) : (
@@ -303,11 +296,10 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
   if (hasImage) {
     return (
       <>
-        <img
+        <Image
           src={item.imageUrl}
           alt={displayName}
-          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
-          draggable={false}
+          UNSAFE_style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
         />
         {isGif && (
           <div style={{
@@ -332,13 +324,13 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
   // Text-only fallback
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: 4 }}>
-      <span style={{ fontSize: 12, color: "var(--spectrum-gray-900)", textAlign: "center", lineHeight: 1.2, fontWeight: 500 }}>
+      <Text UNSAFE_style={{ fontSize: 12, color: "var(--spectrum-gray-900)", textAlign: "center", lineHeight: 1.2, fontWeight: 600 }}>
         {displayName}
-      </span>
+      </Text>
       {item.seasonString && (
-        <span style={{ fontSize: 9, color: "var(--spectrum-gray-700)", textAlign: "center", lineHeight: 1.2 }}>
+        <Text UNSAFE_style={{ fontSize: 10, color: "var(--spectrum-gray-700)", textAlign: "center", lineHeight: 1.2 }}>
           {item.seasonString}
-        </span>
+        </Text>
       )}
     </div>
   );
@@ -413,13 +405,9 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
 
   const style: React.CSSProperties = {
     transform: dragTransform || undefined,
-    // Modern Spring Physics (Research Doc: 100ms snap, 300ms spring)
-    transition: isDragging
-      ? "none" // Instant response during drag
-      : `${transition}, box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275)`,
+    transition: isDragging ? "none" : transition,
     willChange: isDragging ? "transform" : "auto",
     zIndex: isDragging ? 100 : undefined,
-    animationDelay: `${index * STAGGER.FAST}ms`,
     transformOrigin: "center center",
   };
 

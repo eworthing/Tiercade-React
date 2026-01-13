@@ -1,6 +1,12 @@
 import React, { useState, useCallback } from "react";
 import {
+  ActionButton,
+  Badge,
   Button,
+  ButtonGroup,
+  Picker,
+  PickerItem,
+  Text,
   TextField,
   Dialog,
   DialogTrigger,
@@ -8,6 +14,10 @@ import {
   Content,
   AlertDialog,
 } from "@react-spectrum/s2";
+import ChevronUp from "@react-spectrum/s2/icons/ChevronUp";
+import ChevronDown from "@react-spectrum/s2/icons/ChevronDown";
+import Delete from "@react-spectrum/s2/icons/Delete";
+import Edit from "@react-spectrum/s2/icons/Edit";
 import { TIER_COLOR_PALETTE, TIER_PRESETS } from "@tiercade/theme";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
@@ -156,13 +166,11 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
         <Dialog size="L">
           <Heading>Tier Settings</Heading>
           <Content>
-            <p style={{ marginBottom: 16, color: "var(--spectrum-gray-700)" }}>
-              Customize your tier list structure
-            </p>
+            <Text>Customize your tier list structure</Text>
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Existing Tiers */}
               <div>
-                <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Tiers</h3>
+                <Heading level={3}>Tiers</Heading>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {tierOrder.map((tierId, index) => (
                     <div
@@ -170,87 +178,97 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
                       style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 8, backgroundColor: "var(--spectrum-gray-100)", border: "1px solid var(--spectrum-gray-300)" }}
                     >
                       {/* Reorder buttons */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                        <button
-                          type="button"
-                          onClick={() => handleMoveUp(index)}
-                          disabled={index === 0}
-                          style={{ padding: 2, opacity: index === 0 ? 0.3 : 1, cursor: index === 0 ? "not-allowed" : "pointer" }}
+                      <ButtonGroup aria-label="Reorder tier" orientation="vertical">
+                        <ActionButton
+                          isQuiet
+                          onPress={() => handleMoveUp(index)}
+                          isDisabled={index === 0}
                           aria-label="Move up"
                         >
-                          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleMoveDown(index)}
-                          disabled={index === tierOrder.length - 1}
-                          style={{ padding: 2, opacity: index === tierOrder.length - 1 ? 0.3 : 1, cursor: index === tierOrder.length - 1 ? "not-allowed" : "pointer" }}
+                          <ChevronUp />
+                        </ActionButton>
+                        <ActionButton
+                          isQuiet
+                          onPress={() => handleMoveDown(index)}
+                          isDisabled={index === tierOrder.length - 1}
                           aria-label="Move down"
                         >
-                          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                      </div>
+                          <ChevronDown />
+                        </ActionButton>
+                      </ButtonGroup>
 
                       {/* Color picker */}
-                      <input
-                        type="color"
-                        value={tierColors[tierId] ?? "#1e293b"}
-                        onChange={(e) => handleColorChange(tierId, e.target.value)}
-                        style={{ width: 32, height: 32, borderRadius: 4, cursor: "pointer", border: "none", backgroundColor: "transparent" }}
-                        title="Change color"
-                      />
+                      <Picker
+                        aria-label="Tier color"
+                        selectedKey={tierColors[tierId] ?? "#1e293b"}
+                        onSelectionChange={(key) => handleColorChange(tierId, String(key))}
+                      >
+                        {TIER_COLOR_PALETTE.map((color) => (
+                          <PickerItem key={color} id={color}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span
+                                aria-hidden="true"
+                                style={{
+                                  width: 12,
+                                  height: 12,
+                                  borderRadius: 3,
+                                  backgroundColor: color,
+                                  border: "1px solid var(--spectrum-gray-400)",
+                                }}
+                              />
+                              {color.toUpperCase()}
+                            </div>
+                          </PickerItem>
+                        ))}
+                      </Picker>
 
                       {/* Label */}
-                      {editingLabel === tierId ? (
-                        <input
-                          type="text"
-                          value={editingLabelValue}
-                          onChange={(e) => setEditingLabelValue(e.target.value)}
-                          onBlur={handleLabelSave}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleLabelSave();
-                            if (e.key === "Escape") {
-                              setEditingLabel(null);
-                              setEditingLabelValue("");
-                            }
-                          }}
-                          style={{ flex: 1, padding: "4px 8px", backgroundColor: "var(--spectrum-gray-50)", border: "1px solid var(--spectrum-gray-400)", borderRadius: 4, fontSize: 14 }}
-                          autoFocus
-                        />
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingLabel(tierId);
-                            setEditingLabelValue(tierLabels[tierId] ?? tierId);
-                          }}
-                          style={{ flex: 1, textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
-                        >
-                          {tierLabels[tierId] ?? tierId}
-                        </button>
-                      )}
+                      <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+                        {editingLabel === tierId ? (
+                          <TextField
+                            aria-label="Tier label"
+                            value={editingLabelValue}
+                            onChange={setEditingLabelValue}
+                            onBlur={handleLabelSave}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleLabelSave();
+                              if (e.key === "Escape") {
+                                setEditingLabel(null);
+                                setEditingLabelValue("");
+                              }
+                            }}
+                            autoFocus
+                          />
+                        ) : (
+                          <>
+                            <Text>{tierLabels[tierId] ?? tierId}</Text>
+                            <ActionButton
+                              isQuiet
+                              onPress={() => {
+                                setEditingLabel(tierId);
+                                setEditingLabelValue(tierLabels[tierId] ?? tierId);
+                              }}
+                              aria-label="Edit tier label"
+                            >
+                              <Edit />
+                            </ActionButton>
+                          </>
+                        )}
+                      </div>
 
                       {/* Item count */}
-                      <span style={{ fontSize: 12, color: "var(--spectrum-gray-600)" }}>
-                        {tiers[tierId]?.length ?? 0} items
-                      </span>
+                      <Badge variant="neutral" fillStyle="subtle">
+                        {tiers[tierId]?.length ?? 0}
+                      </Badge>
 
                       {/* Delete button */}
-                      <button
-                        type="button"
-                        onClick={() => setTierToDelete(tierId)}
-                        disabled={tierOrder.length <= 1}
-                        style={{ padding: 6, opacity: tierOrder.length <= 1 ? 0.3 : 1, cursor: tierOrder.length <= 1 ? "not-allowed" : "pointer", color: "var(--spectrum-negative-color-900)" }}
+                      <ActionButton
+                        onPress={() => setTierToDelete(tierId)}
+                        isDisabled={tierOrder.length <= 1}
                         aria-label="Delete tier"
                       >
-                        <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                        <Delete />
+                      </ActionButton>
                     </div>
                   ))}
                 </div>
@@ -258,26 +276,39 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
 
               {/* Add New Tier */}
               <div>
-                <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Add New Tier</h3>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <input
-                    type="color"
-                    value={newTierColor}
-                    onChange={(e) => setNewTierColor(e.target.value)}
-                    style={{ width: 40, height: 40, borderRadius: 4, cursor: "pointer", border: "none", backgroundColor: "transparent" }}
-                    title="Tier color"
-                  />
+                <Heading level={3}>Add New Tier</Heading>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                  <Picker
+                    label="Color"
+                    selectedKey={newTierColor}
+                    onSelectionChange={(key) => setNewTierColor(String(key))}
+                  >
+                    {TIER_COLOR_PALETTE.map((color) => (
+                      <PickerItem key={color} id={color}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: 3,
+                              backgroundColor: color,
+                              border: "1px solid var(--spectrum-gray-400)",
+                            }}
+                          />
+                          {color.toUpperCase()}
+                        </div>
+                      </PickerItem>
+                    ))}
+                  </Picker>
+
                   <TextField
-                    label=" "
-                    placeholder="Tier name..."
+                    label="Name"
+                    placeholder="Tier name…"
                     value={newTierName}
                     onChange={setNewTierName}
                   />
-                  <Button
-                    variant="accent"
-                    onPress={handleAddTier}
-                    isDisabled={!newTierName.trim()}
-                  >
+                  <Button variant="accent" onPress={handleAddTier} isDisabled={!newTierName.trim()}>
                     Add
                   </Button>
                 </div>
@@ -285,7 +316,7 @@ export const TierSettingsModal: React.FC<TierSettingsModalProps> = ({
 
               {/* Presets */}
               <div>
-                <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Quick Presets</h3>
+                <Heading level={3}>Quick Presets</Heading>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {TIER_PRESETS.map((preset) => (
                     <Button

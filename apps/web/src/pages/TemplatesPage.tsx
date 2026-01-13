@@ -64,7 +64,7 @@ const cardMetaRow = style({
   display: "flex",
   gap: 12,
   color: "gray-600",
-  fontSize: "sm",
+  font: { size: "ui-sm" },
 });
 
 const cardViewTall = style({ height: 560 });

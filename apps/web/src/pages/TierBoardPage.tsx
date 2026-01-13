@@ -10,11 +10,27 @@ import {
 } from "@tiercade/ui";
 import {
   Button,
+  ButtonGroup,
   Dialog,
   DialogTrigger,
   Heading,
   Content,
+  IllustratedMessage,
+  Link,
+  Menu,
+  MenuItem,
+  MenuTrigger,
+  Text,
+  Badge,
 } from "@react-spectrum/s2";
+import Add from "@react-spectrum/s2/icons/Add";
+import Settings from "@react-spectrum/s2/icons/Settings";
+import Share from "@react-spectrum/s2/icons/Share";
+import Download from "@react-spectrum/s2/icons/Download";
+import Copy from "@react-spectrum/s2/icons/Copy";
+import LinkIcon from "@react-spectrum/s2/icons/Link";
+import MovieCamera from "@react-spectrum/s2/icons/MovieCamera";
+import Addproject from "@react-spectrum/s2/illustrations/linear/Addproject";
 import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
@@ -345,30 +361,14 @@ export const TierBoardPage: React.FC = () => {
   // Empty state
   if (!tierOrder.length) {
     return (
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: 400,
-        textAlign: "center"
-      }}>
-        <div style={{
-          width: 64,
-          height: 64,
-          marginBottom: 16,
-          borderRadius: "50%",
-          backgroundColor: "var(--spectrum-gray-200)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}>
-          <svg style={{ width: 32, height: 32, color: "var(--spectrum-gray-600)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-        </div>
-        <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>Loading your tier list...</h2>
-        <p style={{ color: "var(--spectrum-gray-700)", fontSize: 14, maxWidth: 280 }}>Setting up your tiers. This should only take a moment.</p>
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: 64 }}>
+        <IllustratedMessage>
+          <Addproject />
+          <Heading>Loading your tier list…</Heading>
+          <Content>
+            <Text>Setting up your tiers. This should only take a moment.</Text>
+          </Content>
+        </IllustratedMessage>
       </div>
     );
   }
@@ -447,21 +447,27 @@ export const TierBoardPage: React.FC = () => {
 
       {/* Empty state hint */}
       {totalItems === 0 && (
-        <div style={{ textAlign: "center", padding: "32px 0" }}>
-          <p style={{ color: "var(--spectrum-gray-600)", fontSize: 14, marginBottom: 8 }}>Your tier list is empty</p>
+        <div style={{ display: "flex", justifyContent: "center", padding: "32px 0" }}>
+          <IllustratedMessage>
+            <Addproject />
+            <Heading>Your tier list is empty</Heading>
+            <Content>
+              <Text>Add items to start ranking.</Text>
+            </Content>
           <Button variant="accent" onPress={() => setShowAddItem(true)}>
             Add your first item
           </Button>
+          </IllustratedMessage>
         </div>
       )}
 
       {totalItems > 0 && (
-        <p style={{ textAlign: "center", color: "var(--spectrum-gray-600)", fontSize: 12 }}>
+        <Text>
           Drag items between tiers • Drop files to add • Double-click to edit •{" "}
-          <button onClick={() => setShowKeyboardHelp(true)} style={{ textDecoration: "underline", background: "none", border: "none", color: "inherit", cursor: "pointer" }}>
+          <Link isQuiet onPress={() => setShowKeyboardHelp(true)}>
             Keyboard shortcuts
-          </button>
-        </p>
+          </Link>
+        </Text>
       )}
 
       {/* Modals - using unified ItemModal */}
@@ -553,127 +559,74 @@ const TierBoardToolbar: React.FC<TierBoardToolbarProps> = ({
   onCopyImage,
   onCopyLink,
   onStreamMode,
-}) => (
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <Button variant="accent" size="S" onPress={onAddItem}>
-        <PlusIcon /> Add Item
-      </Button>
-      <Button variant="secondary" size="S" onPress={onTierSettings}>
-        <SettingsIcon /> Tiers
-      </Button>
-
-      {totalItems > 0 && (
-        <ShareDropdown
-          isExporting={isExporting}
-          onExportPNG={onExportPNG}
-          onCopyImage={onCopyImage}
-          onCopyLink={onCopyLink}
-        />
-      )}
-
-      <Button variant={isPresenting ? "accent" : "secondary"} size="S" onPress={onStreamMode}>
-        <VideoIcon /> {isPresenting ? "Live" : "Stream"}
-      </Button>
-    </div>
-
-    <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 14, color: "var(--spectrum-gray-600)" }}>
-      <span>{totalItems} items</span>
-    </div>
-  </div>
-);
-
-TierBoardToolbar.displayName = "TierBoardToolbar";
-
-interface ShareDropdownProps {
-  isExporting: boolean;
-  onExportPNG: () => void;
-  onCopyImage: () => void;
-  onCopyLink: () => void;
-}
-
-const ShareDropdown: React.FC<ShareDropdownProps> = ({
-  isExporting,
-  onExportPNG,
-  onCopyImage,
-  onCopyLink,
 }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-
   return (
     <div
-      style={{ position: "relative" }}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        flexWrap: "wrap",
+      }}
     >
-      <Button variant="secondary" size="S" isDisabled={isExporting}>
-        <ShareIcon /> Share
-      </Button>
-      {isOpen && (
-        <div style={{
-          position: "absolute",
-          top: "100%",
-          left: 0,
-          marginTop: 4,
-          padding: "4px 0",
-          backgroundColor: "var(--spectrum-gray-100)",
-          border: "1px solid var(--spectrum-gray-300)",
-          borderRadius: 8,
-          minWidth: 160,
-          zIndex: 20,
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
-        }}>
-          <DropdownButton onClick={onExportPNG} disabled={isExporting} icon={<DownloadIcon />}>
-            Download PNG
-          </DropdownButton>
-          <DropdownButton onClick={onCopyImage} disabled={isExporting} icon={<ClipboardIcon />}>
-            Copy Image
-          </DropdownButton>
-          <div style={{ borderTop: "1px solid var(--spectrum-gray-300)", margin: "4px 0" }} />
-          <DropdownButton onClick={onCopyLink} icon={<LinkIcon />}>
-            Copy Link
-          </DropdownButton>
-        </div>
-      )}
+      <ButtonGroup>
+        <Button variant="accent" size="S" onPress={onAddItem}>
+          <Add /> Add item
+        </Button>
+        <Button variant="secondary" size="S" onPress={onTierSettings}>
+          <Settings /> Tiers
+        </Button>
+
+        {totalItems > 0 && (
+          <MenuTrigger>
+            <Button variant="secondary" size="S" isDisabled={isExporting}>
+              <Share /> Share
+            </Button>
+            <Menu
+              aria-label="Share"
+              onAction={(key) => {
+                const action = String(key);
+                if (action === "download") onExportPNG();
+                if (action === "copy-image") onCopyImage();
+                if (action === "copy-link") onCopyLink();
+              }}
+            >
+              <MenuItem id="download">
+                <Download /> Download PNG
+              </MenuItem>
+              <MenuItem id="copy-image">
+                <Copy /> Copy image
+              </MenuItem>
+              <MenuItem id="copy-link">
+                <LinkIcon /> Copy link
+              </MenuItem>
+            </Menu>
+          </MenuTrigger>
+        )}
+
+        <Button
+          variant={isPresenting ? "accent" : "secondary"}
+          size="S"
+          onPress={onStreamMode}
+        >
+          <MovieCamera /> {isPresenting ? "Live" : "Stream"}
+        </Button>
+      </ButtonGroup>
+
+      <Badge variant="neutral" fillStyle="subtle">
+        {totalItems} items
+      </Badge>
     </div>
   );
 };
 
-const DropdownButton: React.FC<{
-  onClick: () => void;
-  disabled?: boolean;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ onClick, disabled, icon, children }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    style={{
-      width: "100%",
-      padding: "8px 12px",
-      textAlign: "left",
-      fontSize: 14,
-      color: "var(--spectrum-gray-900)",
-      background: "none",
-      border: "none",
-      cursor: disabled ? "not-allowed" : "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      opacity: disabled ? 0.5 : 1
-    }}
-    onMouseEnter={(e) => !disabled && (e.currentTarget.style.backgroundColor = "var(--spectrum-gray-200)")}
-    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-  >
-    {icon}
-    {children}
-  </button>
-);
+TierBoardToolbar.displayName = "TierBoardToolbar";
 
 const KeyboardShortcutsContent: React.FC = () => (
   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <div>
-      <h4 style={{ fontSize: 14, fontWeight: 500, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>General</h4>
+      <Heading level={4}>General</Heading>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 14 }}>
         <ShortcutRow keys={["⌘", "Z"]} description="Undo" />
         <ShortcutRow keys={["⌘", "⇧", "Z"]} description="Redo" />
@@ -685,7 +638,7 @@ const KeyboardShortcutsContent: React.FC = () => (
       </div>
     </div>
     <div>
-      <h4 style={{ fontSize: 14, fontWeight: 500, color: "var(--spectrum-gray-900)", marginBottom: 8 }}>Head-to-Head</h4>
+      <Heading level={4}>Head-to-Head</Heading>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 14 }}>
         <ShortcutRow keys={["←"]} description="Vote for left item" />
         <ShortcutRow keys={["→"]} description="Vote for right item" />
@@ -693,75 +646,21 @@ const KeyboardShortcutsContent: React.FC = () => (
         <ShortcutRow keys={["Esc"]} description="Finish & apply" />
       </div>
     </div>
-    <p style={{ fontSize: 12, color: "var(--spectrum-gray-600)" }}>Tip: Use ⌘ on Mac or Ctrl on Windows/Linux</p>
+    <Text>Tip: Use ⌘ on Mac or Ctrl on Windows/Linux</Text>
   </div>
 );
 
 const ShortcutRow: React.FC<{ keys: string[]; description: string }> = ({ keys, description }) => (
   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-    <span style={{ color: "var(--spectrum-gray-700)" }}>{description}</span>
-    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+    <Text>{description}</Text>
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
       {keys.map((key, i) => (
-        <kbd key={i} style={{
-          padding: "2px 6px",
-          backgroundColor: "var(--spectrum-gray-200)",
-          borderRadius: 4,
-          border: "1px solid var(--spectrum-gray-300)",
-          fontSize: 12,
-          fontFamily: "monospace"
-        }}>
+        <Badge key={i} variant="neutral" fillStyle="outline">
           {key}
-        </kbd>
+        </Badge>
       ))}
     </div>
   </div>
-);
-
-// ============================================================================
-// Icons (extracted to reduce JSX noise)
-// ============================================================================
-
-const PlusIcon = () => (
-  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-  </svg>
-);
-
-const SettingsIcon = () => (
-  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-);
-
-const ShareIcon = () => (
-  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-  </svg>
-);
-
-const DownloadIcon = () => (
-  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-  </svg>
-);
-
-const ClipboardIcon = () => (
-  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-  </svg>
-);
-
-const LinkIcon = () => (
-  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-  </svg>
-);
-
-const VideoIcon = () => (
-  <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-  </svg>
 );
 
 // ============================================================================
