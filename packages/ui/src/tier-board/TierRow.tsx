@@ -4,10 +4,10 @@ import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useFileDrag, type FileDropResult } from "../hooks";
-import { Badge, Image, Text } from "@react-spectrum/s2";
+import { Image } from "@react-spectrum/s2";
 
 /** Default tier background color when no theme color is provided */
-const DEFAULT_TIER_BACKGROUND = "#1E293B";
+const DEFAULT_TIER_BACKGROUND = "#64748b";
 
 // Re-export FileDropResult for consumers
 export type { FileDropResult };
@@ -81,22 +81,25 @@ export const TierRow: React.FC<TierRowProps> = ({
       aria-label={`${label} tier, ${items.length} items`}
       {...dragProps}
       style={{
+        position: "relative",
         display: "flex",
         alignItems: "stretch",
-        gap: 12,
-        borderRadius: 8,
-        border: isHighlighted ? "1px solid var(--spectrum-blue-700)" : "1px solid var(--spectrum-gray-300)",
-        minHeight: 80,
-        transition: "all 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-        transform: isHighlighted ? "scale(1.01)" : "scale(1)",
-        boxShadow: isHighlighted ? "0 0 20px rgba(99, 102, 241, 0.3)" : "none",
-        backgroundColor: isHighlighted
-          ? "rgba(99, 102, 241, 0.1)"
+        borderRadius: 12,
+        minHeight: 96,
+        overflow: "hidden",
+        transition: "all 200ms ease",
+        transform: isHighlighted ? "scale(1.005)" : "scale(1)",
+        background: isHighlighted
+          ? "rgba(255, 255, 255, 0.08)"
           : isUnranked
-          ? "rgba(30, 41, 59, 0.5)"
-          : `color-mix(in srgb, ${bgColor}, transparent 85%)`,
-        borderLeftWidth: 4,
-        borderLeftColor: bgColor,
+          ? "rgba(255, 255, 255, 0.02)"
+          : "rgba(255, 255, 255, 0.04)",
+        border: isHighlighted
+          ? "1px solid rgba(99, 102, 241, 0.5)"
+          : "1px solid rgba(255, 255, 255, 0.08)",
+        boxShadow: isHighlighted
+          ? "0 4px 12px rgba(0, 0, 0, 0.3)"
+          : "0 1px 3px rgba(0, 0, 0, 0.2)",
       }}
     >
       {/* Tier Label */}
@@ -107,35 +110,49 @@ export const TierRow: React.FC<TierRowProps> = ({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 4,
-        padding: "12px 8px"
+        gap: 6,
+        padding: "12px 8px",
+        position: "relative",
+        background: `${bgColor}20`,
+        borderRight: "1px solid rgba(255, 255, 255, 0.08)",
       }}>
-        <Badge
-          variant="neutral"
-          fillStyle="bold"
-          UNSAFE_style={{
-            backgroundColor: bgColor,
-            color: "white",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
+        {/* Tier badge */}
+        <div style={{
+          padding: "8px 14px",
+          borderRadius: 8,
+          background: bgColor,
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+        }}>
+          <span style={{
+            fontSize: 18,
             fontWeight: 700,
-            justifyContent: "center",
-            minWidth: 40,
-          }}
-        >
-          {label}
-        </Badge>
-        <Text>{`${items.length} item${items.length === 1 ? "" : "s"}`}</Text>
+            color: "#1a1a1a",
+            textTransform: "uppercase",
+            letterSpacing: "0.02em",
+          }}>
+            {label}
+          </span>
+        </div>
+
+        {/* Item count */}
+        <span style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: "rgba(255, 255, 255, 0.5)",
+        }}>
+          {items.length} {items.length === 1 ? "item" : "items"}
+        </span>
       </header>
 
-      {/* Items Container with sorted items */}
+      {/* Items Container */}
       <div style={{
         flex: 1,
         display: "flex",
         flexWrap: "wrap",
         alignContent: "flex-start",
-        gap: 8,
-        padding: "8px 12px 8px 0"
+        gap: 10,
+        padding: 12,
+        minHeight: 72,
       }}>
         {items.length === 0 ? (
           <div style={{
@@ -145,14 +162,43 @@ export const TierRow: React.FC<TierRowProps> = ({
             width: "100%",
             height: "100%",
             minHeight: 60,
-            color: "var(--spectrum-gray-600)"
           }}>
             {isHighlighted ? (
-              <Text UNSAFE_style={{ color: "var(--spectrum-blue-700)", fontWeight: 600 }}>
-                {showFileDrop ? "Drop file to add item" : "Drop here"}
-              </Text>
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+              }}>
+                <div style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  border: "2px dashed rgba(99, 102, 241, 0.6)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(99, 102, 241, 0.1)",
+                }}>
+                  <svg width={22} height={22} fill="none" viewBox="0 0 24 24" stroke="rgba(99, 102, 241, 0.8)">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <span style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "rgba(99, 102, 241, 0.9)",
+                }}>
+                  {showFileDrop ? "Drop file here" : "Drop here"}
+                </span>
+              </div>
             ) : (
-              <Text>Drag items or files here</Text>
+              <span style={{
+                fontSize: 13,
+                color: "rgba(255, 255, 255, 0.3)",
+              }}>
+                Drag items or files here
+              </span>
             )}
           </div>
         ) : (
@@ -178,13 +224,13 @@ export const TierRow: React.FC<TierRowProps> = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 80,
-                height: 80,
-                borderRadius: 8,
-                border: "2px dashed var(--spectrum-blue-700)",
-                backgroundColor: "rgba(99, 102, 241, 0.1)"
+                width: 72,
+                height: 72,
+                borderRadius: 10,
+                border: "2px dashed rgba(99, 102, 241, 0.6)",
+                background: "rgba(99, 102, 241, 0.1)",
               }}>
-                <svg style={{ width: 24, height: 24, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg width={26} height={26} fill="none" viewBox="0 0 24 24" stroke="rgba(99, 102, 241, 0.8)">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </div>
@@ -210,15 +256,32 @@ const NameOverlay: React.FC<{ name: string; subtitle?: string; isHovered?: boole
   <div style={{
     position: "absolute",
     inset: "auto 0 0 0",
-    background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
-    padding: 6,
+    background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 60%, transparent 100%)",
+    padding: "16px 6px 6px",
     borderRadius: "0 0 8px 8px",
     opacity: isHovered ? 1 : 0,
-    transition: "opacity 150ms ease"
+    transform: isHovered ? "translateY(0)" : "translateY(4px)",
+    transition: "all 150ms ease",
   }}>
-    <p style={{ fontSize: 10, color: "white", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{name}</p>
+    <p style={{
+      fontSize: 10,
+      fontWeight: 600,
+      color: "white",
+      textAlign: "center",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+    }}>{name}</p>
     {subtitle && (
-      <p style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{subtitle}</p>
+      <p style={{
+        fontSize: 9,
+        color: "rgba(255,255,255,0.6)",
+        textAlign: "center",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        marginTop: 2,
+      }}>{subtitle}</p>
     )}
   </div>
 );
@@ -229,14 +292,17 @@ const MediaBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     position: "absolute",
     top: 4,
     left: 4,
-    padding: "2px 4px",
-    backgroundColor: "rgba(0,0,0,0.6)",
+    padding: "2px 6px",
+    background: "rgba(0, 0, 0, 0.7)",
+    backdropFilter: "blur(4px)",
     borderRadius: 4,
-    fontSize: 8,
+    fontSize: 9,
+    fontWeight: 600,
     color: "white",
     display: "flex",
     alignItems: "center",
-    gap: 2
+    gap: 3,
+    textTransform: "uppercase",
   }}>
     {children}
   </div>
@@ -263,9 +329,10 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
           draggable={false}
         />
         <MediaBadge>
-          <svg style={{ width: 8, height: 8 }} fill="currentColor" viewBox="0 0 24 24">
+          <svg width={8} height={8} fill="currentColor" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
           </svg>
+          VID
         </MediaBadge>
         <NameOverlay name={displayName} subtitle={item.seasonString} isHovered={isHovered} />
       </>
@@ -275,18 +342,39 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
   if (hasAudio) {
     return (
       <>
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: 8 }}>
-          <svg style={{ width: 32, height: 32, color: "var(--spectrum-blue-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+          padding: 8,
+          background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+          borderRadius: 8,
+        }}>
+          <svg width={24} height={24} fill="none" viewBox="0 0 24 24" stroke="white">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
-          <p style={{ fontSize: 10, color: "var(--spectrum-gray-700)", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", width: "100%", fontWeight: 500 }}>
+          <p style={{
+            fontSize: 9,
+            fontWeight: 600,
+            color: "white",
+            textAlign: "center",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            width: "100%",
+          }}>
             {displayName}
           </p>
         </div>
         <MediaBadge>
-          <svg style={{ width: 8, height: 8 }} fill="currentColor" viewBox="0 0 24 24">
+          <svg width={8} height={8} fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
           </svg>
+          AUDIO
         </MediaBadge>
         <audio src={item.audioUrl} style={{ display: "none" }} />
       </>
@@ -302,19 +390,7 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
           UNSAFE_style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
         />
         {isGif && (
-          <div style={{
-            position: "absolute",
-            top: 4,
-            left: 4,
-            padding: "2px 4px",
-            backgroundColor: "rgba(0,0,0,0.6)",
-            borderRadius: 4,
-            fontSize: 8,
-            color: "white",
-            fontWeight: 500
-          }}>
-            GIF
-          </div>
+          <MediaBadge>GIF</MediaBadge>
         )}
         <NameOverlay name={displayName} subtitle={item.seasonString} isHovered={isHovered} />
       </>
@@ -323,14 +399,35 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
 
   // Text-only fallback
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: 4 }}>
-      <Text UNSAFE_style={{ fontSize: 12, color: "var(--spectrum-gray-900)", textAlign: "center", lineHeight: 1.2, fontWeight: 600 }}>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 2,
+      padding: 6,
+      background: "rgba(255, 255, 255, 0.08)",
+      borderRadius: 8,
+      width: "100%",
+      height: "100%",
+    }}>
+      <span style={{
+        fontSize: 11,
+        fontWeight: 600,
+        color: "white",
+        textAlign: "center",
+        lineHeight: 1.2,
+      }}>
         {displayName}
-      </Text>
+      </span>
       {item.seasonString && (
-        <Text UNSAFE_style={{ fontSize: 10, color: "var(--spectrum-gray-700)", textAlign: "center", lineHeight: 1.2 }}>
+        <span style={{
+          fontSize: 9,
+          color: "rgba(255, 255, 255, 0.5)",
+          textAlign: "center",
+        }}>
           {item.seasonString}
-        </Text>
+        </span>
       )}
     </div>
   );
@@ -414,9 +511,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
   const hasMedia = !!(item.imageUrl || item.videoUrl || item.audioUrl);
 
   const handleClick = (e: React.MouseEvent) => {
-    // Prevent triggering when dragging
     if (e.detail === 1) {
-      // If not revealed, reveal it first
       if (!isRevealed) {
         onReveal?.(item.id);
       } else {
@@ -437,11 +532,10 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         style={{
           ...style,
           position: "relative",
-          width: 80,
-          height: 80,
-          borderRadius: 8,
+          width: 72,
+          height: 72,
+          borderRadius: 10,
           cursor: "pointer",
-          transition: "all 300ms ease",
         }}
         {...attributes}
         {...listeners}
@@ -452,38 +546,41 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Mystery card back */}
+        {/* Mystery card */}
         <div style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(135deg, #7c3aed, #4338ca)",
-          borderRadius: 8,
+          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+          borderRadius: 10,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
-          transform: isHovered ? "scale(1.05)" : "scale(1)",
-          transition: "transform 300ms ease"
+          transform: isHovered ? "scale(1.03)" : "scale(1)",
+          transition: "all 150ms ease",
+          boxShadow: isHovered
+            ? "0 6px 16px rgba(99, 102, 241, 0.4)"
+            : "0 2px 8px rgba(0, 0, 0, 0.3)",
         }}>
+          {/* Shimmer effect */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)",
+            backgroundSize: "200% 200%",
+            animation: "shimmer 2s infinite",
+          }} />
           {/* Question mark */}
           <span style={{
-            fontSize: 30,
+            fontSize: 28,
             fontWeight: 700,
-            color: "rgba(255,255,255,0.9)",
+            color: "white",
             transform: isHovered ? "scale(1.1)" : "scale(1)",
-            transition: "transform 150ms ease"
+            transition: "transform 150ms ease",
           }}>
             ?
           </span>
         </div>
-        {/* Glow effect on hover */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          borderRadius: 8,
-          boxShadow: isHovered ? "0 0 0 2px rgba(167, 139, 250, 0.5)" : "none",
-          transition: "box-shadow 150ms ease"
-        }} />
       </div>
     );
   }
@@ -500,7 +597,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
         justifyContent: "center",
         outline: "none",
         ...(hasMedia
-          ? { width: 80, height: 80 }
+          ? { width: 72, height: 72 }
           : { padding: "8px 12px" }
         ),
         opacity: isDragging ? 0.3 : 1,
@@ -526,18 +623,16 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
           alignItems: "center",
           justifyContent: "center",
           cursor: "grab",
-          borderRadius: 8,
-          backgroundColor: "var(--spectrum-gray-100)",
-          boxShadow: isHovered
-            ? "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)"
-            : "0 1px 3px rgba(0, 0, 0, 0.1)",
-          transform: isHovered ? "scale(1.03)" : "scale(1)",
-          transition: "all 200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-          border: isSelected
-            ? "2px solid var(--spectrum-blue-700)"
-            : isFileDragOver
-            ? "2px solid var(--spectrum-green-700)"
-            : "1px solid var(--spectrum-gray-300)",
+          borderRadius: 10,
+          background: "rgba(255, 255, 255, 0.06)",
+          boxShadow: isSelected
+            ? "0 0 0 2px #6366f1, 0 4px 12px rgba(99, 102, 241, 0.3)"
+            : isHovered
+            ? "0 4px 12px rgba(0, 0, 0, 0.4)"
+            : "0 2px 6px rgba(0, 0, 0, 0.2)",
+          transform: isHovered && !isDragging ? "translateY(-2px)" : "translateY(0)",
+          transition: "all 150ms ease",
+          overflow: "hidden",
         }}
       >
         {/* File drop overlay */}
@@ -549,11 +644,11 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "rgba(16, 185, 129, 0.2)",
-            borderRadius: 8,
-            border: "2px dashed var(--spectrum-green-700)"
+            background: "rgba(99, 102, 241, 0.2)",
+            borderRadius: 10,
+            border: "2px dashed #6366f1",
           }}>
-            <svg style={{ width: 24, height: 24, color: "var(--spectrum-green-700)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg width={22} height={22} fill="none" viewBox="0 0 24 24" stroke="#6366f1">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
           </div>
@@ -561,27 +656,29 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
 
         <ItemMediaContent item={item} isHovered={isHovered} />
 
-        {/* Selection indicator with pop animation */}
+        {/* Selection indicator */}
         {isSelected && !isFileDragOver && (
           <div style={{
             position: "absolute",
-            top: -6,
-            right: -6,
+            top: -3,
+            right: -3,
             width: 20,
             height: 20,
-            backgroundColor: "var(--spectrum-blue-700)",
+            background: "#6366f1",
             borderRadius: "50%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 0 10px rgba(99, 102, 241, 0.5)",
-            zIndex: 20
+            boxShadow: "0 2px 6px rgba(99, 102, 241, 0.5)",
+            zIndex: 20,
+            border: "2px solid #1a1a1a",
           }}>
             <svg
-              style={{ width: 12, height: 12, color: "white" }}
+              width={11}
+              height={11}
               fill="none"
               viewBox="0 0 24 24"
-              stroke="currentColor"
+              stroke="white"
             >
               <path
                 strokeLinecap="round"

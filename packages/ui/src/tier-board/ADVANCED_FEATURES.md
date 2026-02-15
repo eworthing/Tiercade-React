@@ -360,13 +360,6 @@ export interface TierBoardProps {
 
 ## Usage Examples
 
-See complete working examples in [`TierBoard.example.tsx`](./TierBoard.example.tsx):
-
-1. **BasicMonitoringExample** - Track drag events and show live status
-2. **ValidationExample** - Enforce tier limits and item rules
-3. **AnalyticsExample** - Full analytics with undo/redo
-4. **PreviewExample** - Real-time drag indicators
-
 ### Quick Example: Complete Implementation
 
 ```typescript
@@ -481,15 +474,13 @@ All new props are **optional** - existing code works without changes!
 
 ## Next Steps
 
-1. **Try the examples** - See [`TierBoard.example.tsx`](./TierBoard.example.tsx)
-2. **Add monitoring** - Track analytics with `onDragComplete`
-3. **Add validation** - Enforce business rules with `validateDrop`
-4. **Test on mobile** - Try the touch improvements on real devices
+1. **Add monitoring** - Track analytics with `onDragComplete`
+2. **Add validation** - Enforce business rules with `validateDrop`
+3. **Test on mobile** - Try the touch improvements on real devices
 
 ---
 
 ## Questions?
 
-- Check the examples in `TierBoard.example.tsx`
 - Read the dnd-kit docs: https://docs.dndkit.com
 - See Context7 library docs via MCP tools

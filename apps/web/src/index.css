@@ -1,44 +1,51 @@
-/* CSS Cascade Layers for Spectrum 2 compatibility
-   S2 uses "_" layer internally. Our custom styles go in "tiercade" layer.
-   Layer order: reset < tiercade < _ (S2 has highest priority within layers) */
+/* ============================================================================
+   TIERCADE - SPECTRUM 2 NATIVE STYLING
+   Using Adobe's Spectrum 2 design tokens for consistency
+   ============================================================================ */
+
 @layer reset, tiercade, _;
 
-/* Import Spectrum 2 page styles */
+/* Import Spectrum 2 core - provides design tokens and foundation */
 @import "@react-spectrum/s2/page.css";
 
-/* Domain-specific styles only - everything else uses S2 */
-@layer tiercade {
-  /* Tier colors - REQUIRED for tier visualization */
-  :root {
-    --color-tier-s: oklch(0.7 0.15 25);
-    --color-tier-a: oklch(0.75 0.12 60);
-    --color-tier-b: oklch(0.8 0.1 95);
-    --color-tier-c: oklch(0.75 0.1 145);
-    --color-tier-d: oklch(0.7 0.08 230);
-    --color-tier-f: oklch(0.65 0.1 300);
-    --color-tier-unranked: oklch(0.6 0.05 270);
-  }
+/* Fonts - Using system fonts for performance, S2 handles typography */
 
-  /* Base styles */
+@layer tiercade {
+  /* ==========================================================================
+     GLOBAL STYLES - Extend Spectrum 2 foundation
+     ========================================================================== */
   html, body, #root {
     height: 100%;
+    /* S2 handles background and text colors via page.css */
   }
 
-  /* Reduced motion preferences */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+  /* ==========================================================================
+     TIER COLORS - App-specific semantic colors
+     ========================================================================== */
+  :root {
+    /* Tier ranking colors - vibrant for visual hierarchy */
+    --tier-color-s: #ef4444;
+    --tier-color-a: #f97316;
+    --tier-color-b: #eab308;
+    --tier-color-c: #22c55e;
+    --tier-color-d: #3b82f6;
+    --tier-color-f: #8b5cf6;
+    --tier-color-unranked: #64748b;
+
+    /* Custom surface colors for tier board */
+    --tier-row-bg: rgba(255, 255, 255, 0.03);
+    --tier-row-bg-hover: rgba(255, 255, 255, 0.06);
+    --tier-row-border: rgba(255, 255, 255, 0.08);
+    --tier-item-bg: rgba(255, 255, 255, 0.05);
+    --tier-item-bg-hover: rgba(255, 255, 255, 0.1);
   }
 
-  /* Custom scrollbar using S2 tokens */
+  /* ==========================================================================
+     SCROLLBAR - Subtle, matches Spectrum style
+     ========================================================================== */
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--spectrum-gray-400) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -51,20 +58,58 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: var(--spectrum-gray-400);
+    background-color: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
   }
 
-  /* Text selection using S2 tokens */
-  ::selection {
-    background-color: var(--spectrum-blue-700);
-    color: white;
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
   }
 
-  /* Confetti animation - REQUIRED for celebration feature */
+  /* ==========================================================================
+     ANIMATIONS
+     ========================================================================== */
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
   @keyframes confetti {
-    from { transform: translateY(0) rotate(0deg); opacity: 1; }
-    to { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    from {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(-100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
   }
 
   .confetti-particle {
@@ -82,7 +127,22 @@
     z-index: 9999;
   }
 
-  /* Presentation mode utilities - REQUIRED for streaming */
+  /* ==========================================================================
+     UTILITY CLASSES
+     ========================================================================== */
+
+  /* Entrance animation */
+  .animate-in {
+    animation: slideUp 300ms ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-in-1 { animation-delay: 50ms; }
+  .animate-in-2 { animation-delay: 100ms; }
+  .animate-in-3 { animation-delay: 150ms; }
+  .animate-in-4 { animation-delay: 200ms; }
+
+  /* Presentation mode utilities */
   .chroma-green {
     background-color: #00ff00 !important;
   }
@@ -107,5 +167,18 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* ==========================================================================
+     REDUCED MOTION
+     ========================================================================== */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

@@ -21,98 +21,20 @@ import {
   selectProjectName,
   selectHasCompletedOnboarding,
 } from "@tiercade/state";
-import { ActionButton, Button, StatusLight, TextField, Text } from "@react-spectrum/s2";
+import {
+  ActionButton,
+  Badge,
+  TextField,
+  Text,
+  Tabs,
+  TabList,
+  Tab,
+} from "@react-spectrum/s2";
+import Undo from "@react-spectrum/s2/icons/Undo";
+import Redo from "@react-spectrum/s2/icons/Redo";
 import { PageErrorBoundary } from "../components/ErrorBoundary";
 import { OnboardingWizard } from "../components/OnboardingWizard";
 import { PWAInstallPrompt } from "../components/PWAInstallPrompt";
-import { style } from "@react-spectrum/s2/style" with { type: "macro" };
-
-const frameStyles = style({
-  minHeight: "[100vh]",
-  display: "flex",
-  flexDirection: "column",
-});
-
-const headerStyles = style({
-  position: "sticky",
-  top: 0,
-  zIndex: 40,
-  borderBottomWidth: 1,
-  borderColor: "gray-200",
-  backgroundColor: "layer-1",
-});
-
-const headerInnerStyles = style({
-  maxWidth: 1152,
-  marginX: "auto",
-  display: "flex",
-  alignItems: "center",
-  gap: 16,
-  paddingX: 16,
-  paddingY: 12,
-});
-
-const mainStyles = style({
-  flexGrow: 1,
-  maxWidth: 1152,
-  width: "[100%]",
-  marginX: "auto",
-  paddingX: 16,
-  paddingY: 24,
-});
-
-const footerStyles = style({
-  borderTopWidth: 1,
-  borderColor: "gray-200",
-  paddingX: 16,
-  paddingY: 12,
-  textAlign: "center",
-});
-
-const footerTextStyles = style({
-  font: { size: "body-xs" },
-  color: "gray-600",
-});
-
-const navStyles = style({
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  marginStart: 24,
-});
-
-const brandButtonStyles = style({
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-});
-
-const projectNameRowStyles = style({
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-});
-
-const actionsRowStyles = style({
-  marginStart: "auto",
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-});
-
-const undoRedoStyles = style({
-  display: "flex",
-  alignItems: "center",
-  gap: 4,
-  paddingEnd: 12,
-  marginEnd: 4,
-  borderRightWidth: 1,
-  borderColor: "gray-200",
-});
-
-const brandIconStyles = style({
-  color: "accent",
-});
 
 export const AppShell: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -134,7 +56,7 @@ export const AppShell: React.FC = () => {
   useEffect(() => {
     if (prevPathRef.current !== location.pathname) {
       setIsTransitioning(true);
-      const timer = setTimeout(() => setIsTransitioning(false), 300);
+      const timer = setTimeout(() => setIsTransitioning(false), 200);
       prevPathRef.current = location.pathname;
       return () => clearTimeout(timer);
     }
@@ -148,7 +70,6 @@ export const AppShell: React.FC = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in inputs
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
@@ -156,26 +77,15 @@ export const AppShell: React.FC = () => {
         return;
       }
 
-      // Cmd/Ctrl + Z for undo
       if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
-        if (canUndo) {
-          dispatch(performUndo());
-        }
-      }
-      // Cmd/Ctrl + Shift + Z for redo
-      else if ((e.metaKey || e.ctrlKey) && e.key === "z" && e.shiftKey) {
+        if (canUndo) dispatch(performUndo());
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "z" && e.shiftKey) {
         e.preventDefault();
-        if (canRedo) {
-          dispatch(performRedo());
-        }
-      }
-      // Cmd/Ctrl + Y for redo (alternative)
-      else if ((e.metaKey || e.ctrlKey) && e.key === "y") {
+        if (canRedo) dispatch(performRedo());
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "y") {
         e.preventDefault();
-        if (canRedo) {
-          dispatch(performRedo());
-        }
+        if (canRedo) dispatch(performRedo());
       }
     };
 
@@ -202,161 +112,203 @@ export const AppShell: React.FC = () => {
 
   const isOnBoard = location.pathname === "/";
 
-  const navItems: Array<{ label: string; to: string; end?: boolean }> = [
-    { label: "Board", to: "/", end: true },
-    { label: "Templates", to: "/templates" },
-    { label: "Head-to-Head", to: "/head-to-head" },
-    { label: "Themes", to: "/themes" },
-    { label: "Analytics", to: "/analytics" },
-    { label: "Import/Export", to: "/import-export" },
-  ];
+  // Map routes to tab keys
+  const routeToTab: Record<string, string> = {
+    "/": "board",
+    "/templates": "templates",
+    "/head-to-head": "compare",
+    "/themes": "themes",
+    "/analytics": "analytics",
+    "/import-export": "export",
+  };
 
-  const isRouteActive = (to: string, end?: boolean) => {
-    if (end) return location.pathname === to;
-    return location.pathname === to || location.pathname.startsWith(`${to}/`);
+  const tabToRoute: Record<string, string> = {
+    board: "/",
+    templates: "/templates",
+    compare: "/head-to-head",
+    themes: "/themes",
+    analytics: "/analytics",
+    export: "/import-export",
+  };
+
+  const currentTab = routeToTab[location.pathname] ?? "board";
+
+  const handleTabChange = (key: React.Key) => {
+    const route = tabToRoute[String(key)];
+    if (route) {
+      navigate(route);
+    }
   };
 
   return (
     <>
-      {/* Onboarding Wizard */}
       {!hasCompletedOnboarding && <OnboardingWizard />}
 
-      <div className={frameStyles}>
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}>
         {/* Header */}
-        <header className={headerStyles}>
-          <div className={headerInnerStyles}>
-            {/* Brand + Project */}
-            <div className={projectNameRowStyles}>
-              <Button
-                variant="secondary"
-                fillStyle="outline"
-                size="S"
-                onPress={() => navigate("/")}
-                styles={brandButtonStyles}
-              >
-                <svg
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className={brandIconStyles}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
-                </svg>
-                <Text>Tiercade</Text>
-              </Button>
-
-              {isOnBoard && (
-                <>
-                  <Text>/</Text>
-                  {isEditingName ? (
-                    <TextField
-                      aria-label="Project name"
-                      value={editedName}
-                      onChange={setEditedName}
-                      onKeyDown={handleNameKeyDown}
-                      onBlur={handleSaveName}
-                      autoFocus
-                      styles={style({ width: 240 })}
-                    />
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      fillStyle="outline"
-                      size="S"
-                      onPress={() => setIsEditingName(true)}
-                    >
-                      {projectName}
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Navigation */}
-            <nav className={navStyles} role="navigation" aria-label="Primary">
-              {navItems.map((item) => {
-                const isActive = isRouteActive(item.to, item.end);
-                return (
-                  <Button
-                    key={item.to}
-                    variant={isActive ? "accent" : "secondary"}
-                    fillStyle={isActive ? "fill" : "outline"}
-                    size="S"
-                    onPress={() => navigate(item.to)}
-                  >
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </nav>
-
-            {/* Right side actions */}
-            <div className={actionsRowStyles}>
-              {/* Undo/Redo */}
-              <div className={undoRedoStyles}>
-                <ActionButton
-                  isQuiet
-                  size="S"
-                  onPress={() => dispatch(performUndo())}
-                  isDisabled={!canUndo}
-                  aria-label="Undo (Cmd+Z)"
-                >
-                  <svg
-                    width={16}
-                    height={16}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                    />
-                  </svg>
-                </ActionButton>
-                <ActionButton
-                  isQuiet
-                  size="S"
-                  onPress={() => dispatch(performRedo())}
-                  isDisabled={!canRedo}
-                  aria-label="Redo (Cmd+Shift+Z)"
-                >
-                  <svg
-                    width={16}
-                    height={16}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
-                    />
-                  </svg>
-                </ActionButton>
+        <header style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          backdropFilter: "blur(8px)",
+        }}>
+          <div style={{
+            maxWidth: 1400,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            padding: "12px 24px",
+          }}>
+            {/* Brand */}
+            <button
+              onClick={() => navigate("/")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px 8px",
+                borderRadius: 8,
+              }}
+            >
+              <div style={{
+                width: 36,
+                height: 36,
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                borderRadius: 8,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <span style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: "white",
+                }}>T</span>
               </div>
+              <span style={{
+                fontSize: 20,
+                fontWeight: 600,
+                color: "var(--spectrum-gray-100)",
+              }}>
+                Tiercade
+              </span>
+            </button>
 
-              {/* Saved indicator */}
-              <StatusLight variant="positive">Saved</StatusLight>
+            {/* Project Name */}
+            {isOnBoard && (
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}>
+                <span style={{ color: "var(--spectrum-gray-500)", fontSize: 18 }}>/</span>
+                {isEditingName ? (
+                  <TextField
+                    aria-label="Project name"
+                    value={editedName}
+                    onChange={setEditedName}
+                    onKeyDown={handleNameKeyDown}
+                    onBlur={handleSaveName}
+                    autoFocus
+                    size="S"
+                  />
+                ) : (
+                  <button
+                    onClick={() => setIsEditingName(true)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      borderRadius: 4,
+                      padding: "4px 8px",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: "var(--spectrum-gray-300)",
+                    }}
+                  >
+                    {projectName}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Spacer */}
+            <div style={{ flex: 1 }} />
+
+            {/* Actions */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}>
+              <ActionButton
+                isQuiet
+                size="S"
+                onPress={() => dispatch(performUndo())}
+                isDisabled={!canUndo}
+                aria-label="Undo"
+              >
+                <Undo />
+              </ActionButton>
+              <ActionButton
+                isQuiet
+                size="S"
+                onPress={() => dispatch(performRedo())}
+                isDisabled={!canRedo}
+                aria-label="Redo"
+              >
+                <Redo />
+              </ActionButton>
+
+              <Badge size="S" variant="neutral">
+                Saved
+              </Badge>
             </div>
+          </div>
+
+          {/* Navigation Tabs - Using S2 Tabs */}
+          <div style={{
+            maxWidth: 1400,
+            margin: "0 auto",
+            padding: "0 24px",
+          }}>
+            <Tabs
+              aria-label="Main navigation"
+              selectedKey={currentTab}
+              onSelectionChange={handleTabChange}
+            >
+              <TabList>
+                <Tab id="board">Board</Tab>
+                <Tab id="templates">Templates</Tab>
+                <Tab id="compare">Compare</Tab>
+                <Tab id="themes">Themes</Tab>
+                <Tab id="analytics">Analytics</Tab>
+                <Tab id="export">Export</Tab>
+              </TabList>
+            </Tabs>
           </div>
         </header>
 
         {/* Main Content */}
         <main
-          className={mainStyles}
           style={{
-            opacity: isTransitioning ? 0 : 1,
-            transition: "opacity 200ms",
+            flex: 1,
+            maxWidth: 1400,
+            width: "100%",
+            margin: "0 auto",
+            padding: 24,
+            opacity: isTransitioning ? 0.5 : 1,
+            transition: "opacity 200ms ease",
           }}
         >
           <PageErrorBoundary>
@@ -374,14 +326,17 @@ export const AppShell: React.FC = () => {
         </main>
 
         {/* Footer */}
-        <footer className={footerStyles}>
-          <Text styles={footerTextStyles}>
-            Tiercade • Your data is stored locally in this browser
+        <footer style={{
+          borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+          padding: "16px 24px",
+          textAlign: "center",
+        }}>
+          <Text>
+            Tiercade · Your data is stored locally in this browser
           </Text>
         </footer>
       </div>
 
-      {/* PWA Install Prompt */}
       <PWAInstallPrompt />
     </>
   );
@@ -389,27 +344,30 @@ export const AppShell: React.FC = () => {
 
 // Loading skeleton
 const PageSkeleton: React.FC = () => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-    {/* Title skeleton */}
+  <div style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  }}>
     <div style={{
       height: 32,
-      width: 192,
+      width: 200,
       borderRadius: 8,
-      backgroundColor: "var(--spectrum-gray-200)"
+      background: "rgba(255, 255, 255, 0.05)",
     }} />
-
-    {/* Content skeletons */}
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {[0, 1, 2].map((i) => (
         <div
           key={i}
           style={{
             height: 80,
-            borderRadius: 8,
-            backgroundColor: "var(--spectrum-gray-200)"
+            borderRadius: 12,
+            background: "rgba(255, 255, 255, 0.03)",
           }}
         />
       ))}
     </div>
   </div>
 );
+
+PageSkeleton.displayName = "PageSkeleton";
