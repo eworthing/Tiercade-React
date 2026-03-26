@@ -67,34 +67,16 @@ export const onboardingSlice = createSlice({
     completeOnboarding(state) {
       state.hasCompletedOnboarding = true;
       state.currentStep = 0;
-      // Persist to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({ hasCompletedOnboarding: true, skipped: false })
-        );
-      }
     },
     skipOnboarding(state) {
       state.hasCompletedOnboarding = true;
       state.skipped = true;
       state.currentStep = 0;
-      // Persist to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({ hasCompletedOnboarding: true, skipped: true })
-        );
-      }
     },
     resetOnboarding(state) {
       state.hasCompletedOnboarding = false;
       state.currentStep = 0;
       state.skipped = false;
-      // Clear from localStorage
-      if (typeof window !== "undefined") {
-        localStorage.removeItem(STORAGE_KEY);
-      }
     },
   },
 });
@@ -109,3 +91,27 @@ export const {
 } = onboardingSlice.actions;
 
 export const onboardingReducer = onboardingSlice.reducer;
+
+/**
+ * Persist onboarding state to localStorage.
+ * Separated from reducers to keep them pure (no side effects).
+ */
+export function persistOnboardingState(state: OnboardingState): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    if (state.hasCompletedOnboarding) {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          hasCompletedOnboarding: true,
+          skipped: state.skipped,
+        })
+      );
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  } catch {
+    // Ignore storage errors (e.g., quota exceeded, private browsing)
+  }
+}

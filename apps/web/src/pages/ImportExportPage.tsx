@@ -283,6 +283,9 @@ export function ImportExportPage() {
           );
         }
       };
+      reader.onerror = () => {
+        ToastQueue.negative("Failed to read file");
+      };
       reader.readAsText(file);
     },
     [dispatch]
@@ -357,13 +360,18 @@ export function ImportExportPage() {
         <DropZone
           aria-label="Import tier list file"
           onDrop={async (e) => {
-            const files = await Promise.all(
-              e.items
-                .filter((item) => item.kind === "file")
-                .map((item) => item.getFile())
-            );
-            const file = files[0];
-            if (file) handleImportFile(file);
+            try {
+              const files = await Promise.all(
+                e.items
+                  .filter((item) => item.kind === "file")
+                  .map((item) => item.getFile())
+              );
+              const file = files[0];
+              if (file) handleImportFile(file);
+            } catch (error) {
+              console.error("Drop failed:", error);
+              ToastQueue.negative("Failed to process dropped file");
+            }
           }}
         >
           <Heading>Drop a file here</Heading>

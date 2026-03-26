@@ -17,6 +17,7 @@ import {
   prevStep,
   completeOnboarding,
   skipOnboarding,
+  persistOnboardingState,
 } from "@tiercade/state";
 import Addproject from "@react-spectrum/s2/illustrations/linear/Addproject";
 import Search from "@react-spectrum/s2/illustrations/linear/Search";
@@ -89,10 +90,12 @@ export const OnboardingWizard: React.FC = () => {
 
   const handleComplete = useCallback(() => {
     dispatch(completeOnboarding());
+    persistOnboardingState({ hasCompletedOnboarding: true, currentStep: 0, totalSteps: 5, skipped: false });
   }, [dispatch]);
 
   const handleSkip = useCallback(() => {
     dispatch(skipOnboarding());
+    persistOnboardingState({ hasCompletedOnboarding: true, currentStep: 0, totalSteps: 5, skipped: true });
   }, [dispatch]);
 
   const handleStartFromScratch = () => {

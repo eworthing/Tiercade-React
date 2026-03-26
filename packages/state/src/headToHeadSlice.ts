@@ -100,7 +100,9 @@ export const headToHeadSlice = createSlice({
       const pairKey = makePairKey(a, b);
 
       // Only defer if not already skipped (prevent infinite loops)
-      if (!state.skippedPairKeys.includes(pairKey)) {
+      // Use Set for O(1) lookup instead of O(n) array scan
+      const skippedSet = new Set(state.skippedPairKeys);
+      if (!skippedSet.has(pairKey)) {
         state.deferredPairs.push(state.currentPair);
         state.skippedPairKeys.push(pairKey);
       }
