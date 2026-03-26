@@ -4,6 +4,7 @@ export const palette = {
   surfaceSoft: "#0f172a",
   border: "#1e293b",
   text: "#e5e7eb",
+  textOnColor: "#ffffff",
   tierDefault: "#1e293b"
 } as const;
 

@@ -2,7 +2,7 @@ import type { ThunkAction } from "@reduxjs/toolkit";
 import type { AnyAction } from "redux";
 import type { RootState } from "./store";
 import type { HeadToHeadRecord } from "@tiercade/core";
-import { quickTierPass, pairings } from "@tiercade/core";
+import { quickTierPass, pairings, vote } from "@tiercade/core";
 import {
   setActive,
   setPool,
@@ -102,7 +102,6 @@ export const voteCurrentPair =
     );
 
     // Apply vote via shared core logic
-    const { vote } = require("@tiercade/core") as typeof import("@tiercade/core");
     vote(a, b, winner, records);
 
     const updatedRecordsObj: Record<string, HeadToHeadRecord> = {};

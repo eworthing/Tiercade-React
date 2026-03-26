@@ -22,6 +22,7 @@ import {
   MenuTrigger,
   Text,
   Badge,
+  ToastQueue,
 } from "@react-spectrum/s2";
 import Add from "@react-spectrum/s2/icons/Add";
 import Settings from "@react-spectrum/s2/icons/Settings";
@@ -137,6 +138,10 @@ export const TierBoardPage: React.FC = () => {
 
   // Check for shared tier list in URL on mount
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const hasShareParam = url.searchParams.has("share");
+    if (!hasShareParam) return;
+
     const sharedData = getShareDataFromUrl();
     if (sharedData) {
       dispatch(captureSnapshot("Load Shared"));
@@ -150,6 +155,10 @@ export const TierBoardPage: React.FC = () => {
         })
       );
       clearShareDataFromUrl();
+      ToastQueue.positive("Shared tier list loaded!");
+    } else {
+      clearShareDataFromUrl();
+      ToastQueue.negative("Could not load shared tier list — the link may be corrupted.");
     }
   }, [dispatch]); // dispatch is stable
 

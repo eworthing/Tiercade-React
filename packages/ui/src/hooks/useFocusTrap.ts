@@ -59,7 +59,8 @@ export function useFocusTrap(
     if (!active) return;
 
     // Store currently focused element for restoration
-    previouslyFocusedRef.current = document.activeElement as HTMLElement;
+    const activeEl = document.activeElement;
+    previouslyFocusedRef.current = activeEl instanceof HTMLElement ? activeEl : null;
 
     // Focus initial element or first focusable
     const focusInitial = () => {
@@ -74,7 +75,7 @@ export function useFocusTrap(
     };
 
     // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(focusInitial);
+    const initialFocusFrame = requestAnimationFrame(focusInitial);
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Tab" || !containerRef.current) return;
@@ -100,15 +101,18 @@ export function useFocusTrap(
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      cancelAnimationFrame(initialFocusFrame);
       document.removeEventListener("keydown", handleKeyDown);
 
       // Restore focus on cleanup
       if (restoreFocus) {
         const elementToFocus = returnFocus?.current ?? previouslyFocusedRef.current;
-        if (elementToFocus && typeof elementToFocus.focus === "function") {
+        if (elementToFocus && elementToFocus.isConnected && typeof elementToFocus.focus === "function") {
           // Use requestAnimationFrame to ensure focus happens after DOM updates
           requestAnimationFrame(() => {
-            elementToFocus.focus();
+            if (elementToFocus.isConnected) {
+              elementToFocus.focus();
+            }
           });
         }
       }
