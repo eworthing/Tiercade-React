@@ -95,11 +95,13 @@ export function analyzeTierDistribution(
     smallest = { name: "", count: 0 };
   }
 
+  const totalTiers = distribution.length;
+
   return {
     totalItems,
-    totalTiers: tierOrder.length,
+    totalTiers,
     distribution,
-    averageItemsPerTier: tierOrder.length > 0 ? totalItems / tierOrder.length : 0,
+    averageItemsPerTier: totalTiers > 0 ? totalItems / totalTiers : 0,
     largestTier: largest,
     smallestTier: smallest,
     emptyTiers,
@@ -201,7 +203,7 @@ export function getTierBalanceScore(analytics: TierAnalytics): number {
     analytics.distribution.reduce((sum, tier) => {
       const diff = tier.itemCount - mean;
       return sum + diff * diff;
-    }, 0) / analytics.totalTiers;
+    }, 0) / analytics.distribution.length;
 
   const stdDev = Math.sqrt(variance);
 

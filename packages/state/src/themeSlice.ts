@@ -1,11 +1,14 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { BUNDLED_THEMES, type TierTheme } from "@tiercade/theme";
 
 export interface ThemeState {
   selectedThemeId: string | null;
+  availableThemes: TierTheme[];
 }
 
 const initialState: ThemeState = {
-  selectedThemeId: null
+  selectedThemeId: null,
+  availableThemes: BUNDLED_THEMES,
 };
 
 export const themeSlice = createSlice({
