@@ -139,7 +139,7 @@
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
       "last_seen_loop": 12,
-      "last_seen_sha": "pending",
+      "last_seen_sha": "583f3d4",
       "occurrences": [
         {
           "loop": 5,
@@ -194,7 +194,7 @@
           "loop": 12,
           "loop_local_id": "F1",
           "status": "open",
-          "sha": "pending",
+          "sha": "583f3d4",
           "idempotency_key": "loop12-F-004-open"
         }
       ]
