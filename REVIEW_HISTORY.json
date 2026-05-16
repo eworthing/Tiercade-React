@@ -922,6 +922,100 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 5,
+      "loop_cap": 10,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "subagent",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Build is globally green for the first time (17 suites, 84 tests, all passing). Package DAG and RTK slice ownership are architecturally honest. Main gaps: persistenceMiddleware writes ambient localStorage without injection; undoRedoThunks cross-slice behavior has zero unit tests; TierBoardPage.tsx at 757 LOC is a god-component.",
+      "scorecard": {
+        "architecture_quality":   {"score": 6, "delta": "UP",   "proof": "packages/core/src/index.ts (no React imports); packages/state/src/store.ts only imports from @tiercade/core; TierBoardPage.tsx:757 LOC conflates multiple concerns", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "state_management":       {"score": 6, "delta": "UP",   "proof": "packages/state/src/selectors.ts memoized selectors for all 6 slices; persistenceMiddleware.ts:9 module-level saveTimeout singleton outside Redux", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "domain_modeling":        {"score": 6, "delta": "UP",   "proof": "packages/core/src/models.ts:6 Item interface; packages/core/src/project.ts:108 Project schema; Item.name?: string vs ProjectItem.title: string mapping gap", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "data_flow":              {"score": 6, "delta": "UP",   "proof": "workspace package.json enforces DAG: core←state←apps; persistenceMiddleware.ts:63 ambient localStorage.getItem without injection", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "framework_idioms":       {"score": 6, "delta": "UP",   "proof": "AppShell.tsx:8-12 React lazy; selectors.ts createSelector throughout; persistenceMiddleware.ts:40 localStorage.setItem no typeof window guard", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "concurrency":            {"score": 7, "delta": "UP",   "proof": "No floating Promises in thunks; persistenceMiddleware.ts:22-44 clearTimeout/setTimeout debounce pattern correct; module-level saveTimeout singleton is SPA-acceptable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "simplicity":             {"score": 5, "delta": "UP",   "proof": "TierBoardPage.tsx:757 LOC (7 useState, 3 useEffect, drag-drop, modals, URL sharing, export, keyboard shortcuts); ImportExportPage.tsx:438 LOC", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "test_strategy":          {"score": 5, "delta": "UP",   "proof": "packages/core 11 suites 69 tests; packages/state 4 suites 10 tests; undoRedoThunks.ts zero tests; persistenceMiddleware.ts zero tests", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "credibility":            {"score": 5, "delta": "UP",   "proof": "packages/core domain solid; RTK slice ownership honest; test-environment localStorage leaks visible on every test run; 3:1 test-depth imbalance core vs state", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
+      },
+      "authority_map": [
+        {"concern": "Tier state", "owner": "tierSlice", "allowed_writers": ["loadProject","setTiers","setTierOrder","addItemToTier","moveItemBetweenTiers","moveItemsBetweenTiers","deleteItems","updateItem","setTierLabels","setTierColors","performUndo","performRedo"], "readers": ["selectTiers","selectTierOrder","selectSelection","selectTierLabels","selectTierColors","selectProjectName"], "persistence_seam": "persistenceMiddleware writes state.tier to localStorage (debounced 500ms)", "async_mutation_entry_points": ["loadDefaultProject (async dynamic import)","importJSON (sync dispatch)"], "verdict": "Single and clear"},
+        {"concern": "Undo/redo history", "owner": "undoRedoSlice", "allowed_writers": ["pushHistory","undoAction","redoAction","clearHistory"], "readers": ["selectCanUndo","selectCanRedo","selectLastActionName"], "persistence_seam": "persistenceMiddleware (trimmed to 20 entries)", "async_mutation_entry_points": [], "verdict": "Single and clear"},
+        {"concern": "Head-to-head session", "owner": "headToHeadSlice", "allowed_writers": ["headToHeadSlice actions","headToHeadThunks"], "readers": ["selectHeadToHeadIsActive","selectHeadToHeadCurrentPair","selectHeadToHeadPairsQueue","selectHeadToHeadPhase","selectHeadToHeadPool"], "persistence_seam": null, "async_mutation_entry_points": [], "verdict": "Single and clear"},
+        {"concern": "Persistence side effect (ambient localStorage)", "owner": "persistenceMiddleware", "allowed_writers": ["every dispatched action triggers debounce"], "readers": ["loadPersistedState at store init","clearPersistedState on demand"], "persistence_seam": null, "async_mutation_entry_points": ["debounce setTimeout callback","module-level saveTimeout singleton"], "verdict": "Split and ambiguous"}
+      ],
+      "strengths": [
+        "packages/core domain layer framework-free; 11 suites 69 tests end-to-end.",
+        "RTK slice ownership one clear owner per concern; memoized selectors in selectors.ts.",
+        "Monorepo DAG enforced by workspace package.json.",
+        "E2E suite (8 spec files) covers primary user flows.",
+        "HeadToHeadLogic deeply implemented and tested."
+      ],
+      "findings": [
+        {"loop_local_id": "F1", "stable_id": "F-001", "title": "Build failure blocks structural review", "why_it_matters": "Resolved this loop.", "what_is_wrong": "Stale legacy {tiers/tierOrder} fixture in importJSON.test.ts — fixed.", "evidence": ["packages/state/test/importJSON.test.ts:7","packages/core/src/modelResolver.ts:88"], "test_failed": "n/a", "dependency_category": null, "leverage_impact": "Resolved.", "locality_impact": "Resolved.", "metric_signal": "17 suites 84 tests all PASS.", "why_weakens_submission": "Resolved.", "severity": "Likely disqualifier", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Resolved: updated test fixture.", "blast_radius": {"change": ["packages/state/test/importJSON.test.ts"], "avoid": []}},
+        {"loop_local_id": "F2", "stable_id": "F-002", "title": "persistenceMiddleware writes ambient localStorage without injection — untestable seam", "why_it_matters": "Middleware that writes durable user state cannot be unit-tested.", "what_is_wrong": "persistenceMiddleware.ts:63 calls localStorage.getItem at store init; :40 calls localStorage.setItem in debounce timer that fires after test teardown. No typeof window guard.", "evidence": ["packages/state/src/persistenceMiddleware.ts:40","packages/state/src/persistenceMiddleware.ts:63","packages/state/src/store.ts:21"], "test_failed": "Two-adapter rule", "dependency_category": "local-substitutable", "leverage_impact": "Callers must know middleware depends on global browser API.", "locality_impact": "Persistence failure behavior untestable.", "metric_signal": "ExperimentalWarning: localStorage is not available on every test run.", "why_weakens_submission": "Un-seamed ambient dependency; zero persistence unit test coverage.", "severity": "Serious deduction", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Add typeof localStorage !== 'undefined' guard in loadPersistedState and debounce callback.", "blast_radius": {"change": ["packages/state/src/persistenceMiddleware.ts"], "avoid": ["packages/state/src/store.ts"]}},
+        {"loop_local_id": "F3", "stable_id": "F-003", "title": "undoRedoThunks — multi-slice behavior with zero direct tests", "why_it_matters": "Undo/redo is a primary user feature; regression invisible to CI.", "what_is_wrong": "undoRedoThunks.ts:22-56 dispatches into two slices; snapshot round-trip not tested.", "evidence": ["packages/state/src/undoRedoThunks.ts:22-39","packages/state/src/undoRedoThunks.ts:45-62","packages/state/test/ — no undoRedo*.test.ts"], "test_failed": "Interface-as-test-surface", "dependency_category": "in-process", "leverage_impact": "Every change to undoRedoThunks carries blind regression risk.", "locality_impact": "Bug surface spread across two slices and one thunk with no test boundary.", "metric_signal": "0 tests for undo/redo.", "why_weakens_submission": "Primary user feature with zero unit test coverage at the thunk interface.", "severity": "Serious deduction", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Add packages/state/test/undoRedoThunks.test.ts covering captureSnapshot/performUndo/performRedo round-trip.", "blast_radius": {"change": ["packages/state/test/undoRedoThunks.test.ts (new file)"], "avoid": ["packages/state/src/undoRedoThunks.ts"]}},
+        {"loop_local_id": "F4", "stable_id": "F-004", "title": "TierBoardPage.tsx at 757 LOC — god-component fails shallow-module test", "why_it_matters": "Cannot modify one concern without risk to the others; tests at this surface impractical.", "what_is_wrong": "TierBoardPage.tsx concentrates 7 useState, 3 useEffect, drag-drop, URL sharing, export, keyboard shortcuts, presentation mode, item modals.", "evidence": ["apps/web/src/pages/TierBoardPage.tsx:1-757","apps/web/src/pages/TierBoardPage.tsx:101-113 (7 useState)","apps/web/src/pages/TierBoardPage.tsx:139-154 (URL share useEffect)"], "test_failed": "Shallow module", "dependency_category": "in-process", "leverage_impact": "Every bundled concern must be understood to modify any one of them.", "locality_impact": "Bug in URL sharing or export requires navigating 757 LOC.", "metric_signal": "757 LOC vs 95 LOC for ThemesPage.tsx.", "why_weakens_submission": "God-component resists maintenance and unit testing.", "severity": "Noticeable weakness", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Extract URL-sharing useEffect (lines 139-154) into useShareImport hook.", "blast_radius": {"change": ["apps/web/src/pages/TierBoardPage.tsx","apps/web/src/hooks/useShareImport.ts (new)"], "avoid": ["apps/web/src/utils/urlSharing.ts"]}}
+      ],
+      "simplification_check": {
+        "structurally_necessary": "localStorage guard — passes Deletion test",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "undoRedoThunks tests add zero ceremony",
+        "should_not_be_done": "Full Storage port with two adapters as Priority 1 — overshoots",
+        "tests_after_fix": "No deletions; add undoRedoThunks.test.ts"
+      },
+      "backlog": [
+        {"priority": 1, "title": "Add localStorage guard to persistenceMiddleware — clear test-environment leaks", "kind": "structural", "rank": "needed for winning", "why_it_matters": "Every npm run test:state emits visible warnings from bare localStorage access at module load time.", "score_impact": "Framework idioms +0.5; Test strategy +0.5; Overall credibility +0.5"},
+        {"priority": 2, "title": "Add undoRedoThunks.test.ts — cover multi-slice undo/redo round-trip", "kind": "structural", "rank": "needed for winning", "why_it_matters": "Primary undo/redo path crosses two slices with zero unit test coverage.", "score_impact": "Test strategy +1.0; Overall credibility +0.5"},
+        {"priority": 3, "title": "Extract useShareImport hook from TierBoardPage — reduce god-component scope", "kind": "simplification", "rank": "helpful", "why_it_matters": "Smallest concrete step to decompose 757-LOC TierBoardPage.", "score_impact": "Code simplicity +0.5; Architecture quality +0.5"}
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [
+        {"candidate_module": "persistenceMiddleware (localStorage injection)", "source_friction_proven": "F2", "why_shallow_or_misplaced": "Calls localStorage directly without injection; no test seam.", "behavior_to_move_behind_interface": "getItem, setItem, removeItem calls", "dependency_category": "local-substitutable", "test_surface_after_change": "persistenceMiddleware.test.ts against in-memory Storage stub", "smallest_first_step": "Add typeof localStorage guard (Priority 1); injection refactor is next-loop work.", "what_not_to_do": "Do not introduce StoragePort protocol before the guard fix lands."}
+      ],
+      "builder_notes": [
+        {"pattern": "Ambient browser globals in middleware", "how_to_recognize": "Test output shows ExperimentalWarning: localStorage is not available.", "smallest_coding_rule": "Guard localStorage with typeof localStorage !== 'undefined' before use.", "stack_example": "persistenceMiddleware.ts:63: const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null"},
+        {"pattern": "Cross-slice thunks with no integration test", "how_to_recognize": "Thunk dispatches to two slice reducers; test suite has per-slice tests but no combined round-trip test.", "smallest_coding_rule": "For every thunk spanning 2+ slices, add one integration test using real store instance.", "stack_example": "undoRedoThunks.ts: captureSnapshot → performUndo → performRedo; test checks state.undoRedo.past, state.undoRedo.future, AND state.tier.tiers."},
+        {"pattern": "God-page-component", "how_to_recognize": "React page over ~300 LOC with 5+ useState for independent concerns.", "smallest_coding_rule": "Each self-contained behavior becomes one custom hook named use<Behavior>.", "stack_example": "TierBoardPage.tsx:139-154 URL share useEffect — extracting to useShareImport() costs ~15 lines and zero blast radius."}
+      ],
+      "narrative": "Good app, place but not win. Five loops to reach green baseline; first structural review confirms monorepo package boundaries and RTK slice ownership are architecturally honest. packages/core is framework-free and deeply tested. The gaps are real but fixable.",
+      "loop_result": {
+        "what_changed": "Updated packages/state/test/importJSON.test.ts — replaced stale legacy {tiers/tierOrder} fixture with valid Project schema; renamed test.",
+        "evidence_change_is_honest": "npm run test:core && test:state && test:ui (loop 5): 17 suites, 84 tests — all PASS. First globally green run.",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": ["packages/state/test/importJSON.test.ts"],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: stale test fixture (ModelResolverError) gone from current source; fix is smallest honest correction (fixture updated to match existing API contract, no production code changes); no regressions introduced.",
+        "checks": {"reality": "passed", "honesty": "passed", "regression": "passed"},
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [{"attempt": 1, "outcome": "ok", "error": null, "duration_ms": null}]
+      }
     }
   ]
 }

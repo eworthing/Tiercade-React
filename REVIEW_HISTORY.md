@@ -396,3 +396,121 @@ Reviewer verdict: **approved**. All three checks passed. Reality: core failures 
 
 ## Final Judge Narrative
 Miss this loop, progress evident. Four loops in; packages/core and packages/ui fully green (74 tests). Loop 4 cleared four independent bugs. One failure remains in packages/state/test/importJSON.test.ts. Next loop investigates and fixes that single remaining failure to enable full structural scoring.
+
+--- Loop 5 (UTC 2026-05-16T02:00:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 5 of 10 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Build is globally green for the first time (17 suites, 84 tests, all passing). Package DAG and RTK slice ownership are architecturally honest. Main gaps: `persistenceMiddleware` writes ambient `localStorage` without injection (test-environment leaks on every run); `undoRedoThunks` cross-slice behavior has zero unit tests; `TierBoardPage.tsx` at 757 LOC is a god-component.
+
+## Scorecard (1-10)
+- Architecture quality: 6 | UP | packages/core/src/index.ts (no React imports); packages/state/src/store.ts only imports from @tiercade/core; TierBoardPage.tsx:757 LOC conflates multiple concerns
+- State management and runtime ownership: 6 | UP | packages/state/src/selectors.ts — memoized selectors for all 6 slices; persistenceMiddleware.ts:9 module-level saveTimeout singleton outside Redux
+- Domain modeling: 6 | UP | packages/core/src/models.ts:6 Item interface; packages/core/src/project.ts:108 Project schema; Item.name?: string vs ProjectItem.title: string mapping gap
+- Data flow and dependency design: 6 | UP | workspace package.json enforces DAG: core←state←apps; persistenceMiddleware.ts:63 ambient localStorage.getItem without injection
+- Framework / platform best practices: 6 | UP | AppShell.tsx:8-12 React lazy; selectors.ts createSelector throughout; persistenceMiddleware.ts:40 localStorage.setItem no typeof window guard
+- Concurrency and runtime safety: 7 | UP | No floating Promises in thunks; persistenceMiddleware.ts:22-44 clearTimeout/setTimeout debounce pattern correct; module-level saveTimeout singleton is SPA-acceptable
+- Code simplicity and clarity: 5 | UP | TierBoardPage.tsx:757 LOC (7 useState, 3 useEffect, drag-drop, modals, URL sharing, export, keyboard shortcuts in one component); ImportExportPage.tsx:438 LOC
+- Test strategy and regression resistance: 5 | UP | packages/core 11 suites 69 tests (all pure functions covered); packages/state 4 suites 10 tests; undoRedoThunks.ts zero tests; persistenceMiddleware.ts zero tests
+- Overall implementation credibility: 5 | UP | packages/core domain solid; RTK slice ownership honest; test-environment localStorage leaks visible on every test run; 3:1 test-depth imbalance core vs state
+
+## Authority Map
+
+### Tier state
+- Owner: tierSlice (packages/state/src/tierSlice.ts)
+- Allowed writers: loadProject, setTiers, setTierOrder, addItemToTier, moveItemBetweenTiers, moveItemsBetweenTiers, deleteItems, updateItem, setTierLabels, setTierColors, performUndo/performRedo (setTiers/setTierOrder)
+- Persistence seam: persistenceMiddleware writes state.tier to localStorage (debounced 500ms)
+- Verdict: Single and clear
+
+### Undo/redo history
+- Owner: undoRedoSlice (packages/state/src/undoRedoSlice.ts)
+- Allowed writers: pushHistory (via captureSnapshot), undoAction, redoAction, clearHistory
+- Persistence seam: persistenceMiddleware (trimmed to 20 entries)
+- Verdict: Single and clear
+
+### Head-to-head session
+- Owner: headToHeadSlice (packages/state/src/headToHeadSlice.ts)
+- Persistence seam: not persisted
+- Verdict: Single and clear
+
+### Persistence side effect (ambient localStorage)
+- Owner: persistenceMiddleware (packages/state/src/persistenceMiddleware.ts)
+- Verdict: Split and ambiguous (no test seam; ambient access causes test-environment leaks)
+
+## Strengths That Matter
+- packages/core domain layer framework-free (no React imports); 11 suites 69 tests end-to-end.
+- RTK slice ownership one clear owner per concern; memoized selectors in selectors.ts.
+- Monorepo DAG enforced by workspace package.json: core←state←apps; no circular dependencies.
+- E2E suite (8 spec files) covers primary user flows.
+- HeadToHeadLogic (Wilson score, two-phase) deeply implemented and tested.
+
+## Findings
+
+### Finding #1: Build failure blocks structural review (F-001) — RESOLVED
+**Severity** — Likely disqualifier → resolved
+Updated packages/state/test/importJSON.test.ts to use valid Project schema. 17 suites, 84 tests all PASS.
+
+### Finding #2: persistenceMiddleware writes ambient localStorage without injection — untestable seam (F-002)
+**Evidence** — persistenceMiddleware.ts:40, persistenceMiddleware.ts:63, store.ts:21
+**Architectural test failed** — Two-adapter rule
+**Dependency category** — local-substitutable
+**Severity** — Serious deduction
+**Minimal correction path** — Add typeof localStorage !== 'undefined' guard in loadPersistedState and debounce callback.
+**Blast radius** — Change: packages/state/src/persistenceMiddleware.ts. Avoid: store.ts, test/.
+
+### Finding #3: undoRedoThunks — multi-slice behavior with zero direct tests (F-003)
+**Evidence** — packages/state/src/undoRedoThunks.ts:22-56; no undoRedo*.test.ts exists
+**Architectural test failed** — Interface-as-test-surface
+**Severity** — Serious deduction
+**Minimal correction path** — Add packages/state/test/undoRedoThunks.test.ts covering captureSnapshot/performUndo/performRedo round-trip.
+**Blast radius** — Change: new test file. Avoid: undoRedoThunks.ts.
+
+### Finding #4: TierBoardPage.tsx at 757 LOC — god-component fails shallow-module test (F-004)
+**Evidence** — apps/web/src/pages/TierBoardPage.tsx:1-757; 7 useState, 3 useEffect
+**Architectural test failed** — Shallow module
+**Severity** — Noticeable weakness
+**Minimal correction path** — Extract URL-sharing useEffect (lines 139-154) into useShareImport hook.
+**Blast radius** — Change: TierBoardPage.tsx, new hooks/useShareImport.ts. Avoid: urlSharing.ts.
+
+## Simplification Check
+
+| Field | Value |
+|---|---|
+| structurally_necessary | localStorage guard — passes Deletion test |
+| new_seam_justified | no |
+| helpful_simplification | undoRedoThunks tests add zero ceremony |
+| should_not_be_done | Full Storage port with two adapters as Priority 1 — overshoots |
+| tests_after_fix | No deletions; add undoRedoThunks.test.ts |
+
+## Improvement Backlog
+1. Add localStorage guard to persistenceMiddleware — clear test-environment leaks (structural, needed for winning)
+2. Add undoRedoThunks.test.ts — cover multi-slice undo/redo round-trip (structural, needed for winning)
+3. Extract useShareImport hook from TierBoardPage — reduce god-component scope (simplification, helpful)
+
+## Builder Notes
+1. Ambient browser globals in middleware → REVIEW_HISTORY.json `loops[4].builder_notes` for full notes
+2. Cross-slice thunks with no integration test → REVIEW_HISTORY.json `loops[4].builder_notes` for full notes
+3. God-page-component → REVIEW_HISTORY.json `loops[4].builder_notes` for full notes
+
+## Loop 5 Result
+
+Updated packages/state/test/importJSON.test.ts — replaced stale legacy {tiers/tierOrder} fixture with valid Project schema (schemaVersion:1, projectId, tiers:ProjectTier[], items:Record<string,ProjectItem>, audit); renamed test to 'loads a project JSON with items in the unranked tier'. All assertions preserved.
+
+npm run test:core && test:state && test:ui (loop 5): 17 suites, 84 tests — ALL PASS. First globally green run across all three workspaces. Targeted finding F-001 "Build failure blocks structural review" is resolved. First real structural scorecard produced. All 9 dimensions moved UP from 1 (build-failure floor) to honest mid-range scores (5-7). No unintended scorecard regression.
+
+## Loop 5 Implementation Review
+
+Reviewer verdict: **approved**. All three checks passed. Reality: stale test fixture (ModelResolverError) gone from current source. Honesty: fix is smallest honest correction (fixture updated to match existing API contract, no production code changes). Regression: no new findings introduced.
+
+## Final Judge Narrative
+Good app, place but not win. Five loops to reach green baseline; first structural review confirms monorepo package boundaries and RTK slice ownership are architecturally honest. packages/core is framework-free and deeply tested. The gaps are real but fixable: persistenceMiddleware writes ambient localStorage without isolation; undo/redo cross-slice thunks have zero unit tests; TierBoardPage.tsx at 757 LOC is a god-component. Runtime ownership trustworthy. Concurrency not a concern. Future work should not over-engineer.

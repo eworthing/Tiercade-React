@@ -1,22 +1,19 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 2,
+  "next_serial": 5,
   "entries": [
     {
       "stable_id": "F-001",
       "title": "Build failure blocks structural review",
       "category_hint": "build-failure",
-      "primary_file": "packages/ui/jest.config.ts",
-      "primary_evidence_lines": [
-        1,
-        10
-      ],
+      "primary_file": "packages/state/test/importJSON.test.ts",
+      "primary_evidence_lines": [1, 36],
       "test_failed": "n/a",
       "severity": "Likely disqualifier",
       "first_seen_loop": 1,
       "first_seen_sha": "4e569ee9601ecf7a8334d84f3e72c22747927399",
-      "last_seen_loop": 4,
-      "last_seen_sha": "e9f367d60623bb0d42c34de53f08bc8bb670c3ef",
+      "last_seen_loop": 5,
+      "last_seen_sha": null,
       "occurrences": [
         {
           "loop": 1,
@@ -44,6 +41,79 @@
           "status": "open",
           "sha": "e9f367d60623bb0d42c34de53f08bc8bb670c3ef",
           "idempotency_key": "loop4-F-001-open"
+        },
+        {
+          "loop": 5,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": null,
+          "idempotency_key": "loop5-F-001-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-002",
+      "title": "persistenceMiddleware writes ambient localStorage without injection — untestable seam",
+      "category_hint": "ambient-dependency",
+      "primary_file": "packages/state/src/persistenceMiddleware.ts",
+      "primary_evidence_lines": [40, 63],
+      "test_failed": "Two-adapter rule",
+      "severity": "Serious deduction",
+      "first_seen_loop": 5,
+      "first_seen_sha": null,
+      "last_seen_loop": 5,
+      "last_seen_sha": null,
+      "occurrences": [
+        {
+          "loop": 5,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": null,
+          "idempotency_key": "loop5-F-002-open"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-003",
+      "title": "undoRedoThunks — multi-slice behavior with zero direct tests",
+      "category_hint": "missing-tests",
+      "primary_file": "packages/state/src/undoRedoThunks.ts",
+      "primary_evidence_lines": [22, 62],
+      "test_failed": "Interface-as-test-surface",
+      "severity": "Serious deduction",
+      "first_seen_loop": 5,
+      "first_seen_sha": null,
+      "last_seen_loop": 5,
+      "last_seen_sha": null,
+      "occurrences": [
+        {
+          "loop": 5,
+          "loop_local_id": "F3",
+          "status": "open",
+          "sha": null,
+          "idempotency_key": "loop5-F-003-open"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-004",
+      "title": "TierBoardPage.tsx at 757 LOC — god-component fails shallow-module test",
+      "category_hint": "god-component",
+      "primary_file": "apps/web/src/pages/TierBoardPage.tsx",
+      "primary_evidence_lines": [1, 757],
+      "test_failed": "Shallow module",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 5,
+      "first_seen_sha": null,
+      "last_seen_loop": 5,
+      "last_seen_sha": null,
+      "occurrences": [
+        {
+          "loop": 5,
+          "loop_local_id": "F4",
+          "status": "open",
+          "sha": null,
+          "idempotency_key": "loop5-F-004-open"
         }
       ]
     }
