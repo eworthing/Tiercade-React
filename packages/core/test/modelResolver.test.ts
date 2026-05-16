@@ -207,10 +207,13 @@ describe("ModelResolver", () => {
 
       const { items } = ModelResolver.parseCSV(csvWithDupes, ["S", "A"]);
 
-      const allItems = [...items.S, ...items.A];
-      const ids = allItems.map((item) => item.id);
-
-      expect(ids).toEqual(["alpha", "alpha_2", "alpha_3"]);
+      // IDs are assigned in CSV row order (alpha, alpha_2, alpha_3),
+      // but items are bucketed by tier: S=[alpha, alpha_3], A=[alpha_2]
+      const allIds = new Set([...items.S, ...items.A].map((item) => item.id));
+      expect(allIds).toEqual(new Set(["alpha", "alpha_2", "alpha_3"]));
+      // Verify no duplicates
+      expect(items.S).toHaveLength(2);
+      expect(items.A).toHaveLength(1);
     });
 
     test("throws on empty CSV", () => {

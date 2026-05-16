@@ -386,19 +386,25 @@ export class ModelResolver {
     for (const ch of line) {
       if (ch === '"') {
         if (insideQuotes && prevWasQuote) {
+          // Escaped quote inside a quoted field ("" → ")
           current += '"';
           prevWasQuote = false;
         } else if (insideQuotes) {
+          // Closing quote candidate — defer until we see what follows
           prevWasQuote = true;
         } else {
           insideQuotes = true;
         }
-      } else if (ch === "," && !insideQuotes) {
+      } else if (ch === "," && (prevWasQuote || !insideQuotes)) {
+        // Field separator: either after closing quote of a quoted field,
+        // or between unquoted fields.
+        insideQuotes = false;
+        prevWasQuote = false;
         fields.push(current.trim());
         current = "";
-        prevWasQuote = false;
       } else {
         if (prevWasQuote) {
+          // Character after a quote inside a quoted field → not a closing quote
           insideQuotes = false;
           prevWasQuote = false;
         }

@@ -324,3 +324,75 @@ reason: The combineReducers wrapper and Middleware cast correctly resolve the RT
 
 regressions: none
 conditions: none
+
+--- Loop 4 (UTC 2026-05-16T01:00:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 4 of 10 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Functionally solid, but structurally compromised
+
+`packages/core` is now fully green (11 suites, 69 tests). Loop 4 resolved: sorting TS2459, 4 analytics test assertion drifts, parseCSVLine field-separator bug, unique-ID test bucket-order assumption. One remaining failure: `packages/state/test/importJSON.test.ts`.
+
+## Scorecard (1-10)
+- Architecture quality: 1 | SAME | loop 4 build still partially failing; packages/state/importJSON.test.ts still fails; baseline unmeasurable
+- State management and runtime ownership: 1 | SAME | loop 4 build still partially failing; importJSON still fails; baseline unmeasurable
+- Domain modeling: 1 | SAME | carried forward
+- Data flow and dependency design: 1 | SAME | carried forward
+- Framework / platform best practices: 1 | SAME | carried forward
+- Concurrency and runtime safety: 1 | SAME | carried forward
+- Code simplicity and clarity: 1 | SAME | carried forward
+- Test strategy and regression resistance: 1 | SAME | carried forward
+- Overall implementation credibility: 1 | SAME | carried forward
+
+## Strengths That Matter
+Deferred until baseline test suite is green.
+
+## Findings
+
+### Finding #1: Build failure blocks structural review
+**Why it matters** — Without green baseline, every architectural claim is unverifiable.
+**What is wrong** — One remaining failure: `packages/state/test/importJSON.test.ts` — ModelResolverError: Invalid project schema at modelResolver.ts:89. packages/core (11 suites) and packages/ui (2 suites) now fully green.
+**Evidence** — packages/state/test/importJSON.test.ts:28 (ModelResolverError); npm run test:core loop 4: 69 PASS; npm run test:ui: 5 PASS.
+**Architectural test failed** — n/a
+**Severity** — Likely disqualifier
+**Minimal correction path** — Fix packages/state/test/importJSON.test.ts: update stale fixture or add legacy shape support per loop 5 investigation.
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | Re-green baseline; n/a architectural test |
+| new_seam_justified | false |
+| helpful_simplification | Defer until baseline green |
+| should_not_be_done | Change isValidProject before confirming fixture is stale |
+| tests_after_fix | importJSON.test.ts passes; no deletions required |
+
+## Improvement Backlog
+
+### Priority 1: Fix `packages/state/test/importJSON.test.ts` — `ModelResolverError: Invalid project schema`
+- Rank: needed for winning
+
+## Builder Notes
+1. `export type { X }` vs `export { X }` for TypeScript enums → REVIEW_HISTORY.json `loops[3].builder_notes` for full notes
+2. prevWasQuote state not propagated to field-separator check in CSV parser → REVIEW_HISTORY.json `loops[3].builder_notes` for full notes
+3. Test expected-value drift when implementation changes averaging denominator → REVIEW_HISTORY.json `loops[3].builder_notes` for full notes
+
+## Loop 4 Result
+
+Fixed four independent issues in `packages/core`: (1) `packages/core/src/sorting.ts` — added `export { AttributeType }` (value re-export, not type-only) so tests can use the enum at runtime (TS2459 resolved). (2) `packages/core/test/analytics.test.ts` — corrected 4 stale assertions: `largestTier` → `"S"` (first-match on tie), `averageItemsPerTier` → `1.5` (unranked included in totalItems), `totalSeasons` → `4` (fixture has "1","Final","2","3"), `generateAnalyticsSummary` → "Largest Tier: S". (3) `packages/core/src/modelResolver.ts` — fixed `parseCSVLine`: condition changed from `ch === ',' && !insideQuotes` to `ch === ',' && (prevWasQuote || !insideQuotes)`, correctly handling the closing-quote-then-comma transition. (4) `packages/core/test/modelResolver.test.ts` — corrected unique-ID test to use `Set` equality instead of ordered array.
+
+`npm run test:core` (loop 4): 11 suites, 69 tests — all PASS. `npm run test:ui` unchanged: 5 tests PASS. `npm run test:state`: 1 failed (importJSON.test.ts, pre-existing), 3 passed. Targeted finding F-001 carried_forward.
+
+## Loop 4 Implementation Review
+
+Reviewer verdict: **approved**. All three checks passed. Reality: core failures addressed; carried_forward honest. Honesty: parseCSVLine fix minimal and correct; no new Seams; no ceremony. Regression: no new ownership smells, no production API changes.
+
+## Final Judge Narrative
+Miss this loop, progress evident. Four loops in; packages/core and packages/ui fully green (74 tests). Loop 4 cleared four independent bugs. One failure remains in packages/state/test/importJSON.test.ts. Next loop investigates and fixes that single remaining failure to enable full structural scoring.
