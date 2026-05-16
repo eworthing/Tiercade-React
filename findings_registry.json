@@ -170,7 +170,7 @@
       "first_seen_loop": 7,
       "first_seen_sha": "ed3c3c3",
       "last_seen_loop": 8,
-      "last_seen_sha": "pending-loop8-commit",
+      "last_seen_sha": "edbeae083c86760d7bc2288e04b2aa15f8691d21",
       "occurrences": [
         {
           "loop": 7,
@@ -183,7 +183,7 @@
           "loop": 8,
           "loop_local_id": "F2",
           "status": "resolved",
-          "sha": "pending-loop8-commit",
+          "sha": "edbeae083c86760d7bc2288e04b2aa15f8691d21",
           "idempotency_key": "loop8-F-005-resolved"
         }
       ]
@@ -199,13 +199,13 @@
       "first_seen_loop": 8,
       "first_seen_sha": "e8d7050efbd362a5ba918f18a6fa3e659b04221a",
       "last_seen_loop": 8,
-      "last_seen_sha": "pending-loop8-commit",
+      "last_seen_sha": "edbeae083c86760d7bc2288e04b2aa15f8691d21",
       "occurrences": [
         {
           "loop": 8,
           "loop_local_id": "F3",
           "status": "resolved",
-          "sha": "pending-loop8-commit",
+          "sha": "edbeae083c86760d7bc2288e04b2aa15f8691d21",
           "idempotency_key": "loop8-F-006-resolved"
         }
       ]
