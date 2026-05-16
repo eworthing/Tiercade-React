@@ -11,7 +11,7 @@
 - Test scope: full (no `--test-filter` set).
 
 ### Loop Counter
-Loop 2 of 10 (cap)
+Loop 3 of 10 (cap)
 
 ### System Flag
 [STATE: CONTINUE]
@@ -21,18 +21,18 @@ Loop 2 of 10 (cap)
 ## Contest Verdict
 Functionally solid, but structurally compromised
 
-Test suite is still red across all three Jest workspaces. Loop 2 resolved the smallest state-package compile error (`headToHeadSlice.test.ts` stale `totalComparisons` reference now corrected to `totalPairs`), reducing state failures from 2 suites failing to 1 suite failing. Remaining failure clusters: `packages/core` (7 tests fail across analytics/modelResolver/sorting), `packages/state/test/importJSON.test.ts` (1 test: pre-existing ModelResolverError runtime failure), `packages/ui/test/TierBoard.test.tsx` (Jest cannot parse `@react-spectrum/s2` ESM). Structural review remains blocked until all test suites pass.
+Test suite is partially red. Loop 3 resolved the `packages/ui` ESM/CSS parse failure: `@react-spectrum/s2 .cjs` files require `.css` files containing `@layer` syntax; adding `moduleNameMapper` in `packages/ui/jest.config.ts` stubs CSS so Jest can evaluate the `.cjs` graph. Both TierBoard tests now compile and pass. Remaining failure clusters: `packages/core` (7 tests across analytics/modelResolver/sorting), `packages/state/test/importJSON.test.ts` (1 test, pre-existing ModelResolverError). Structural review still blocked until all suites are green.
 
 ## Scorecard (1-10)
-- Architecture quality: 1 | SAME | loop 2 build still failing; carried forward — packages/core and packages/ui suites still red
-- State management and runtime ownership: 1 | SAME | loop 2 build still failing; state/importJSON.test.ts still fails (ModelResolverError)
-- Domain modeling: 1 | SAME | loop 2 build still failing; carried forward
-- Data flow and dependency design: 1 | SAME | loop 2 build still failing; carried forward
-- Framework / platform best practices: 1 | SAME | loop 2 build still failing; carried forward
-- Concurrency and runtime safety: 1 | SAME | loop 2 build still failing; carried forward
-- Code simplicity and clarity: 1 | SAME | loop 2 build still failing; carried forward
-- Test strategy and regression resistance: 1 | SAME | loop 2 build still failing; carried forward
-- Overall implementation credibility: 1 | SAME | loop 2 build still failing; carried forward
+- Architecture quality: 1 | SAME | loop 3 build still partially failing; packages/core suites still red; baseline unmeasurable
+- State management and runtime ownership: 1 | SAME | loop 3 build still partially failing; state/importJSON.test.ts still fails (ModelResolverError); baseline unmeasurable
+- Domain modeling: 1 | SAME | loop 3 build still partially failing; carried forward
+- Data flow and dependency design: 1 | SAME | loop 3 build still partially failing; carried forward
+- Framework / platform best practices: 1 | SAME | loop 3 build still partially failing; carried forward
+- Concurrency and runtime safety: 1 | SAME | loop 3 build still partially failing; carried forward
+- Code simplicity and clarity: 1 | SAME | loop 3 build still partially failing; carried forward
+- Test strategy and regression resistance: 1 | SAME | loop 3 build still partially failing; carried forward
+- Overall implementation credibility: 1 | SAME | loop 3 build still partially failing; carried forward
 
 ## Authority Map
 Skipped — build failure still blocks authoritative source inspection. Re-emit next loop after all test suites are green.
@@ -46,24 +46,25 @@ Deferred until baseline test suite is green.
 
 **Why it matters** — Without a green baseline test/typecheck across all three workspaces, every other architectural claim is unverifiable and the contest review cannot proceed.
 
-**What is wrong** — Two remaining failure clusters after loop 2:
+**What is wrong** — Two remaining failure clusters after loop 3:
 
-1. `packages/core` Jest: 7 tests fail. `analytics.test.ts` (4 assertions: `averageItemsPerTier` computed 1.5 vs expected 1.25; `totalSeasons` computed 4 vs expected 3; `generateAnalyticsSummary` reports "Largest Tier: S" vs expected "Largest Tier: A" because S has 2 items and A has 2 items — test data mismatch vs implementation); `modelResolver.test.ts` (3 assertions: `parseCSV` returns empty `items[tier]` arrays where tests expect parsed rows); `sorting.test.ts` (suite failed to run — import/module error, per Jest summary).
-2. `packages/state/test/importJSON.test.ts`: 1 test fails — `ModelResolverError: Invalid project schema` thrown from `modelResolver.ts:89` during thunk dispatch. Pre-existing failure newly observable after loop 1 unblocked `importJSON.test.ts` compile.
-3. `packages/ui/test/TierBoard.test.tsx`: `@react-spectrum/s2` ships a `.cjs` file that contains ESM `import` syntax; Jest's default CJS transform cannot parse it. Suite fails at module parse.
+1. `packages/core` Jest: 7 tests fail.
+   - `analytics.test.ts` (3 assertions: `averageItemsPerTier` 1.5 vs expected 1.25; `totalSeasons` 4 vs expected 3; `generateAnalyticsSummary` "Largest Tier: S" vs expected "Largest Tier: A").
+   - `modelResolver.test.ts` (3 assertions: `parseCSV` returns empty `items[tier]` arrays where tests expect parsed rows).
+   - `sorting.test.ts` (suite fails to run: `AttributeType` declared locally in `sorting.ts` but imported from `models.ts`; not re-exported from `sorting.ts`; TS2459 compile error).
+2. `packages/state/test/importJSON.test.ts`: 1 test fails — `ModelResolverError: Invalid project schema` thrown from `modelResolver.ts:89`. Pre-existing failure, newly observable after loop 1.
 
 **Evidence** —
-- `npm run test:core` (second run):
-  - `packages/core/test/analytics.test.ts:66` `expect(analytics.averageItemsPerTier).toBeCloseTo(1.25, 2)` received 1.5.
-  - `packages/core/test/analytics.test.ts:74` `expect(stats.totalSeasons).toBe(3)` received 4.
-  - `packages/core/test/analytics.test.ts:104` `expect(summary).toContain("Largest Tier: A")` received "Largest Tier: S (2 items)".
-  - `packages/core/test/modelResolver.test.ts:213` expected `["alpha", "alpha_2", "alpha_3"]`, received `[]`.
-  - `packages/core/test/sorting.test.ts` — suite failed to run.
-- `npm run test:state` (second run):
-  - `packages/state/test/headToHeadSlice.test.ts` — now PASS (loop 2 fix).
+- `npm run test:core` (second run, loop 3):
+  - `packages/core/test/analytics.test.ts:66` `averageItemsPerTier`: received 1.5, expected 1.25.
+  - `packages/core/test/analytics.test.ts:74` `totalSeasons`: received 4, expected 3.
+  - `packages/core/test/analytics.test.ts:104` `generateAnalyticsSummary`: "Largest Tier: S (2 items)" vs expected "Largest Tier: A".
+  - `packages/core/test/modelResolver.test.ts:213` `parseCSV`: received `[]`, expected `["alpha", "alpha_2", "alpha_3"]`.
+  - `packages/core/test/sorting.test.ts` — TS2459 `AttributeType` not exported from `"../src/sorting"`.
+- `npm run test:state` (second run, loop 3):
   - `packages/state/test/importJSON.test.ts` — `ModelResolverError: Invalid project schema` at `modelResolver.ts:89`.
-- `npm run test:ui` (second run):
-  - `packages/ui/test/TierBoard.test.tsx:7` → `@react-spectrum/s2/dist/main.cjs` SyntaxError on `import { Image }`.
+- `npm run test:ui` (second run, loop 3):
+  - PASS — both suites pass. (Resolved by loop 3 fix.)
 
 **Architectural test failed** — n/a (build failure, not a structural finding)
 
@@ -71,9 +72,9 @@ Deferred until baseline test suite is green.
 
 **Leverage impact** — Until all baseline tests are green, no architectural change can be verified safe.
 
-**Locality impact** — Failures span three packages but each cluster is locally diagnosable.
+**Locality impact** — Failures span two packages; each cluster is locally diagnosable.
 
-**Metric signal, if any** — `Test Suites: 3 failed, 8 passed` (core), `1 failed, 3 passed` (state — improved), `1 failed, 1 passed` (ui).
+**Metric signal, if any** — `Test Suites: 3 failed, 8 passed` (core), `1 failed, 3 passed` (state), `2 passed` (ui — improved from 1 failed in loop 2).
 
 **Why this weakens submission** — Untrusted test suite blocks every contest claim about regression resistance, refactor safety, and architectural credibility.
 
@@ -81,52 +82,39 @@ Deferred until baseline test suite is green.
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Loop 3 targets the next cluster. Candidate ranking: (a) `packages/ui/test/TierBoard.test.tsx` — add `transformIgnorePatterns` entry for `@react-spectrum/s2` in `packages/ui/jest.config.ts`; isolated single-file change; unblocks the only remaining ui suite failure. (b) `packages/core/test/analytics.test.ts` — determine whether test data or implementation is authoritative; correct the stale side. (c) `packages/core/test/modelResolver.test.ts` — investigate `parseCSV` implementation vs test expectations; correct if implementation is buggy.
+**Minimal correction path** — Loop 4 targets the next cluster. Candidate ranking: (a) `packages/core/test/sorting.test.ts` — `AttributeType` is declared locally in `packages/core/src/sorting.ts` but never re-exported; the test imports it directly. Fix: re-export `AttributeType` from `sorting.ts` or move it to `models.ts` if it is already there and `sorting.ts` re-imports it. The TS2459 is the smallest mechanical fix with zero runtime risk. (b) `packages/core/test/analytics.test.ts` — determine which side (test data vs analytics implementation) is authoritative and correct the stale side. (c) `packages/core/test/modelResolver.test.ts` + `packages/state/test/importJSON.test.ts` — both failures trace to `modelResolver.ts`; investigate `parseCSV` return and `Invalid project schema` path together since they share the same root module.
 
-**Blast radius** — Change: `packages/ui/jest.config.ts` (or equivalent config file for the next loop pick). Avoid: all production `src/` files, all other test files, all other packages.
+**Blast radius** — Change: `packages/core/src/sorting.ts` (re-export `AttributeType`). Avoid: all production `src/` files in other packages, all other test files.
 
 ## Simplification Check
 - Structurally necessary: Re-green baseline tests so structural review can begin. n/a architectural test (build failure, not refactor).
 - New seam justified: no.
 - Helpful simplification: defer until baseline green.
-- Should NOT be done: change any production source in `packages/core` or `packages/ui` as part of the next build-green loop without first confirming which side (test vs implementation) is authoritative.
-- Tests after fix: `packages/ui/test/TierBoard.test.tsx` (currently blocked by ESM transform error) becomes exercisable once `transformIgnorePatterns` is corrected.
+- Should NOT be done: change any analytics implementation logic before determining which side of the test-vs-impl drift is authoritative.
+- Tests after fix: `packages/core/test/sorting.test.ts` (blocked by TS2459 re-export missing) becomes runnable once `AttributeType` is exported from `sorting.ts`; no test deletions required.
 
 ## Improvement Backlog
 
-### Priority 1: Fix `packages/ui` Jest ESM transform for `@react-spectrum/s2`
-- Why it matters: blocks the only remaining ui suite; the fix is a single config-file change with no production code risk; unblocks `TierBoard` component testing.
-- Score impact: reduces open failure clusters from 3 to 2; enables framework-idioms and test-strategy scoring for ui package.
-- Kind: structural (build config)
+### Priority 1: Fix `packages/core/test/sorting.test.ts` TS2459 — re-export `AttributeType` from `sorting.ts`
+- Why it matters: TS2459 compile error prevents the sorting suite from running at all; it's the smallest mechanical fix in the remaining core failures (one-line re-export in sorting.ts).
+- Score impact: reduces compile errors in core; enables sorting suite execution; one step toward full core green.
+- Kind: structural (export gap)
 - Rank: needed for winning
 
-### Priority 2: Fix `packages/core` analytics / modelResolver / sorting test failures
-- Why it matters: 7 failing tests in core block all analytical and domain-modeling review.
-- Score impact: unlocks domain modeling, data flow, and test strategy scoring for core.
+### Priority 2: Fix `packages/core` analytics / modelResolver test failures and `packages/state/test/importJSON.test.ts`
+- Why it matters: 6 remaining failing tests in core + 1 in state block all analytical and domain-modeling review; analytics and modelResolver/importJSON share the same `modelResolver.ts` root.
+- Score impact: unlocks domain modeling, data flow, test strategy, and credibility scoring.
 - Kind: structural (test/impl drift)
 - Rank: needed for winning
 
 ## Builder Notes
-1. **Pattern** — Stale field reference in a test after production state shape changed. **How to recognize** — `Property 'totalComparisons' does not exist on type 'HeadToHeadState'` — TS2339 on a test-only assertion. **Smallest coding rule** — When renaming a state field in a slice, search for the old name across all test files and update all assertions before committing. The test is the canonical change-detection surface for field removal. **Stack example** — RTK `createSlice` renames `totalComparisons → totalPairs`; test still reads `.totalComparisons`; TS catches it, but only at ts-jest compile time, not at runtime type checking.
-2. **Pattern** — ESM-shipping `node_modules` package under Jest's default CJS transform. **How to recognize** — `SyntaxError: Invalid or unexpected token` at `import` inside a `.cjs` file in a vendor package; the import chain leads through `@react-spectrum/s2/dist/main.cjs`. **Smallest coding rule** — Add the ESM-shipping package to Jest's `transformIgnorePatterns` as a negative lookahead exclusion, or configure `extensionsToTreatAsEsm` for that package. **Stack example** — `transformIgnorePatterns: ['/node_modules/(?!@react-spectrum/s2/)']` in `jest.config.ts`.
-3. **Pattern** — Test assertions that embed values derived from the wrong understanding of test data. **How to recognize** — `generateAnalyticsSummary` says "Largest Tier: S" but test expects "Largest Tier: A" — both S and A have 2 items, so implementation picks S (perhaps alphabetically or by position); test was written assuming A. **Smallest coding rule** — When writing analytics tests, make the expected value derivable from the test data directly, not from memory of a prior implementation version.
+1. **Pattern** — CSS files required from node_modules `.cjs` bundles break Jest. **How to recognize** — `SyntaxError: Invalid or unexpected token` at a CSS file path inside a `node_modules` package; the `@layer` or similar modern CSS syntax is the offending token. **Smallest coding rule** — Add `moduleNameMapper: { "\\.(css|less|scss|sass)$": "<rootDir>/test/__mocks__/fileMock.js" }` in `jest.config.ts`. The mock file exports `{}` so `require()` calls in vendor `.cjs` bundles succeed. No `transformIgnorePatterns` change needed when the only issue is CSS. **Stack example** — `@react-spectrum/s2/dist/Accordion.cjs:1` requires `./Accordion.css`; Accordion.css contains `@layer _.a {`; Jest's CJS transform fails on the CSS.
+2. **Pattern** — TypeScript local declaration shadowing an imported type causes TS2459 in test imports. **How to recognize** — `TS2459: Module X declares Y locally, but it is not exported` when the test imports a named type that exists in the module but was never listed in its exports. **Smallest coding rule** — When a test file imports a type from a module, verify the module's `export` list includes that type. If the module re-imports the type from another module and uses it internally, add `export type { X }` to expose it to consumers. **Stack example** — `packages/core/src/sorting.ts` imports `AttributeType` from `./models` but does not re-export it; test imports it from `../src/sorting`.
+3. **Pattern** — Test assertions encoding derived values that drift from implementation. **How to recognize** — `averageItemsPerTier` expected 1.25 but implementation returns 1.5; test data has 2 tiers with 3 items total → 1.5 is correct, 1.25 was the old expected value. **Smallest coding rule** — Derive expected values programmatically from the test fixture data, not from memory. Add a comment linking the math to the fixture shape.
 
 ## Final Judge Narrative
-Miss this loop. Two loops into cleanup and the baseline is still red. Loop 2 resolved the smallest compile error in `packages/state` (stale `totalComparisons` reference). Three clusters remain: core analytics/modelResolver/sorting (7 tests), state importJSON (1 test, pre-existing runtime schema failure), ui ESM transform (config issue). Next loop should target the ui ESM transform — it is a pure config change with no production code risk, smallest blast radius, and unblocks the only component test suite. Do not speculate about domain correctness (analytics test data vs implementation) until core/ui baseline is green.
+Miss this loop. Three loops in; the ui package is now green, but core and state are still red. Loop 3 resolved the smallest remaining ui config failure — the CSS parse error blocking `TierBoard.test.tsx` — by adding a `moduleNameMapper` stub for CSS files in `packages/ui/jest.config.ts`. The TierBoard tests now compile and pass (2 tests). Core failures split into three groups: TS2459 (sorting, one re-export fix), test-vs-impl drift (analytics, 3 failing assertions), and runtime schema error shared by modelResolver and state/importJSON. Next loop should fix the sorting TS2459 re-export — it is the smallest mechanical fix with the clearest blast radius and zero production behavior risk.
 
-## Loop 2 Result
+## Loop 3 Result
 
-Fixed `packages/state/test/headToHeadSlice.test.ts:38` — replaced stale field reference `totalComparisons` with `totalPairs` (the current field name in `HeadToHeadState`). `npm run test:state` confirms: `headToHeadSlice.test.ts` now PASS (was compile-fail TS2339); state package moves from 2 suites failing to 1 suite failing (importJSON.test.ts runtime ModelResolverError remains, pre-existing). Overall build is still red — F-001 "Build failure blocks structural review" is `carried_forward` as umbrella finding because packages/core (7 failing) and packages/ui (1 failing) are still red. No unintended scorecard regression: all 9 dimensions remain at 1 with `unverifiable_due_to_build_failure: true`.
-
-## Loop 2 Implementation Review
-
-verdict: **approved**
-
-reason: Stale `totalComparisons` reference correctly replaced with `totalPairs` which matches the current `HeadToHeadState` field; `setPairsQueue` reducer sets `state.totalPairs = action.payload.length` confirming the assertion value 1 remains correct; no production code changed, no new structural smells introduced.
-
-- reality: passed
-- honesty: passed
-- regression: passed
-
-regressions: none
-conditions: none
+Added `moduleNameMapper` to `packages/ui/jest.config.ts` mapping `*.css` (and `*.less`, `*.scss`, `*.sass`) to `packages/ui/test/__mocks__/fileMock.js`, a one-line CJS stub that exports `{}`. Root cause confirmed: `@react-spectrum/s2/dist/Accordion.cjs` calls `require("./Accordion.css")` at load time; `Accordion.css` uses `@layer _.a {` syntax; Jest's default CJS evaluator cannot parse it. CSS stub prevents the parse attempt. `npm run test:ui` (second run): both suites PASS — `collision.test.ts` (3 tests) and `TierBoard.test.tsx` (2 tests). ui package moves from 1 failed/1 passed to 2 passed, 0 failed. TierBoard assertions pass: `renders rows for each tier and unranked` and `invokes onMoveItem when drag end handler fires` both pass. Targeted finding F-001 "Build failure blocks structural review" is `carried_forward` — packages/core (7 failing) and packages/state (1 failing) remain red. No unintended scorecard regression: all 9 dimensions remain at 1 with `unverifiable_due_to_build_failure: true`.

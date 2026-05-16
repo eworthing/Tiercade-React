@@ -6,17 +6,18 @@
       "stable_id": "F-001",
       "title": "Build failure blocks structural review",
       "category_hint": "build-failure",
-      "primary_file": "packages/state/src/store.ts",
-      "primary_evidence_lines": [32, 40],
+      "primary_file": "packages/ui/jest.config.ts",
+      "primary_evidence_lines": [1, 10],
       "test_failed": "n/a",
       "severity": "Likely disqualifier",
       "first_seen_loop": 1,
       "first_seen_sha": "4e569ee9601ecf7a8334d84f3e72c22747927399",
-      "last_seen_loop": 2,
-      "last_seen_sha": "2236b73f305071627561634072f2cd13471c102a",
+      "last_seen_loop": 3,
+      "last_seen_sha": "0fb30aefefbfb4e1a77c3e1c550319035fd82016",
       "occurrences": [
         {"loop": 1, "loop_local_id": "F1", "status": "open", "sha": "4e569ee9601ecf7a8334d84f3e72c22747927399"},
-        {"loop": 2, "loop_local_id": "F1", "status": "open", "sha": "2236b73f305071627561634072f2cd13471c102a", "idempotency_key": "loop2-F-001-open"}
+        {"loop": 2, "loop_local_id": "F1", "status": "open", "sha": "2236b73f305071627561634072f2cd13471c102a", "idempotency_key": "loop2-F-001-open"},
+        {"loop": 3, "loop_local_id": "F1", "status": "open", "sha": "0fb30aefefbfb4e1a77c3e1c550319035fd82016", "idempotency_key": "loop3-F-001-open"}
       ]
     }
   ]

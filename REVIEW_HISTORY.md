@@ -1,3 +1,110 @@
+--- Loop 3 (UTC 2026-05-16T00:30:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Functionally solid, but structurally compromised
+
+packages/ui now green (loop 3 fix). Remaining failures: packages/core (7 tests: analytics, modelResolver, sorting TS2459), packages/state/test/importJSON.test.ts (1 test, pre-existing ModelResolverError). Structural review still blocked.
+
+## Scorecard (1-10)
+- Architecture quality: 1 | SAME | loop 3 build still partially failing; packages/core suites red; baseline unmeasurable
+- State management and runtime ownership: 1 | SAME | loop 3 build still partially failing; importJSON.test.ts still fails; baseline unmeasurable
+- Domain modeling: 1 | SAME | loop 3 build still partially failing; carried forward; baseline unmeasurable
+- Data flow and dependency design: 1 | SAME | loop 3 build still partially failing; carried forward; baseline unmeasurable
+- Framework / platform best practices: 1 | SAME | loop 3 build still partially failing; carried forward; baseline unmeasurable
+- Concurrency and runtime safety: 1 | SAME | loop 3 build still partially failing; carried forward; baseline unmeasurable
+- Code simplicity and clarity: 1 | SAME | loop 3 build still partially failing; carried forward; baseline unmeasurable
+- Test strategy and regression resistance: 1 | SAME | loop 3 build still partially failing; carried forward; baseline unmeasurable
+- Overall implementation credibility: 1 | SAME | loop 3 build still partially failing; carried forward; baseline unmeasurable
+
+## Authority Map
+Skipped — build failure still blocks authoritative source inspection.
+
+## Strengths That Matter
+Deferred until baseline test suite is green.
+
+## Findings
+
+### Finding #1: Build failure blocks structural review
+
+**Why it matters** — Without a green baseline test/typecheck across all three workspaces, every other architectural claim is unverifiable.
+
+**What is wrong** — Two remaining failure clusters after loop 3: (1) packages/core: 7 tests fail — analytics.test.ts (3 assertions), modelResolver.test.ts (3 assertions), sorting.test.ts (TS2459: AttributeType not re-exported). (2) packages/state/test/importJSON.test.ts: ModelResolverError pre-existing.
+
+**Evidence** —
+- `packages/core/test/analytics.test.ts:66` averageItemsPerTier: received 1.5, expected 1.25.
+- `packages/core/test/analytics.test.ts:74` totalSeasons: received 4, expected 3.
+- `packages/core/test/analytics.test.ts:104` generateAnalyticsSummary: "Largest Tier: S" vs expected "Largest Tier: A".
+- `packages/core/test/modelResolver.test.ts:213` parseCSV: received [], expected ['alpha', 'alpha_2', 'alpha_3'].
+- `packages/core/test/sorting.test.ts` — TS2459 AttributeType not exported from sorting.ts.
+- `packages/state/test/importJSON.test.ts:28` ModelResolverError: Invalid project schema.
+- `packages/ui/test/TierBoard.test.tsx` — PASS (resolved by loop 3 CSS moduleNameMapper fix).
+
+**Architectural test failed** — n/a
+**Dependency category** — n/a
+**Leverage impact** — Until all baseline tests are green, no architectural change can be verified safe.
+**Locality impact** — Failures span two packages now (down from three).
+**Metric signal** — Test Suites: 3 failed/8 passed (core), 1 failed/3 passed (state), 2 passed/0 failed (ui — improved).
+**Why this weakens submission** — Untrusted test suite blocks every contest claim.
+**Severity** — Likely disqualifier
+**ADR conflicts** — none
+**Minimal correction path** — Loop 4 targets packages/core/src/sorting.ts — re-export AttributeType to fix TS2459.
+**Blast radius** — Change: `packages/core/src/sorting.ts`. Avoid: all production src/ files in other packages.
+
+## Simplification Check
+
+| field | value |
+|---|---|
+| structurally_necessary | Re-green baseline tests so structural review can begin. n/a architectural test. |
+| new_seam_justified | false |
+| helpful_simplification | Defer until baseline green. |
+| should_not_be_done | Change analytics implementation before confirming which side is authoritative. |
+| tests_after_fix | packages/core/test/sorting.test.ts becomes runnable once AttributeType is exported from sorting.ts. |
+
+## Improvement Backlog
+
+### Priority 1: Fix packages/core/test/sorting.test.ts TS2459 — re-export AttributeType from sorting.ts
+- Why it matters: TS2459 prevents sorting suite from running; one-line re-export fix.
+- Score impact: reduces compile errors in core; enables sorting suite execution.
+- Kind: structural (export gap)
+- Rank: needed for winning
+
+### Priority 2: Fix packages/core analytics/modelResolver test failures and packages/state/test/importJSON.test.ts
+- Why it matters: 6 failing tests + 1 in state block domain-modeling review.
+- Score impact: unlocks domain modeling, data flow, test strategy, credibility scoring.
+- Kind: structural (test/impl drift)
+- Rank: needed for winning
+
+## Builder Notes (compressed)
+- Pattern: CSS files required from node_modules .cjs bundles break Jest → REVIEW_HISTORY.json `loops[2].builder_notes` for full notes.
+- Pattern: TypeScript local declaration not re-exported causes TS2459 → REVIEW_HISTORY.json `loops[2].builder_notes` for full notes.
+- Pattern: Test assertions encoding derived values that drift from implementation → REVIEW_HISTORY.json `loops[2].builder_notes` for full notes.
+
+## Final Judge Narrative
+Miss this loop. Three loops in; ui package now green but core and state still red. Loop 3 resolved CSS parse failure blocking TierBoard.test.tsx by adding moduleNameMapper stub in packages/ui/jest.config.ts. Next loop targets sorting TS2459 re-export — smallest mechanical fix, clearest blast radius.
+
+## Loop 3 Result
+
+Added `moduleNameMapper` to `packages/ui/jest.config.ts` stubbing `*.css` via `packages/ui/test/__mocks__/fileMock.js` (exports {}). Root cause: `@react-spectrum/s2/dist/Accordion.cjs` requires `./Accordion.css` at load time; `Accordion.css` uses `@layer _.a {}` syntax that Jest cannot parse as JS. `npm run test:ui` (second run): 2 suites PASS, 0 failed — `collision.test.ts` (3 tests) and `TierBoard.test.tsx` (2 tests). F-001 `carried_forward` — packages/core (7 failing) and packages/state (1 failing) remain red. No unintended scorecard regression.
+
+## Loop 3 Implementation Review
+
+verdict: **approved**
+
+reason: CSS moduleNameMapper stub correctly resolves the @layer parse failure; jest.config.ts moduleNameMapper is the idiomatic Jest solution; no production code changed; no new structural smells introduced; TierBoard.test.tsx now compiles and both assertions pass.
+
+- reality: passed
+- honesty: passed
+- regression: passed
+
+regressions: none
+conditions: none
+
 --- Loop 2 (UTC 2026-05-16T00:15:00Z) ---
 
 ### Discovery
