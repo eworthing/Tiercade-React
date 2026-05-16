@@ -608,3 +608,84 @@ Reviewer verdict: **approved**. All three checks passed. Reality: unguarded loca
 
 ## Final Judge Narrative
 Good app, place but not win yet. Loop 6 resolves F-002: persistenceMiddleware now guards all 4 localStorage call sites, eliminating the test-environment crash. Framework idioms and credibility each move up one point. Full suite stays green at 17/84. Two structural gaps remain: undoRedoThunks zero unit tests (Priority 1 next loop) and TierBoardPage.tsx at 757 LOC (Priority 2). Concurrency trustworthy. Runtime ownership honest. Guard fix is idiomatic and minimal.
+
+--- Loop 7 (UTC 2026-05-16T03:00:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 7 of 10 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 7 resolves F-003: three new test files cover undoRedoThunks, persistenceMiddleware, and selectors at their public Interfaces. Tests caught and fixed two latent bugs in selectors.ts. Full suite: 20 suites, 114 tests.
+
+## Scorecard (1-10)
+- Architecture quality: 6 | SAME | Package DAG intact; TierBoardPage.tsx ~757 LOC still god-component
+- State management and runtime ownership: 6 | SAME | RTK slice ownership solid; saveTimeout module-level singleton unchanged
+- Domain modeling: 6 | SAME | Item interface sound; mapping gaps unchanged
+- Data flow and dependency design: 6 | SAME | DAG enforced; localStorage still ambient
+- Framework / platform best practices: 7 | SAME | All 4 localStorage guards in place; RTK idioms correct
+- Concurrency and runtime safety: 7 | SAME | Single-threaded; debounce timer correct
+- Code simplicity and clarity: 5 | SAME | TierBoardPage.tsx:1-757 unchanged
+- Test strategy and regression resistance: 7 | UP | packages/state/test/undoRedoThunks.test.ts (new 8 tests); packages/state/test/persistenceMiddleware.test.ts (new 14 tests); packages/state/test/selectors.test.ts (new 8 tests). 20 suites 114 tests.
+- Overall implementation credibility: 7 | UP | selectors.ts:136 .actionName→.action bug fixed; selectors.ts:103-108 removed broken selectAvailableThemes/selectCurrentTheme (nonexistent field)
+
+## Simplification Check
+
+| Field | Value |
+|---|---|
+| structurally_necessary | New test files assert behavior at public Interfaces — passes Interface-as-test-surface test |
+| new_seam_justified | false |
+| helpful_simplification | Removed broken selectAvailableThemes/selectCurrentTheme selectors; fixed selectLastActionName bug |
+| should_not_be_done | Introduce a Storage port as Priority 1 — global override in tests is workable |
+| tests_after_fix | No old test deletions needed. New tests live at thunk/middleware/selector Interfaces. |
+
+## Findings
+
+### Finding #1: undoRedoThunks + persistenceMiddleware + selectors — zero direct tests (F-003) — RESOLVED
+
+**Severity** — Serious deduction (resolved)
+**Evidence** — packages/state/test/undoRedoThunks.test.ts (new 8 tests); packages/state/test/persistenceMiddleware.test.ts (new 14 tests); packages/state/test/selectors.test.ts (new 8 tests); selectors.ts:136 actionName→action bug fix; selectors.ts:103-108 removed broken selectors
+**Architectural test failed** — Interface-as-test-surface
+
+### Finding #2: TierBoardPage.tsx at ~757 LOC — god-component (F-004)
+
+**Severity** — Noticeable weakness
+**Evidence** — apps/web/src/pages/TierBoardPage.tsx:1-757; 7 useState; 3 useEffect
+**Architectural test failed** — Shallow module
+
+### Finding #3: persistenceMiddleware — global override required in tests (F-005, new)
+
+**Severity** — Noticeable weakness
+**Evidence** — packages/state/src/persistenceMiddleware.ts:41; packages/state/test/persistenceMiddleware.test.ts:58-63
+**Architectural test failed** — Two-adapter rule
+
+## Improvement Backlog
+1. Inject storage parameter into persistenceMiddleware — clean the seam | Data flow +0.5; simplicity +0.5 | simplification | helpful
+2. Extract useShareImport hook from TierBoardPage (F-004) | simplicity +0.5; arch +0.5 | simplification | helpful
+
+## Strengths That Matter
+- packages/core domain layer framework-free; 11 suites 69 tests
+- RTK slice ownership solid across 6 slices; memoized selectors
+- undoRedoThunks — 8 integration tests at thunk interface using real store instances
+- persistenceMiddleware — 14 behavior tests using fake timers + fake storage
+
+## Authority Map
+(see Loop 5 Discovery; persistence concern verdict unchanged)
+
+## Final Judge Narrative
+Good app, place but not win yet. Loop 7 resolves F-003: 30 new tests across 3 suites. Tests caught two latent selector bugs — both fixed. Full suite: 20 suites, 114 tests, all green. test_strategy 5→7, credibility 6→7. Remaining: localStorage injection (workable, not clean) and TierBoardPage.tsx god-component (~757 LOC).
+
+## Loop 7 Result
+
+Changed four files: packages/state/test/undoRedoThunks.test.ts (new, 8 tests), packages/state/test/persistenceMiddleware.test.ts (new, 14 tests), packages/state/test/selectors.test.ts (new, 8 tests), packages/state/src/selectors.ts (2 bug fixes: .actionName→.action; removed selectAvailableThemes/selectCurrentTheme). Full suite: 20 suites, 114 tests — all PASS. F-003 resolved. test_strategy: 5→7. credibility: 6→7.
+
+## Loop 7 Implementation Review
+
+Reviewer verdict: **approved**. All three checks passed: Reality — F-003 pattern eliminated (three direct test files now exist); Honesty — test additions pass Simplify Pressure Test; no new seam; selector bug fixes are subtractive; Regression — no new findings at same or higher severity. Full suite green at 114 tests.

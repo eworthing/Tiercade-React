@@ -99,14 +99,8 @@ export const selectHasActiveFilters = createSelector(
 /** Select the currently selected theme ID */
 export const selectSelectedThemeId = (state: RootState) => state.theme.selectedThemeId;
 
-/** Select available themes */
-export const selectAvailableThemes = (state: RootState) => state.theme.availableThemes;
-
-/** Select the current theme object */
-export const selectCurrentTheme = createSelector(
-  [selectSelectedThemeId, selectAvailableThemes],
-  (selectedId, themes) => themes.find((t) => t.id === selectedId) ?? themes[0]
-);
+/** Select the current theme ID (alias kept for backward compat) */
+export const selectCurrentThemeId = selectSelectedThemeId;
 
 // ============================================================================
 // Undo/Redo Selectors
@@ -133,7 +127,7 @@ export const selectCanRedo = createSelector(
 /** Select the last action name from undo stack */
 export const selectLastActionName = createSelector(
   [selectUndoPast],
-  (past) => past.length > 0 ? past[past.length - 1].actionName : null
+  (past) => past.length > 0 ? past[past.length - 1].action : null
 );
 
 // ============================================================================

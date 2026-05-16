@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 5,
+  "next_serial": 6,
   "entries": [
     {
       "stable_id": "F-001",
@@ -90,8 +90,8 @@
       "severity": "Serious deduction",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 6,
-      "last_seen_sha": "59cf1be",
+      "last_seen_loop": 7,
+      "last_seen_sha": "<pending-loop7-commit>",
       "occurrences": [
         {
           "loop": 5,
@@ -106,6 +106,13 @@
           "status": "open",
           "sha": "59cf1be",
           "idempotency_key": "loop6-F-003-open"
+        },
+        {
+          "loop": 7,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": "<pending-loop7-commit>",
+          "idempotency_key": "loop7-F-003-resolved"
         }
       ]
     },
@@ -119,8 +126,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 6,
-      "last_seen_sha": "59cf1be",
+      "last_seen_loop": 7,
+      "last_seen_sha": "<pending-loop7-commit>",
       "occurrences": [
         {
           "loop": 5,
@@ -135,6 +142,35 @@
           "status": "open",
           "sha": "59cf1be",
           "idempotency_key": "loop6-F-004-open"
+        },
+        {
+          "loop": 7,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "<pending-loop7-commit>",
+          "idempotency_key": "loop7-F-004-open"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-005",
+      "title": "persistenceMiddleware ambient localStorage — global override required in tests",
+      "category_hint": "ambient-dependency-injection",
+      "primary_file": "packages/state/src/persistenceMiddleware.ts",
+      "primary_evidence_lines": [41, 41],
+      "test_failed": "Two-adapter rule",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 7,
+      "first_seen_sha": "<pending-loop7-commit>",
+      "last_seen_loop": 7,
+      "last_seen_sha": "<pending-loop7-commit>",
+      "occurrences": [
+        {
+          "loop": 7,
+          "loop_local_id": "F3",
+          "status": "open",
+          "sha": "<pending-loop7-commit>",
+          "idempotency_key": "loop7-F-005-open"
         }
       ]
     }
