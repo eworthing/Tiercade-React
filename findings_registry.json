@@ -62,7 +62,7 @@
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
       "last_seen_loop": 6,
-      "last_seen_sha": "<pending-loop6-commit>",
+      "last_seen_sha": "b4000a5",
       "occurrences": [
         {
           "loop": 5,
@@ -75,7 +75,7 @@
           "loop": 6,
           "loop_local_id": "F1",
           "status": "resolved",
-          "sha": "<pending-loop6-commit>",
+          "sha": "b4000a5",
           "idempotency_key": "loop6-F-002-resolved"
         }
       ]
