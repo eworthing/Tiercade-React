@@ -1,0 +1,21 @@
+{
+  "registry_schema_version": 3,
+  "next_serial": 2,
+  "entries": [
+    {
+      "stable_id": "F-001",
+      "title": "Build failure blocks structural review",
+      "category_hint": "build-failure",
+      "primary_file": "packages/state/src/store.ts",
+      "primary_evidence_lines": [32, 40],
+      "test_failed": "n/a",
+      "severity": "Likely disqualifier",
+      "first_seen_loop": 1,
+      "first_seen_sha": "4e569ee9601ecf7a8334d84f3e72c22747927399",
+      "last_seen_loop": 1,
+      "occurrences": [
+        {"loop": 1, "loop_local_id": "F1", "status": "open", "sha": "4e569ee9601ecf7a8334d84f3e72c22747927399"}
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import type { Middleware, MiddlewareAPI, Dispatch, AnyAction } from "@reduxjs/toolkit";
+import type { Middleware } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
 import type { UndoRedoState, TierSnapshot } from "./undoRedoSlice";
 
@@ -8,13 +8,10 @@ const MAX_PERSISTED_HISTORY = 20; // Limit history size for storage efficiency
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
-/**
- * Middleware that persists state to localStorage after every action.
- * Uses debouncing to avoid excessive writes during rapid interactions.
- */
-export const persistenceMiddleware: Middleware = (
-  store: MiddlewareAPI<Dispatch<AnyAction>, RootState>
-) => (next) => (action) => {
+// Untyped `Middleware` (no state generic) avoids a circular type dependency
+// with `RootState`, which is derived from `store` which uses this middleware.
+// State is cast at use site below.
+export const persistenceMiddleware: Middleware = (store) => (next) => (action) => {
   const result = next(action);
 
   // Debounce saves to avoid excessive writes
@@ -23,7 +20,7 @@ export const persistenceMiddleware: Middleware = (
   }
 
   saveTimeout = setTimeout(() => {
-    const state = store.getState();
+    const state = store.getState() as RootState;
     try {
       // Trim undo/redo history for storage efficiency
       const trimmedUndoRedo: UndoRedoState = {
