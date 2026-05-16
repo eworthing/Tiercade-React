@@ -810,3 +810,79 @@ Reviewer verdict: **approved**. All three checks passed: (1) Reality — F-004 s
 
 ## Final Judge Narrative
 Good app, place but not win yet. Loop 9 reduces TierBoardPage 757→507 LOC via honest structural extraction — no costume layers, each module passes deletion test. `simplicity` 5→6; `architecture_quality` 6→6.5. Full suite green. Remaining gaps: three new hooks lack unit tests; filterAllTiers has no core test. Loop 10 should close these test gaps.
+
+--- Loop 10 (UTC 2026-05-16T17:00:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 10 of 10 (cap)
+
+### System Flag
+[STATE: HALT_LOOP_CAP]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 10 final critic pass (HALT_LOOP_CAP; no code changes). Full suite: 20 suites, 114 tests, all green. Scorecard re-derived from current source per G26. F-004, F-007, F-008 carried forward open. Residual Accounting Pass: all sub-9 dimensions have source-backed 9-anchor blockers.
+
+## Scorecard (1-10)
+- Architecture quality: 6.5 | SAME | TierBoardPage.tsx:1-507 (507 LOC, 20 hook calls); ImportExportPage.tsx:1-438; HeadToHeadPage.tsx:1-378. 9-anchor not met: page shells lack Interface Depth. Package DAG enforced; 5 hooks extracted loop 9.
+- State management and runtime ownership: 6.5 | SAME | tierSlice.ts:1-343 one writer per concern. Process-lifetime ownership not explicit. 9-anchor sub-threshold.
+- Domain modeling: 6.0 | SAME | models.ts:6 Item interface is a data bag. No smart constructors. 9-anchor not met.
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced. Within-app no module-level enforcement. 9-anchor partial.
+- Framework / platform best practices: 7.0 | SAME | Custom hooks idiomatic. RTK patterns correct. ImportExportPage.tsx 438 LOC still mixes orchestration. 9-anchor nearly met.
+- Concurrency and runtime safety: 7.0 | SAME | No floating promises. useEffect cleanup present. persistenceMiddleware per-instance timer (loop 8). 9-anchor partial.
+- Code simplicity and clarity: 6.0 | SAME | TierBoardPage:1-507 (20 hook calls); ImportExportPage:1-438; AppShell:1-385; HeadToHeadPage:1-378; TemplatesPage:1-361. No loop-10 changes.
+- Test strategy and regression resistance: 7.0 | SAME | 20 suites 114 tests green. F-007: useTierFilter.ts (91 LOC, no test). F-008: filtering.ts:96 filterAllTiers (0 tests vs sortItems 8). Authority Map cross-check: useTierFilter concern has no Interface test.
+- Overall implementation credibility: 7.5 | SAME | No fake-clean moves loops 5-9. persistenceMiddleware injectable (loop 8). undoRedoThunks tested (loop 7). TierBoardPage 757→507 LOC (loop 9). All modules pass deletion test.
+
+## Authority Map
+- TierBoardPage modal state: Owner: TierBoardPage local state (7 useState, lines 80-86). Verdict: Single and clear.
+- Tier/Item domain state: Owner: packages/state/src/tierSlice.ts. Verdict: Single and clear.
+- Sort/filter derived state: Owner: apps/web/src/hooks/useTierFilter.ts. Verdict: Single and clear (no Interface test — F-007).
+
+## Strengths That Matter
+- packages/core domain layer framework-free; 11 suites, 69 tests
+- RTK slice ownership: one clear writer per concern across 6 slices
+- Monorepo DAG enforced by workspace package.json: core←state←apps
+- persistenceMiddleware — fully injectable storage; per-instance timer
+- undoRedoThunks — direct test suite covering cross-slice behavior
+- TierBoardPage.tsx — reduced from 757 to 507 LOC; 5 focused modules extracted
+
+## Findings
+
+### Finding #1: TierBoardPage.tsx at 507 LOC — god-component partially resolved, carried forward (F-004)
+**Severity** — Noticeable weakness. **Evidence** — apps/web/src/pages/TierBoardPage.tsx:1-507 (507 LOC, 20 hook calls); lines 80-86 (7 useState); lines 133-237 (8 useCallback). **Architectural test failed** — Shallow module. **Minimal correction path** — Evaluate useItemInteraction hook (4 item handlers); if they share only dispatch + captureSnapshot, extract to hooks/useItemInteraction.ts.
+
+### Finding #2: useTierFilter — no unit test at Interface (F-007)
+**Severity** — Noticeable weakness. **Evidence** — apps/web/src/hooks/useTierFilter.ts:1-91 (91 LOC, no test); line 41 (filterAllTiers call); no *.test.ts in hooks/. **Architectural test failed** — Interface-as-test-surface. **Minimal correction path** — Add useTierFilter.test.ts: renderHook with mock store; dispatch setSortMode; assert processedTiers sorted.
+
+### Finding #3: filterAllTiers — no direct test in @tiercade/core (F-008)
+**Severity** — Noticeable weakness. **Evidence** — packages/core/src/filtering.ts:96 (filterAllTiers exported); packages/core/test/ (no filtering.test.ts); sorting.test.ts has 8 tests. **Architectural test failed** — Interface-as-test-surface. **Minimal correction path** — Add packages/core/test/filtering.test.ts: 3-4 filter tests.
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | No code changes this loop (HALT_LOOP_CAP). Prior loop's extractions pass Deletion test. |
+| new_seam_justified | false |
+| helpful_simplification | n/a — critic pass only |
+| should_not_be_done | Extract TierBoardPage modal state into useModalState — adds ceremony without structural benefit. |
+| tests_after_fix | For F-007: add useTierFilter.test.ts. For F-008: add filtering.test.ts. |
+
+## Improvement Backlog
+1. Add useTierFilter unit test (F-007) — test_strategy +0.5 — structural — helpful
+2. Add filterAllTiers unit test in @tiercade/core (F-008) — test_strategy +0.5 — structural — helpful
+3. Evaluate useItemInteraction extraction (F-004) — architecture_quality +0.5; simplicity +0.5 — structural — helpful
+
+## Deepening Candidates
+→ REVIEW_HISTORY.json `loops[9].deepening_candidates` for full notes
+
+## Builder Notes
+1. God-component with partially extractable handlers → REVIEW_HISTORY.json `loops[9].builder_notes[0]`
+2. Test gap after extraction → REVIEW_HISTORY.json `loops[9].builder_notes[1]`
+3. Coverage asymmetry between similar pure functions → REVIEW_HISTORY.json `loops[9].builder_notes[2]`
+
+## Final Judge Narrative
+Good app, place but not win. 10 loops from build failure to 6.7 avg. Real structural improvements: build baseline green (loop 5), storage injectable (loop 6), undoRedoThunks tested (loop 7), persistenceMiddleware per-instance timer (loop 8), TierBoardPage 757→507 LOC with 5 focused hooks extracted (loop 9). No fake-clean moves; every resolution passed implementation review. Remaining gaps honest and quantified: test_strategy at 7 by F-007 + F-008; architecture_quality at 6.5 by page shell Depth gap. Two test file additions would raise test_strategy to 7.5. The codebase is structurally honest; 9-anchor not yet reached in any dimension but trending correctly.

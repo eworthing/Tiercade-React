@@ -126,8 +126,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 9,
-      "last_seen_sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
+      "last_seen_loop": 10,
+      "last_seen_sha": "332a272fbff32adfda4798eb67e06bc76d722430",
       "occurrences": [
         {
           "loop": 5,
@@ -163,6 +163,13 @@
           "status": "open",
           "sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
           "idempotency_key": "loop9-F-004-open"
+        },
+        {
+          "loop": 10,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "332a272fbff32adfda4798eb67e06bc76d722430",
+          "idempotency_key": "loop10-F-004-open"
         }
       ]
     },
@@ -227,8 +234,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 9,
       "first_seen_sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
-      "last_seen_loop": 9,
-      "last_seen_sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
+      "last_seen_loop": 10,
+      "last_seen_sha": "332a272fbff32adfda4798eb67e06bc76d722430",
       "occurrences": [
         {
           "loop": 9,
@@ -236,6 +243,13 @@
           "status": "open",
           "sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
           "idempotency_key": "loop9-F-007-open"
+        },
+        {
+          "loop": 10,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "332a272fbff32adfda4798eb67e06bc76d722430",
+          "idempotency_key": "loop10-F-007-open"
         }
       ]
     },
@@ -249,8 +263,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 9,
       "first_seen_sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
-      "last_seen_loop": 9,
-      "last_seen_sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
+      "last_seen_loop": 10,
+      "last_seen_sha": "332a272fbff32adfda4798eb67e06bc76d722430",
       "occurrences": [
         {
           "loop": 9,
@@ -258,6 +272,13 @@
           "status": "open",
           "sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
           "idempotency_key": "loop9-F-008-open"
+        },
+        {
+          "loop": 10,
+          "loop_local_id": "F3",
+          "status": "open",
+          "sha": "332a272fbff32adfda4798eb67e06bc76d722430",
+          "idempotency_key": "loop10-F-008-open"
         }
       ]
     }

@@ -11,178 +11,201 @@
 - Test scope: full (no `--test-filter` set).
 
 ### Loop Counter
-Loop 9 of 10 (cap)
+Loop 10 of 10 (cap)
 
 ### System Flag
-[STATE: CONTINUE]
+[STATE: HALT_LOOP_CAP]
 
 ---
 
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 9 resolves F-004 partially: `TierBoardPage.tsx` split from 757 LOC to 507 LOC by extracting 5 focused modules — `useShareImport`, `useTierDisplay`, `useTierFilter`, `CelebrationEffect`, `TierBoardToolbar`. Each module passes deletion test. Full suite: 20 suites, 114 tests, all green. Build clean. `simplicity` moves 5→6, `architecture_quality` moves 6→6.5.
+Loop 10 is a final critic pass (HALT_LOOP_CAP — no code changes). Full suite: 20 suites, 114 tests, all green. Baseline confirmed. Scorecard re-derived from current source per G26. Findings F-004, F-007, F-008 carried forward — open. Residual Accounting Pass confirms all sub-9 dimensions have source-backed blockers that keep the 9-anchor unmet; none qualify as accepted residuals at 9.5+.
 
 ## Scorecard (1-10)
-- Architecture quality: 6.5 | UP | `apps/web/src/hooks/useTierFilter.ts` (new 91-LOC module concentrating sort/filter concern); `TierBoardPage.tsx:1-507` (250 LOC reduction from 757). Five extracted modules each pass deletion test. Package DAG intact; no costume layers introduced.
-- State management and runtime ownership: 6.5 | SAME | RTK slice ownership unchanged. No new state ownership changes this loop.
-- Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — `Item` interface sound. No domain model changes this loop.
-- Data flow and dependency design: 6.5 | SAME | `useTierFilter` and `useTierDisplay` create cleaner interfaces, but the broader data flow complexity (no explicit DAG enforcement) unchanged.
-- Framework / platform best practices: 7.0 | SAME | React custom hook extraction is idiomatic. RTK patterns unchanged.
-- Concurrency and runtime safety: 7.0 | SAME | JavaScript single-threaded. No concurrency model changes.
-- Code simplicity and clarity: 6.0 | UP | `TierBoardPage.tsx:1-507` — 250 LOC removed. Five extracted modules at 33-107 LOC each; all focused single-concern. Prior 757-LOC god-component reduced to 507-LOC orchestration shell. Deletion test: each extracted module earns its keep (`useTierFilter`: concentrates filterAllTiers + sortItems + 4 dispatch callbacks; `useTierDisplay`: concentrates theme resolution + color/label merging; `useShareImport`: URL share import effect; `CelebrationEffect`: self-contained animation; `TierBoardToolbar`: pure props toolbar).
-- Test strategy and regression resistance: 7.0 | SAME | No new unit test surfaces added. Extracted modules behavior covered transitively: `sortItems` tested at `packages/core/test/sorting.test.ts:27`; toolbar/board render exercised at `apps/web/e2e/tier-board.spec.ts:94-105`. No regression: full suite 20 suites 114 tests green.
-- Overall implementation credibility: 7.5 | SAME | No fake-clean moves. Each extracted module is genuinely self-contained. No re-export shells. No empty protocols.
+- Architecture quality: 6.5 | SAME | `apps/web/src/pages/TierBoardPage.tsx:1-507` (507 LOC, 20 hook calls, shallow orchestration shell); `apps/web/src/pages/ImportExportPage.tsx:1-438` (438 LOC); `apps/web/src/pages/HeadToHeadPage.tsx:1-378` (378 LOC). 9-anchor requires contest-grade module graph with Depth and deletion-test-passing seams. Not met: page shells are orchestration wrappers without real Interface Depth. Package DAG enforced by workspace. Five modules extracted in loop 9. No loop-10 structural changes.
+- State management and runtime ownership: 6.5 | SAME | RTK slice ownership clear. One writer per concern across 6 slices (`packages/state/src/tierSlice.ts:1-343`). `memoized selectors in selectors.ts`. No process-lifetime ownership pattern (store is implicit global). 9-anchor sub-threshold: process lifetime ownership not explicit.
+- Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — `Item` interface is a data bag (`name?`, `imageUrl?`, `description?` all optional). `Items = Record<string, Item[]>` anemic. No smart constructors, no validated values. 9-anchor requires types prove most invariants by construction — not met.
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json` (`core←state←apps`). No circular deps. `useTierFilter.ts`, `useTierDisplay.ts` create cleaner hook interfaces. Within-app no module-level DAG enforcement. 9-anchor requires "DAG enforced; effects typed" — partial.
+- Framework / platform best practices: 7.0 | SAME | Custom hooks idiomatic (6 focused hooks in `apps/web/src/hooks/`). RTK patterns correct. `useId()` for stable IDs in modal. `ImportExportPage.tsx` at 438 LOC still mixes orchestration and display logic without hook delegation. 9-anchor nearly met but no documented carve-outs.
+- Concurrency and runtime safety: 7.0 | SAME | JavaScript single-threaded. No floating promises found in `apps/web/src/`. `useEffect` cleanup present in `CelebrationEffect.tsx`. No AbortController pattern for async fetches. No timer races (persistenceMiddleware per-instance after loop 8). 9-anchor partial.
+- Code simplicity and clarity: 6.0 | SAME | `apps/web/src/pages/TierBoardPage.tsx:1-507` (507 LOC, 20 hook calls). `ImportExportPage.tsx:1-438`. `AppShell.tsx:1-385`. `HeadToHeadPage.tsx:1-378`. `TemplatesPage.tsx:1-361`. All large orchestration shells. No loop-10 simplification changes.
+- Test strategy and regression resistance: 7.0 | SAME | 20 suites, 114 tests, all green. F-007 still open: `apps/web/src/hooks/useTierFilter.ts` (91 LOC, no test file). F-008 still open: `packages/core/src/filtering.ts` exports `filterAllTiers` (165 LOC) with no test in `packages/core/test/`. Authority Map cross-check: `useTierFilter` concern has no direct Interface test; `filterAllTiers` has 0 tests vs `sortItems` 8 tests. Score ceiling 7 until test gaps closed.
+- Overall implementation credibility: 7.5 | SAME | No fake-clean moves across loops 5-9. Each extracted module passes deletion test. `persistenceMiddleware` fully injectable (loop 8). `undoRedoThunks` tested (loop 7). Honest reduction TierBoardPage 757→507 LOC (loop 9). Remaining pages large but orchestration is genuine, not theater.
+
+## Authority Map
+(First loop only; re-emitted because F-004 is Priority 1 at HALT_LOOP_CAP.)
+
+**TierBoardPage modal state**
+- Owner: `TierBoardPage` local state (7 `useState` declarations, lines 80-86)
+- Allowed writers: `TierBoardPage` handlers only (inline setters)
+- Observers / readers: JSX render tree within the same component
+- Persistence seam: none
+- Async mutation entry points: `handleMoveItemWithCelebration` (celebration state)
+- Verdict: Single and clear (local component state; not a shared concern)
+
+**Tier/Item domain state**
+- Owner: `packages/state/src/tierSlice.ts`
+- Allowed writers: dispatched actions (captureSnapshot, moveItemBetweenTiersWithUndo, addItemToTier, updateItem, deleteItems, moveItemsBetweenTiers)
+- Observers / readers: all page components via `useAppSelector`
+- Persistence seam: `persistenceMiddleware` (injectable storage, per-instance timer, loop 8)
+- Async mutation entry points: thunks in `packages/state/src/`
+- Verdict: Single and clear
+
+**Sort/filter derived state**
+- Owner: `apps/web/src/hooks/useTierFilter.ts`
+- Allowed writers: `setSortMode`, `setFilters` dispatched from hook callbacks
+- Observers / readers: `TierBoardPage` via `useTierFilter` return value
+- Persistence seam: none
+- Async mutation entry points: none (synchronous derivation)
+- Verdict: Single and clear — **no direct test at Interface (F-007)**
 
 ## Strengths That Matter
-- `packages/core` domain layer framework-free; 11 suites 69 tests covering pure functions end-to-end.
+- `packages/core` domain layer framework-free; 11 suites, 69 tests covering pure functions end-to-end.
 - RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in `selectors.ts` cover all derived state.
-- Monorepo DAG enforced by workspace package.json: `core`←`state`←`apps`; no circular dependencies.
-- `persistenceMiddleware` — fully injectable storage (F-005 resolved); debounce timer per-instance.
-- `TierBoardPage.tsx` — reduced from 757 to 507 LOC; 5 focused modules extracted; page shell is genuine orchestration.
-- `useTierFilter.ts` — concentrates all sort/filter derived state + dispatch callbacks behind one interface (91 LOC).
-- `useTierDisplay.ts` — concentrates all theme resolution + color/label merging behind one interface (63 LOC).
+- Monorepo DAG enforced by workspace `package.json`: `core←state←apps`; no circular dependencies.
+- `persistenceMiddleware` — fully injectable storage (F-005 resolved loop 8); per-instance timer (F-006 resolved loop 8).
+- `undoRedoThunks` — direct test suite covering cross-slice behavior (F-003 resolved loop 7).
+- `TierBoardPage.tsx` — reduced from 757 to 507 LOC; 5 focused modules extracted (loop 9).
+- `useTierFilter.ts` — concentrates sort/filter derived state + dispatch callbacks (91 LOC, passes deletion test).
 
 ## Findings
 
-### Finding #1: `TierBoardPage.tsx` at 507 LOC — god-component partially resolved, still over threshold (F-004)
+### Finding #1: `TierBoardPage.tsx` at 507 LOC — god-component partially resolved, carried forward (F-004)
 
-**Why it matters** — At 507 LOC, the page still has 7 `useState` calls and 3 major item interaction handlers bundled together. Progress made (250 LOC removed), but the shallow-module test still applies to remaining content.
+**Why it matters** — At 507 LOC with 20 hook calls (7 useState, 2 useEffect, 8 useCallback, 3 useMemo), the page remains a shallow orchestration wrapper. Shallow-module test still partially applies. No loop-10 changes target this.
 
-**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` still contains: 7 `useState` calls for modal/UI state (showAddItem, showTierSettings, showKeyboardHelp, showStreamingPanel, editingItem, showCelebration, celebrationTier); 2 `useEffect` calls; 4 item interaction handlers (handleFileDrop, handleItemMediaDrop, handleItemClick, handleItemDoubleClick); batch operation handlers; celebration handler; JSX render. These concerns are more tightly coupled than what was extracted — modal state coordinates with JSX; item handlers need dispatch + tiers context.
+**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` still bundles: 7 `useState` modal/UI state declarations (lines 80-86); 4 item interaction handlers (`handleFileDrop`, `handleItemMediaDrop`, `handleItemClick`, `handleMoveItemWithCelebration`) sharing `dispatch` + `captureSnapshot` scope; 2 `useEffect` calls; JSX render tree. Item interaction handlers could pass deletion test as a `useItemInteraction` hook, but this evaluation was not completed this loop.
 
 **Evidence** —
-- `apps/web/src/pages/TierBoardPage.tsx:1-507` — 507 LOC (down from 757)
-- `apps/web/src/pages/TierBoardPage.tsx:79-87` — 7 `useState` declarations for modal/UI state
-- `apps/web/src/pages/TierBoardPage.tsx:133-220` — item interaction handlers bundled with modal state setters
+- `apps/web/src/pages/TierBoardPage.tsx:1-507` — 507 LOC
+- `apps/web/src/pages/TierBoardPage.tsx:80-86` — 7 `useState` declarations
+- `apps/web/src/pages/TierBoardPage.tsx:133-237` — 8 `useCallback` declarations
 
 **Architectural test failed** — Shallow module
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Modal coordination and item handling still require reading the full 507-LOC page.
+**Leverage impact** — Modal coordination and item handling require reading 507 LOC.
 
-**Locality impact** — Bug in file drop handling requires navigating 507 LOC of orchestration code.
+**Locality impact** — Bug in file drop handling requires navigating 507 LOC of orchestration.
 
-**Metric signal, if any** — 507 LOC vs 95 LOC for `ThemesPage.tsx`; ratio 5:1 (improved from 8:1).
+**Metric signal, if any** — 507 LOC vs 95 LOC `ThemesPage.tsx`; 438 LOC `ImportExportPage.tsx` also large.
 
-**Why this weakens submission** — The page shell still concentrates concerns that could be isolated — though further extraction risks costume-layer territory without careful evaluation.
+**Why this weakens submission** — Page shell still concentrates multiple concerns; test surface at page level is impractical.
 
-**Severity** — Noticeable weakness (reduced from prior evaluation)
+**Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Evaluate whether `useItemInteraction` hook (handleFileDrop + handleItemMediaDrop + handleItemClick + handleItemDoubleClick) passes deletion test — these 4 handlers share `dispatch` and `captureSnapshot` but no modal state. If they pass deletion test, extract to `useItemInteraction.ts`. Otherwise, accept 507 LOC as natural page orchestration floor.
+**Minimal correction path** — Evaluate `useItemInteraction` hook (handleFileDrop + handleItemMediaDrop + handleItemClick + handleItemDoubleClick): if 4 handlers share only `dispatch` + `captureSnapshot` with no modal state dependency, extraction passes deletion test. Otherwise accept 507 LOC as natural page orchestration floor.
 
-**Blast radius** — Change: `apps/web/src/pages/TierBoardPage.tsx`, potentially new `apps/web/src/hooks/useItemInteraction.ts`. Avoid: `apps/web/src/components/ItemModal.tsx`, `@tiercade/ui`.
+**Blast radius** — Change: `apps/web/src/pages/TierBoardPage.tsx`, potentially `apps/web/src/hooks/useItemInteraction.ts`. Avoid: `apps/web/src/components/ItemModal.tsx`, `@tiercade/ui`.
 
 ---
 
-### Finding #2: No unit test surface for extracted hooks — indirect coverage only
+### Finding #2: `useTierFilter` — no unit test at Interface (F-007)
 
-**Why it matters** — `useShareImport`, `useTierDisplay`, `useTierFilter` are new modules with real behavior but no direct unit tests. If their logic changes, the only regression signal is E2E tests (slow) or manual testing.
+**Why it matters** — `useTierFilter` is the highest-risk extracted module (91 LOC, `filterAllTiers` + `sortItems` integration + 4 dispatch callbacks). No test file exists. Regression signal relies on slow E2E or manual testing. Carried from loop 9.
 
-**What is wrong** — Three new hooks exported from `apps/web/src/hooks/` have no corresponding test files. `useTierFilter` has the most risk: `filterAllTiers` behavior has no direct core test; `useTierDisplay` theme resolution path has no test. The extracted modules are not deeper than the original inline code — they're equally shallow from a testing perspective.
+**What is wrong** — `apps/web/src/hooks/useTierFilter.ts` exports `useTierFilter` which calls `filterAllTiers` (at line 41) and `sortItems` (transitive) — no `.test.ts` file in `apps/web/src/hooks/`.
 
 **Evidence** —
-- `apps/web/src/hooks/useTierFilter.ts` — 91 LOC, no test file
-- `apps/web/src/hooks/useTierDisplay.ts` — 63 LOC, no test file
-- `apps/web/src/hooks/useShareImport.ts` — 33 LOC, no test file
-- `packages/core/test/` — no `filterAllTiers.test.ts`
+- `apps/web/src/hooks/useTierFilter.ts:1-91` — 91 LOC, no test
+- `apps/web/src/hooks/useTierFilter.ts:41` — `filterAllTiers(tiers, filters)` call
+- `ls apps/web/src/hooks/*.test.ts` — no test files exist
 
 **Architectural test failed** — Interface-as-test-surface
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Extracted modules improve Leverage (callers learn less) but without tests the Locality gain is incomplete — maintainers cannot refactor safely.
+**Leverage impact** — Extracted module improves Leverage but without tests Locality gain is incomplete.
 
 **Locality impact** — Bug in `useTierFilter` requires manual testing to detect regression.
 
-**Metric signal, if any** — 3 new hooks, 0 new test files.
+**Metric signal, if any** — 3 hooks extracted loop 9, 0 test files added.
 
-**Why this weakens submission** — Test strategy score ceiling stays at 7 until at least one of the extracted hooks has a test at its new Interface.
+**Why this weakens submission** — `test_strategy` ceiling stays at 7 until at least one extracted hook has a test at its Interface.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Add one test for `useTierFilter` using `renderHook` from `@testing-library/react`: mount with a mock store, dispatch `setSortMode`, assert `processedTiers` reflects sorted order. This is the highest-leverage test addition — it covers `filterAllTiers` + `sortItems` integration at the hook Interface.
+**Minimal correction path** — Add `apps/web/src/hooks/useTierFilter.test.ts`: `renderHook` with mock store; dispatch `setSortMode`; assert `processedTiers` reflects sorted order. Highest-leverage test addition.
 
-**Blast radius** — Change: new `apps/web/src/hooks/useTierFilter.test.ts`. Avoid: touching the hook implementation.
+**Blast radius** — Change: `apps/web/src/hooks/useTierFilter.test.ts` (new). Avoid: `useTierFilter.ts` implementation.
 
 ---
 
-### Finding #3: `filterAllTiers` has no direct test in `@tiercade/core`
+### Finding #3: `filterAllTiers` — no direct test in `@tiercade/core` (F-008)
 
-**Why it matters** — `filterAllTiers` is called by `useTierFilter` (which is now used in the main page) but has no test in `packages/core/test/`. `sortItems` is tested but the filter+sort integration path lacks coverage.
+**Why it matters** — `filterAllTiers` (exported from `packages/core/src/filtering.ts:96`) is on the main page path via `useTierFilter`. Zero tests in `packages/core/test/` while `sortItems` has 8 tests. Coverage asymmetry is a credibility gap. Carried from loop 9.
 
-**What is wrong** — `packages/core/src/filters.ts` (or wherever `filterAllTiers` is defined) has no test file. The function filters all tiers by text/mediaType — any regression would be silent until E2E or manual testing.
+**What is wrong** — `packages/core/src/filtering.ts` (165 LOC) exports `filterAllTiers`, `filterItems`, `itemMatchesFilters`, `hasActiveFilters`. No corresponding test file.
 
 **Evidence** —
-- `packages/core/test/` — no filtering.test.ts or filterAllTiers.test.ts
-- `apps/web/src/hooks/useTierFilter.ts:42-53` — `filterAllTiers` called inside `processedTiers` useMemo
+- `packages/core/src/filtering.ts:96` — `filterAllTiers` exported
+- `packages/core/test/` — no `filtering.test.ts`
+- `packages/core/test/sorting.test.ts` — 8 sort tests; filtering has 0
 
 **Architectural test failed** — Interface-as-test-surface
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — `filterAllTiers` is used in the main page path; untested regression would affect all users.
+**Leverage impact** — `filterAllTiers` is on main path; untested regression affects all users.
 
 **Locality impact** — Filter logic regression requires E2E or manual detection.
 
-**Metric signal, if any** — 0 filter tests in core; `sortItems` has 8 tests.
+**Metric signal, if any** — 0 filter tests; 8 sort tests; both called from `useTierFilter`.
 
-**Why this weakens submission** — Test coverage asymmetry between sorting (8 tests) and filtering (0 tests) is a credibility gap.
+**Why this weakens submission** — Test coverage asymmetry reduces test strategy credibility.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Add `packages/core/test/filtering.test.ts` with 3-4 tests: searchText filter, mediaType filter, combined filter. Import `filterAllTiers` or `filterItems` directly.
+**Minimal correction path** — Add `packages/core/test/filtering.test.ts` with 3-4 tests: `searchText` filter, combined filter, empty-filter passthrough. Import `filterAllTiers` or `filterItems` directly.
 
-**Blast radius** — Change: new `packages/core/test/filtering.test.ts`. Avoid: production code.
+**Blast radius** — Change: `packages/core/test/filtering.test.ts` (new). Avoid: `packages/core/src/filtering.ts`.
 
 ## Simplification Check
-- Structurally necessary: Extracting `useTierFilter`, `useTierDisplay`, `useShareImport` passes Deletion test — each concentrates real behavior; TierBoardPage would re-absorb the complexity if deleted. Moving `CelebrationEffect` and `TierBoardToolbar` to own files passes Deletion test — zero page-state dependencies.
-- New seam justified: No new Seams introduced. Extractions are simplification (concentration), not new Seam creation. No new protocols, no new Interface contracts.
-- Helpful simplification: TierBoardPage 757→507 LOC; page shell is now genuine orchestration. Five focused modules at 33-107 LOC.
-- Should NOT be done: Extract modal state into a `useModalState` hook — modal state is tightly coupled to JSX (setShowAddItem called directly in onPress handlers); extracting would add ceremony without structural benefit.
-- Tests after fix: No old tests to delete (TierBoardPage had no unit tests). New modules have no tests yet — F-002 in this loop's backlog addresses this gap.
+- Structurally necessary: No code changes this loop (HALT_LOOP_CAP). Prior loop's extractions pass Deletion test.
+- New seam justified: No new seams introduced.
+- Helpful simplification: n/a (critic pass only).
+- Should NOT be done: Any further extraction of TierBoardPage modal state — tightly coupled to JSX handlers; adding a `useModalState` hook would add ceremony without structural benefit.
+- Tests after fix: For F-007: no old tests to delete; new `useTierFilter.test.ts` at hook Interface. For F-008: new `filtering.test.ts` at core Interface.
 
 ## Improvement Backlog
 
 ### Priority 1: Add `useTierFilter` unit test — close test gap for extracted hook (F-007)
-- Why it matters: `useTierFilter` is the highest-risk extracted module (filterAllTiers + 4 dispatch handlers); no test currently covers its Interface. Adding one `renderHook` test with a mock store proves the filter+sort integration path and satisfies the test-strategy gap.
-- Score impact: Test strategy +0.5; Architecture quality credibility improved
+- Why it matters: `useTierFilter` is the highest-risk extracted module (filterAllTiers + sortItems integration + 4 dispatch callbacks); no test covers its Interface. One `renderHook` test with mock store proves filter+sort integration.
+- Score impact: `test_strategy` +0.5; `architecture_quality` credibility improved
 - Kind: structural
 - Rank: helpful
 
 ### Priority 2: Add `filterAllTiers` unit test in `@tiercade/core` (F-008)
-- Why it matters: `sortItems` has 8 tests in core; `filterAllTiers` has 0. Asymmetry is a test-strategy credibility gap that keeps `test_strategy` below 7.5.
-- Score impact: Test strategy +0.5
+- Why it matters: `sortItems` has 8 tests; `filterAllTiers` has 0. Asymmetry is a test-strategy credibility gap. Small mechanical addition.
+- Score impact: `test_strategy` +0.5
 - Kind: structural
 - Rank: helpful
 
 ## Deepening Candidates
 
-No new deepening candidates this loop. The extracted hooks are concentrated; further extraction of TierBoardPage requires evaluating whether `useItemInteraction` passes deletion test — this is a Step 2 concern for loop 10 only if F-007/F-008 are resolved first (test-strategy gaps take priority since they affect contest credibility more).
+**`useItemInteraction` (evaluation target, not yet confirmed)**
+- Candidate module: Item interaction handlers in `TierBoardPage`
+- Source friction proven: F-004 — `apps/web/src/pages/TierBoardPage.tsx:133-237` (8 useCallback declarations; 4 item handlers share `dispatch` + `captureSnapshot`)
+- Why shallow or misplaced: 4 handlers (`handleFileDrop`, `handleItemMediaDrop`, `handleItemClick`, `handleMoveItemWithCelebration`) share only `dispatch` and `captureSnapshot` — if they have no modal state dependency, extraction passes deletion test
+- Behavior to move behind Interface: file drop, media drop, item click/double-click, celebration trigger
+- Dependency category: `in-process`
+- Test surface after change: `useItemInteraction.test.ts` with mock store + mock captureSnapshot
+- Smallest first step: verify no `setShow*` modal state setters called from within the 4 handlers; if clean, extract to `hooks/useItemInteraction.ts`
+- What not to do: Do not extract `handleCopyLink` (uses clipboard side-effect differently); do not extract modal setters (tightly coupled to JSX)
 
 ## Builder Notes
-1. **Pattern** — God-component decomposition. **How to recognize** — Page component with 5+ `useState` calls and multiple `useMemo`/`useCallback` blocks managing independent concerns. **Smallest coding rule** — Identify concerns that depend only on Redux state + dispatch (not on other `useState` values in the same component); extract each to a `use<Concern>` hook. The hook reads its own selectors and returns computed state + stable callbacks. **Stack example** — `useTierFilter.ts`: reads `selectTiers`, `selectSortMode`, `selectFilters`; returns `processedTiers`, `filteredItems`, and 4 dispatch callbacks. Zero dependency on modal state.
-2. **Pattern** — Extraction without tests at new Interface. **How to recognize** — New hook file is created; no corresponding `.test.ts` file. The behavior was untested inline before and remains untested after. **Smallest coding rule** — For every new hook that calls `dispatch` or reads from the store, add one `renderHook` test: mount with a configured store, trigger the side effect, assert state changed. **Stack example** — `useTierFilter` test: create store with items in S tier; call `handleSortModeChange({type: 'alphabetical', ascending: true})`; assert `processedTiers.S` is sorted alphabetically.
-3. **Pattern** — Test coverage asymmetry between similar functions. **How to recognize** — One function in a module has 8 tests; a similar function has 0. Both are called from the same consumer path. **Smallest coding rule** — When you add tests for `sortItems`, add tests for `filterItems`/`filterAllTiers` in the same test run. **Stack example** — `packages/core/test/sorting.test.ts` has 8 tests; `packages/core/test/filtering.test.ts` does not exist. Both are called inside `useTierFilter`'s `processedTiers` useMemo.
+1. **Pattern** — God-component with partially extractable handlers. **How to recognize** — Page component with 8+ `useCallback` hooks; some share only Redux `dispatch` + `captureSnapshot`; others call `setShow*` modal state setters. **Smallest coding rule** — Group handlers by their dependencies: handlers that touch only `dispatch` + domain state extract cleanly; handlers that call local `setShow*` must stay in the component. **Stack example** — `handleFileDrop` and `handleItemMediaDrop` in `TierBoardPage` likely share only `dispatch` + `captureSnapshot`; `handleCelebration` calls `setShowCelebration` and cannot be extracted without modal state coupling.
+2. **Pattern** — Test gap after extraction. **How to recognize** — A new hook file exists with no corresponding `.test.ts`. **Smallest coding rule** — For any hook that calls `dispatch` or reads from the store, add one `renderHook` test: create store with known state; trigger the callback; assert state changed. **Stack example** — `useTierFilter.test.ts`: `renderHook(() => useTierFilter(), { wrapper: Provider(store) })`; call `handleSortModeChange`; assert `processedTiers` is sorted.
+3. **Pattern** — Coverage asymmetry between similar pure functions. **How to recognize** — One function (`sortItems`) has 8 tests; a parallel function (`filterAllTiers`) called from the same consumer has 0. **Smallest coding rule** — When adding tests for any function in `packages/core/`, check its sibling functions in the same file and add proportional tests. **Stack example** — `filtering.ts` exports `filterAllTiers`, `filterItems`, `hasActiveFilters`; `sorting.ts` exports `sortItems`, `sortTierItems` — both called from `useTierFilter`; test parity closes the credibility gap.
 
 ## Final Judge Narrative
-Good app, place but not win yet. Loop 9 reduces `TierBoardPage` from 757 to 507 LOC via honest structural extraction — no costume layers, no empty wrappers, each module passes deletion test. `simplicity` moves 5→6; `architecture_quality` moves 6→6.5. Full suite 20 suites, 114 tests, green. Build clean. The extraction is real but incomplete: three new hooks have no unit tests, and `filterAllTiers` has no core tests. These gaps keep `test_strategy` at 7 and prevent top-tier standing. Loop 10 should close the test gaps (useTierFilter test + filterAllTiers test) — these are small, mechanical additions that would move `test_strategy` to 7.5 and strengthen the overall credibility of the restructured codebase.
-
-## Loop 9 Result
-
-Changed six files:
-- `apps/web/src/pages/TierBoardPage.tsx` — reduced from 757 to 507 LOC by extracting 5 modules: `useShareImport`, `useTierDisplay`, `useTierFilter` (hooks), `CelebrationEffect`, `TierBoardToolbar` (components). Page shell now contains genuine orchestration: modal state (7 useState), 2 useEffect (theme init + project load), item interaction handlers, JSX render tree.
-- `apps/web/src/hooks/useShareImport.ts` (new, 33 LOC) — URL share import effect; self-contained; depends only on dispatch and URL utilities.
-- `apps/web/src/hooks/useTierDisplay.ts` (new, 63 LOC) — tier colors + labels computation; reads 4 selectors + theme library; returns resolved `{tierColors, tierLabels}`.
-- `apps/web/src/hooks/useTierFilter.ts` (new, 91 LOC) — processedTiers derivation + filteredItems count + 4 sort/filter dispatch callbacks; reads 3 selectors.
-- `apps/web/src/components/CelebrationEffect.tsx` (new, 69 LOC) — full-screen celebration overlay; pure props component (onComplete callback only).
-- `apps/web/src/components/TierBoardToolbar.tsx` (new, 107 LOC) — action toolbar; pure props component.
-
-Full suite (`test:core && test:state && test:ui`): 20 suites, 114 tests — all PASS. Build (`apps/web npm run build`): clean. Targeted finding F-004 (`TierBoardPage 757 LOC god-component`) is `carried_forward` (507 LOC — substantial reduction but not fully resolved; remaining content is genuine orchestration). `architecture_quality`: 6→6.5 (UP). `simplicity`: 5→6 (UP).
+Good app, place but not win. 10 loops from build failure (loop 1) to 7.5 avg. Real structural improvements across loops 5-9: build baseline green (loop 5), storage injectable (loop 6), undoRedoThunks tested (loop 7), persistenceMiddleware per-instance timer (loop 8), TierBoardPage 757→507 LOC with 5 focused hooks extracted (loop 9). No fake-clean moves. Each resolved finding survived source inspection. The remaining gaps are honest and quantified: test_strategy held at 7 by F-007 + F-008 (useTierFilter untested, filterAllTiers untested); architecture_quality at 6.5 because pages are still large orchestration shells without Interface Depth. These are the smallest remaining contestrelevant fixes — two test file additions and an optional extraction evaluation. The codebase is structurally honest; it has not reached the 9-anchor in any dimension but it is trending the right direction.
