@@ -91,7 +91,7 @@
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
       "last_seen_loop": 7,
-      "last_seen_sha": "<pending-loop7-commit>",
+      "last_seen_sha": "ed3c3c3",
       "occurrences": [
         {
           "loop": 5,
@@ -111,7 +111,7 @@
           "loop": 7,
           "loop_local_id": "F1",
           "status": "resolved",
-          "sha": "<pending-loop7-commit>",
+          "sha": "ed3c3c3",
           "idempotency_key": "loop7-F-003-resolved"
         }
       ]
@@ -127,7 +127,7 @@
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
       "last_seen_loop": 7,
-      "last_seen_sha": "<pending-loop7-commit>",
+      "last_seen_sha": "ed3c3c3",
       "occurrences": [
         {
           "loop": 5,
@@ -147,7 +147,7 @@
           "loop": 7,
           "loop_local_id": "F2",
           "status": "open",
-          "sha": "<pending-loop7-commit>",
+          "sha": "ed3c3c3",
           "idempotency_key": "loop7-F-004-open"
         }
       ]
@@ -161,15 +161,15 @@
       "test_failed": "Two-adapter rule",
       "severity": "Noticeable weakness",
       "first_seen_loop": 7,
-      "first_seen_sha": "<pending-loop7-commit>",
+      "first_seen_sha": "ed3c3c3",
       "last_seen_loop": 7,
-      "last_seen_sha": "<pending-loop7-commit>",
+      "last_seen_sha": "ed3c3c3",
       "occurrences": [
         {
           "loop": 7,
           "loop_local_id": "F3",
           "status": "open",
-          "sha": "<pending-loop7-commit>",
+          "sha": "ed3c3c3",
           "idempotency_key": "loop7-F-005-open"
         }
       ]
