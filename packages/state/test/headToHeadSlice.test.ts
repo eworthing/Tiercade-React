@@ -35,7 +35,7 @@ describe("headToHeadSlice", () => {
     const pair: [Item, Item] = [pool[0], pool[1]];
     const withQueue = headToHeadReducer(withPool, setPairsQueue([pair]));
     expect(withQueue.pairsQueue.length).toBe(1);
-    expect(withQueue.totalComparisons).toBe(1);
+    expect(withQueue.totalPairs).toBe(1);
     expect(withQueue.completedComparisons).toBe(0);
   });
 

@@ -3,6 +3,148 @@
   "loops": [
 {
   "schema_version": 3,
+  "loop": 2,
+  "loop_cap": 10,
+  "state": "CONTINUE",
+  "halt_subtype": null,
+  "halt_handoff_text": null,
+  "halt_handoff": null,
+  "re_validated_at_sha": null,
+  "re_validation_context": null,
+  "dry_run": false,
+  "provider": "claude_code",
+  "loop_model": "claude-sonnet-4-6",
+  "loop_model_source": "default",
+  "reviewer_model": "claude-sonnet-4-6",
+  "reviewer_model_source": "default",
+  "spawn_isolation": "subagent",
+  "findings_registry_path": "./findings_registry.json",
+  "discovery": null,
+  "verdict": "Functionally solid, but structurally compromised",
+  "verdict_explanation": "Test suite is still red across all three Jest workspaces after loop 2. headToHeadSlice compile error resolved; 2 clusters remain: packages/core (7 failing tests) and packages/ui (ESM transform error). Structural review blocked until all suites pass.",
+  "scorecard": {
+    "architecture_quality":      {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; packages/core and packages/ui suites still red; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "state_management":          {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; importJSON.test.ts still fails (ModelResolverError); baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "domain_modeling":           {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; carried forward; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "data_flow":                 {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; carried forward; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "framework_idioms":          {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; carried forward; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "concurrency":               {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; carried forward; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "simplicity":                {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; carried forward; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "test_strategy":             {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; carried forward; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true},
+    "credibility":               {"score": 1, "delta": "SAME", "proof": "loop 2 build still failing; carried forward; baseline unmeasurable", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": true}
+  },
+  "authority_map": [],
+  "strengths": [],
+  "findings": [
+    {
+      "loop_local_id": "F1",
+      "stable_id": "F-001",
+      "id": "F1",
+      "title": "Build failure blocks structural review",
+      "why_it_matters": "Without a green baseline test/typecheck across all three workspaces, every other architectural claim is unverifiable.",
+      "what_is_wrong": "Two remaining failure clusters after loop 2: packages/core 7 tests fail (analytics/modelResolver/sorting); packages/state importJSON.test.ts ModelResolverError (pre-existing); packages/ui TierBoard.test.tsx @react-spectrum/s2 ESM parse failure.",
+      "evidence": [
+        "packages/core/test/analytics.test.ts:66 (averageItemsPerTier: received 1.5, expected 1.25)",
+        "packages/core/test/analytics.test.ts:74 (totalSeasons: received 4, expected 3)",
+        "packages/core/test/analytics.test.ts:104 (Largest Tier: S vs expected A)",
+        "packages/core/test/modelResolver.test.ts:213 (parseCSV: received [], expected ['alpha', 'alpha_2', 'alpha_3'])",
+        "packages/core/test/sorting.test.ts (suite failed to run)",
+        "packages/state/test/importJSON.test.ts:28 (ModelResolverError: Invalid project schema)",
+        "packages/ui/test/TierBoard.test.tsx:7 (SyntaxError on @react-spectrum/s2 ESM)"
+      ],
+      "test_failed": "n/a",
+      "dependency_category": null,
+      "leverage_impact": "Until all baseline tests are green, no architectural change can be verified safe.",
+      "locality_impact": "Failures span three packages but each cluster is locally diagnosable.",
+      "metric_signal": "Test Suites: 3 failed/8 passed (core), 1 failed/3 passed (state — improved from 2 failed in loop 1), 1 failed/1 passed (ui)",
+      "why_weakens_submission": "Untrusted test suite blocks every contest claim about regression resistance, refactor safety, and architectural credibility.",
+      "severity": "Likely disqualifier",
+      "adr_conflicts": [],
+      "adr_reopen_justification": null,
+      "minimal_correction_path": "Loop 3 targets packages/ui jest.config.ts transformIgnorePatterns — add exclusion for @react-spectrum/s2.",
+      "blast_radius": {
+        "change": ["packages/ui/jest.config.ts"],
+        "avoid": ["packages/ui/src/**", "packages/core/**", "packages/state/**", "apps/**"]
+      }
+    }
+  ],
+  "simplification_check": {
+    "structurally_necessary": "Re-green baseline tests so structural review can begin. n/a architectural test.",
+    "new_seam_justified": false,
+    "new_seam_adapters": [],
+    "helpful_simplification": "Defer until baseline green.",
+    "should_not_be_done": "Change production source in packages/core or packages/ui without confirming which side is authoritative.",
+    "tests_after_fix": "packages/ui/test/TierBoard.test.tsx becomes exercisable once transformIgnorePatterns is corrected."
+  },
+  "backlog": [
+    {
+      "priority": 1,
+      "title": "Fix packages/ui Jest ESM transform for @react-spectrum/s2",
+      "kind": "structural",
+      "rank": "needed for winning",
+      "why_it_matters": "Single config-file change; blocks the only remaining ui suite; no production code risk.",
+      "score_impact": "Reduces open failure clusters from 3 to 2; enables framework-idioms and test-strategy scoring for ui."
+    },
+    {
+      "priority": 2,
+      "title": "Fix packages/core analytics/modelResolver/sorting test failures",
+      "kind": "structural",
+      "rank": "needed for winning",
+      "why_it_matters": "7 failing tests in core block all analytical and domain-modeling review.",
+      "score_impact": "Unlocks domain modeling, data flow, and test strategy scoring for core."
+    }
+  ],
+  "unresolved_reason": null,
+  "deepening_candidates": [],
+  "builder_notes": [
+    {
+      "pattern": "Stale field reference in test after production state shape changed",
+      "how_to_recognize": "TS2339 Property X does not exist on type HeadToHeadState in a test file assertion",
+      "smallest_coding_rule": "When renaming a state field in a slice, search for the old name across all test files and update assertions before committing",
+      "stack_example": "RTK createSlice renames totalComparisons -> totalPairs; test still reads .totalComparisons; TS catches it at ts-jest compile time."
+    },
+    {
+      "pattern": "ESM-shipping node_modules package under Jest's default CJS transform",
+      "how_to_recognize": "SyntaxError at import inside a .cjs file in a vendor package; import chain leads through @react-spectrum/s2/dist/main.cjs",
+      "smallest_coding_rule": "Add the ESM-shipping package to Jest transformIgnorePatterns as a negative lookahead exclusion",
+      "stack_example": "transformIgnorePatterns: ['/node_modules/(?!@react-spectrum/s2/)'] in jest.config.ts"
+    },
+    {
+      "pattern": "Test assertions embedding values from incorrect understanding of test data",
+      "how_to_recognize": "generateAnalyticsSummary returns Largest Tier: S but test expects Largest Tier: A — both tiers have same count; test was written assuming A",
+      "smallest_coding_rule": "Write analytics test expectations derivable directly from the test fixture data",
+      "stack_example": null
+    }
+  ],
+  "narrative": "Miss this loop. Two loops into cleanup and the baseline is still red. Loop 2 resolved the stale totalComparisons compile error in headToHeadSlice.test.ts. Three remaining failure clusters: core analytics/modelResolver/sorting (7 tests), state importJSON (1 test, pre-existing), ui ESM transform (config). Next loop targets the ui ESM config — smallest blast radius, no production code risk.",
+  "loop_result": {
+    "what_changed": "Fixed packages/state/test/headToHeadSlice.test.ts:38 — replaced stale field reference totalComparisons with totalPairs matching current HeadToHeadState shape.",
+    "evidence_change_is_honest": "npm run test:state: headToHeadSlice.test.ts now PASS (was compile-fail TS2339 in loop 1); state package moves from 2 suites failing to 1 suite failing; setPairsQueue reducer sets state.totalPairs = action.payload.length (headToHeadSlice.ts:67) confirming assertion value 1 remains correct.",
+    "targeted_finding_status": "carried_forward",
+    "unintended_regression": null,
+    "changed_paths": ["packages/state/test/headToHeadSlice.test.ts"],
+    "interface_test_coverage_path": null
+  },
+  "implementation_review": {
+    "verdict": "approved",
+    "reason": "Stale totalComparisons reference correctly replaced with totalPairs matching current HeadToHeadState; setPairsQueue sets state.totalPairs = action.payload.length confirming assertion value 1 is still correct; no production code changed, no new structural smells introduced.",
+    "checks": {
+      "reality": "passed",
+      "honesty": "passed",
+      "regression": "passed"
+    },
+    "regressions": [],
+    "conditions": [],
+    "rounds": 1,
+    "retry_count": 1,
+    "retry_cause": null,
+    "retry_attempts": [
+      {"attempt": 1, "outcome": "ok", "error": null, "duration_ms": 8500}
+    ]
+  }
+},
+{
+  "schema_version": 3,
   "loop": 1,
   "loop_cap": 10,
   "state": "CONTINUE",

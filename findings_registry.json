@@ -12,9 +12,11 @@
       "severity": "Likely disqualifier",
       "first_seen_loop": 1,
       "first_seen_sha": "4e569ee9601ecf7a8334d84f3e72c22747927399",
-      "last_seen_loop": 1,
+      "last_seen_loop": 2,
+      "last_seen_sha": "2236b73f305071627561634072f2cd13471c102a",
       "occurrences": [
-        {"loop": 1, "loop_local_id": "F1", "status": "open", "sha": "4e569ee9601ecf7a8334d84f3e72c22747927399"}
+        {"loop": 1, "loop_local_id": "F1", "status": "open", "sha": "4e569ee9601ecf7a8334d84f3e72c22747927399"},
+        {"loop": 2, "loop_local_id": "F1", "status": "open", "sha": "2236b73f305071627561634072f2cd13471c102a", "idempotency_key": "loop2-F-001-open"}
       ]
     }
   ]
