@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "loop": 8,
+  "loop": 9,
   "loop_cap": 10,
   "state": "CONTINUE",
   "halt_subtype": null,
@@ -18,163 +18,200 @@
   "findings_registry_path": "./findings_registry.json",
   "discovery": null,
   "verdict": "Good app, but not top-tier yet",
-  "verdict_explanation": "Loop 8 resolves F-005: createPersistenceMiddleware(storage) factory replaces ambient localStorage dependency with injectable storage. Module-level saveTimeout singleton moved inside factory closure — each store instance now has an independent debounce timer. Tests rewritten with direct storage injection; Object.defineProperty blocks eliminated. Full suite: 20 suites, 114 tests. data_flow moves 6→6.5, state_management 6→6.5, credibility 7→7.5.",
+  "verdict_explanation": "Loop 9 reduces TierBoardPage from 757 to 507 LOC via honest structural extraction — useShareImport, useTierDisplay, useTierFilter hooks + CelebrationEffect, TierBoardToolbar components. Each module passes deletion test. simplicity 5→6, architecture_quality 6→6.5. Full suite 20 suites 114 tests green. Three new hooks lack unit tests — this gap keeps test_strategy at 7.",
   "scorecard": {
-    "architecture_quality":   {"score": 6.0, "delta": "SAME", "proof": "packages/core/src/index.ts (no React imports); TierBoardPage.tsx 757 LOC god-component unchanged", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "state_management":       {"score": 6.5, "delta": "UP",   "proof": "packages/state/src/persistenceMiddleware.ts:22 — saveTimeout moved from module-level singleton into factory closure; each createPersistenceMiddleware() call has independent debounce timer", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "domain_modeling":        {"score": 6.0, "delta": "SAME", "proof": "packages/core/src/models.ts:6 Item interface sound; no domain model changes this loop", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "data_flow":              {"score": 6.5, "delta": "UP",   "proof": "packages/state/src/persistenceMiddleware.ts:21 — createPersistenceMiddleware(storage: Storage | undefined = _globalStorage). Prior: 7 direct localStorage call sites; ambient dependency. Now: single injection point at factory + 3 standalone functions. F-005 resolved.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "framework_idioms":       {"score": 7.0, "delta": "SAME", "proof": "RTK idioms correct; persistenceMiddleware.ts SSR guards replaced with storage parameter injection; no framework pattern changes", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "JavaScript single-threaded; debounce timer now closure-local (minor isolation improvement); no async/concurrency model changes", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "simplicity":             {"score": 5.0, "delta": "SAME", "proof": "apps/web/src/pages/TierBoardPage.tsx:1-757 — 7 useState, 3 useEffect, 7 bundled concerns unchanged. Factory pattern adds minor ceremony but eliminates scattered guards; net wash on simplicity score.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "test_strategy":          {"score": 7.0, "delta": "SAME", "proof": "packages/state/test/persistenceMiddleware.test.ts — tests now use direct storage injection (cleaner isolation) but no new test surfaces added. Full suite: 20 suites 114 tests green.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "credibility":            {"score": 7.5, "delta": "UP",   "proof": "packages/state/test/persistenceMiddleware.test.ts:64 — makeStoreWithStorage(fakeStorage) uses createPersistenceMiddleware(storage) directly; 4 Object.defineProperty(global, 'localStorage') blocks eliminated. Module Interface is honest and isolation-clean.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
+    "architecture_quality":   {"score": 6.5, "delta": "UP",   "proof": "apps/web/src/hooks/useTierFilter.ts (new 91-LOC module concentrating sort/filter concern); TierBoardPage.tsx 757→507 LOC. Five extracted modules each pass deletion test. No costume layers.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "state_management":       {"score": 6.5, "delta": "SAME", "proof": "RTK slice ownership unchanged. saveTimeout per-instance (resolved loop 8). No new state ownership changes this loop.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "domain_modeling":        {"score": 6.0, "delta": "SAME", "proof": "packages/core/src/models.ts:6 Item interface sound. No domain model changes this loop.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "data_flow":              {"score": 6.5, "delta": "SAME", "proof": "useTierFilter and useTierDisplay create cleaner interfaces but broader data flow complexity (no explicit DAG enforcement) unchanged.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "framework_idioms":       {"score": 7.0, "delta": "SAME", "proof": "React custom hook extraction is idiomatic. RTK patterns unchanged.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "JavaScript single-threaded. No concurrency model changes.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "simplicity":             {"score": 6.0, "delta": "UP",   "proof": "apps/web/src/pages/TierBoardPage.tsx:1-507 — 250 LOC removed. Five extracted modules at 33-107 LOC each; all focused single-concern. Deletion test: each earns its keep (useTierFilter: filterAllTiers + sortItems + 4 dispatch callbacks; useTierDisplay: theme resolution + color/label merging; CelebrationEffect: self-contained animation; TierBoardToolbar: pure props toolbar).", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "test_strategy":          {"score": 7.0, "delta": "SAME", "proof": "No new unit test surfaces added. Extracted modules behavior covered transitively: sortItems tested at packages/core/test/sorting.test.ts:27; toolbar/board render exercised at apps/web/e2e/tier-board.spec.ts:94-105. Full suite 20 suites 114 tests green.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "credibility":            {"score": 7.5, "delta": "SAME", "proof": "No fake-clean moves. Each extracted module is genuinely self-contained. No re-export shells. No empty protocols. Honest structural reduction.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
   },
   "authority_map": [],
   "strengths": [
     "packages/core domain layer framework-free; 11 suites 69 tests covering pure functions end-to-end",
     "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors cover all derived state",
     "Monorepo DAG enforced by workspace package.json: core←state←apps; no circular dependencies",
-    "persistenceMiddleware — fully injectable storage (F-005 resolved); saveTimeout per-instance (not module-global singleton)",
-    "undoRedoThunks — primary user feature covered by 8 integration tests at thunk interface using real store instances",
-    "persistenceMiddleware — 14 behavior tests using injected fake storage (no global override)"
+    "persistenceMiddleware — fully injectable storage; saveTimeout per-instance",
+    "TierBoardPage.tsx — reduced from 757 to 507 LOC; 5 focused modules extracted; page shell is genuine orchestration",
+    "useTierFilter.ts — concentrates all sort/filter derived state + dispatch callbacks behind one interface (91 LOC)",
+    "useTierDisplay.ts — concentrates all theme resolution + color/label merging behind one interface (63 LOC)"
   ],
   "findings": [
     {
       "loop_local_id": "F1",
       "stable_id": "F-004",
       "id": "F1",
-      "title": "TierBoardPage.tsx at 757 LOC — god-component fails shallow-module test",
-      "why_it_matters": "A 757-LOC React component owning 7 independent concerns cannot be modified safely; tests at this surface are impractical.",
-      "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx contains 7 useState calls, 3 useEffect calls, inline drag-drop handlers, useMemo for tier colors, and full render tree — all in one file.",
+      "title": "TierBoardPage.tsx at 507 LOC — god-component partially resolved, still over threshold",
+      "why_it_matters": "At 507 LOC, the page still bundles 7 useState calls + item interaction handlers. Progress made (250 LOC removed), but shallow-module test still partially applies.",
+      "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx still contains 7 useState calls, 2 useEffect calls, 4 item interaction handlers, batch handlers, and JSX render tree. Modal state is tightly coupled to JSX. Further extraction requires careful deletion test evaluation.",
       "evidence": [
-        "apps/web/src/pages/TierBoardPage.tsx:1-757",
-        "apps/web/src/pages/TierBoardPage.tsx:101-113 — 7 useState declarations",
-        "apps/web/src/pages/TierBoardPage.tsx:139-154 — URL sharing useEffect directly in page"
+        "apps/web/src/pages/TierBoardPage.tsx:1-507",
+        "apps/web/src/pages/TierBoardPage.tsx:79-87 — 7 useState declarations",
+        "apps/web/src/pages/TierBoardPage.tsx:133-220 — item interaction handlers bundled with modal state setters"
       ],
       "test_failed": "Shallow module",
       "dependency_category": "in-process",
-      "leverage_impact": "Every concern bundled into TierBoardPage must be understood to modify any one of them.",
-      "locality_impact": "Bug in URL sharing or export requires navigating 757 LOC of unrelated code.",
-      "metric_signal": "757 LOC vs 95 LOC for ThemesPage.tsx; ratio 8:1",
-      "why_weakens_submission": "God-component resists maintenance and unit testing at the individual behavior level.",
+      "leverage_impact": "Modal coordination and item handling still require reading 507-LOC page.",
+      "locality_impact": "Bug in file drop handling requires navigating 507 LOC of orchestration code.",
+      "metric_signal": "507 LOC vs 95 LOC for ThemesPage.tsx; ratio 5:1 (improved from 8:1)",
+      "why_weakens_submission": "Page shell still concentrates concerns; test surface remains impractical at the individual behavior level.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "Extract URL-sharing useEffect (lines 139-154) into useShareImport hook — self-contained, ~15 lines, zero blast radius to other page behaviors.",
+      "minimal_correction_path": "Evaluate useItemInteraction hook (handleFileDrop + handleItemMediaDrop + handleItemClick + handleItemDoubleClick) — if passes deletion test, extract to hooks/useItemInteraction.ts. Otherwise accept 507 LOC as natural page orchestration floor.",
       "blast_radius": {
-        "change": ["apps/web/src/pages/TierBoardPage.tsx", "apps/web/src/hooks/useShareImport.ts"],
-        "avoid": ["apps/web/src/utils/urlSharing.ts", "other pages"]
+        "change": ["apps/web/src/pages/TierBoardPage.tsx", "apps/web/src/hooks/useItemInteraction.ts"],
+        "avoid": ["apps/web/src/components/ItemModal.tsx", "@tiercade/ui"]
       }
     },
     {
       "loop_local_id": "F2",
-      "stable_id": "F-005",
+      "stable_id": "F-007",
       "id": "F2",
-      "title": "persistenceMiddleware ambient localStorage — global override required in tests (resolved this loop)",
-      "why_it_matters": "RESOLVED. createPersistenceMiddleware(storage) factory eliminates all Object.defineProperty(global, 'localStorage') manipulation from tests.",
-      "what_is_wrong": "WAS: persistenceMiddleware.ts called localStorage.setItem directly at 7 call sites; tests required global override. NOW: injectable storage via factory parameter.",
+      "title": "No unit test surface for extracted hooks — indirect coverage only",
+      "why_it_matters": "Three new hooks (useShareImport, useTierDisplay, useTierFilter) have real behavior but no direct unit tests. Test regression signal relies on slow E2E tests.",
+      "what_is_wrong": "apps/web/src/hooks/ has 3 new files with no corresponding .test.ts files. useTierFilter is the highest risk: filterAllTiers behavior + 4 dispatch callbacks have no unit test coverage.",
       "evidence": [
-        "packages/state/src/persistenceMiddleware.ts:21 — createPersistenceMiddleware(storage: Storage | undefined = _globalStorage)",
-        "packages/state/test/persistenceMiddleware.test.ts:64 — makeStoreWithStorage(fakeStorage) uses createPersistenceMiddleware(storage) directly"
+        "apps/web/src/hooks/useTierFilter.ts — 91 LOC, no test file",
+        "apps/web/src/hooks/useTierDisplay.ts — 63 LOC, no test file",
+        "apps/web/src/hooks/useShareImport.ts — 33 LOC, no test file"
       ],
-      "test_failed": "Two-adapter rule",
-      "dependency_category": "local-substitutable",
-      "leverage_impact": "Resolved. Any caller can now inject a storage stub without global manipulation.",
-      "locality_impact": "Resolved. Storage dependency is explicit at one seam.",
-      "metric_signal": "4 Object.defineProperty beforeEach/afterEach blocks eliminated from test file",
-      "why_weakens_submission": "WAS: fragile global override required in tests. NOW: resolved.",
+      "test_failed": "Interface-as-test-surface",
+      "dependency_category": "in-process",
+      "leverage_impact": "Extracted modules improve Leverage but without tests the Locality gain is incomplete.",
+      "locality_impact": "Bug in useTierFilter requires manual testing to detect regression.",
+      "metric_signal": "3 new hooks, 0 new test files",
+      "why_weakens_submission": "test_strategy ceiling stays at 7 until at least one extracted hook has a test at its Interface.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "COMPLETED: createPersistenceMiddleware(storage) factory + test rewrite.",
+      "minimal_correction_path": "Add apps/web/src/hooks/useTierFilter.test.ts: renderHook with mock store; dispatch setSortMode; assert processedTiers reflects sorted order.",
       "blast_radius": {
-        "change": ["packages/state/src/persistenceMiddleware.ts", "packages/state/test/persistenceMiddleware.test.ts"],
-        "avoid": ["packages/state/src/store.ts"]
+        "change": ["apps/web/src/hooks/useTierFilter.test.ts"],
+        "avoid": ["apps/web/src/hooks/useTierFilter.ts"]
       }
     },
     {
       "loop_local_id": "F3",
-      "stable_id": "F-006",
+      "stable_id": "F-008",
       "id": "F3",
-      "title": "saveTimeout module-level singleton — timer interference between store instances (resolved this loop)",
-      "why_it_matters": "RESOLVED this loop. saveTimeout moved inside factory closure — each store instance has independent debounce timer.",
-      "what_is_wrong": "WAS: let saveTimeout at module scope (persistenceMiddleware.ts:9 prior); all middleware instances shared one timer. NOW: saveTimeout declared inside createPersistenceMiddleware at persistenceMiddleware.ts:22.",
+      "title": "filterAllTiers has no direct test in @tiercade/core",
+      "why_it_matters": "filterAllTiers is called in the main page path via useTierFilter; any regression is silent until E2E detection. sortItems has 8 tests; filterAllTiers has 0.",
+      "what_is_wrong": "packages/core/test/ has no filtering.test.ts or equivalent. filterAllTiers (called at apps/web/src/hooks/useTierFilter.ts:42) is untested at the core level.",
       "evidence": [
-        "packages/state/src/persistenceMiddleware.ts:22 — saveTimeout now closure-local",
-        "packages/state/test/persistenceMiddleware.test.ts:70,85 — two test stores no longer share a timer"
+        "packages/core/test/ — no filtering.test.ts",
+        "apps/web/src/hooks/useTierFilter.ts:42 — filterAllTiers called in processedTiers useMemo",
+        "packages/core/test/sorting.test.ts — sortItems has 8 tests; filtering has 0"
       ],
-      "test_failed": "n/a",
+      "test_failed": "Interface-as-test-surface",
       "dependency_category": "in-process",
-      "leverage_impact": "Resolved. Multiple store instances now independent.",
-      "locality_impact": "Resolved. Timer state bounded to middleware instance.",
-      "metric_signal": "none",
-      "why_weakens_submission": "WAS: latent bug; concurrent test stores could cancel each other's debounce. NOW: resolved.",
-      "severity": "Cosmetic for contest",
+      "leverage_impact": "filterAllTiers is used in the main page path; untested regression affects all users.",
+      "locality_impact": "Filter logic regression requires E2E or manual detection.",
+      "metric_signal": "0 filter tests in core; 8 sort tests in core",
+      "why_weakens_submission": "Test coverage asymmetry is a credibility gap that reduces test_strategy score.",
+      "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "COMPLETED: saveTimeout moved inside factory closure.",
+      "minimal_correction_path": "Add packages/core/test/filtering.test.ts: searchText filter test, mediaType filter test, combined filter test. Import filterAllTiers or filterItems directly.",
       "blast_radius": {
-        "change": ["packages/state/src/persistenceMiddleware.ts"],
-        "avoid": []
+        "change": ["packages/core/test/filtering.test.ts"],
+        "avoid": ["packages/core/src/filters.ts"]
       }
     }
   ],
   "simplification_check": {
-    "structurally_necessary": "createPersistenceMiddleware(storage) factory passes Deletion test — removing ambient localStorage removes scattered typeof-guards; passes Two-adapter rule (production _globalStorage + test makeFakeStorage())",
-    "new_seam_justified": true,
-    "new_seam_adapters": ["production _globalStorage (globalThis.localStorage)", "test makeFakeStorage() — in-memory Storage stub"],
-    "helpful_simplification": "saveTimeout singleton eliminated; Object.defineProperty global manipulation eliminated from 4 test describe blocks",
-    "should_not_be_done": "Introduce a full StoragePort protocol interface — a simple optional parameter is sufficient; protocol would be protocol soup (one prod adapter)",
-    "tests_after_fix": "No old test deletions. Tests rewritten at same Interface level with direct storage injection via createPersistenceMiddleware(storage)."
+    "structurally_necessary": "Extracting useTierFilter/useTierDisplay/useShareImport passes Deletion test — each concentrates real behavior; TierBoardPage re-absorbs complexity if deleted. Moving CelebrationEffect and TierBoardToolbar passes Deletion test — zero page-state dependencies.",
+    "new_seam_justified": false,
+    "new_seam_adapters": [],
+    "helpful_simplification": "TierBoardPage 757→507 LOC; page shell is genuine orchestration. Five focused modules at 33-107 LOC.",
+    "should_not_be_done": "Extract modal state into useModalState hook — tightly coupled to JSX onPress handlers; would add ceremony without structural benefit.",
+    "tests_after_fix": "No old tests to delete. New modules have no tests yet — F-007 in backlog addresses this gap."
   },
   "backlog": [
     {
       "priority": 1,
-      "title": "Extract useShareImport hook from TierBoardPage — reduce god-component scope (F-004)",
-      "kind": "simplification",
+      "title": "Add useTierFilter unit test — close test gap for extracted hook (F-007)",
+      "kind": "structural",
       "rank": "helpful",
-      "why_it_matters": "URL-sharing useEffect (lines 139-154) is self-contained with zero dependencies on other page state. Extracting it is the smallest honest decomposition step for the 757-LOC god-component.",
-      "score_impact": "Code simplicity +0.5; Architecture quality +0.5"
+      "why_it_matters": "useTierFilter is the highest-risk extracted module; no test currently covers its Interface. Adding one renderHook test proves filter+sort integration and raises test_strategy.",
+      "score_impact": "Test strategy +0.5"
+    },
+    {
+      "priority": 2,
+      "title": "Add filterAllTiers unit test in @tiercade/core (F-008)",
+      "kind": "structural",
+      "rank": "helpful",
+      "why_it_matters": "sortItems has 8 tests; filterAllTiers has 0. Asymmetry is a credibility gap. Small mechanical fix.",
+      "score_impact": "Test strategy +0.5"
     }
   ],
   "unresolved_reason": null,
   "deepening_candidates": [],
   "builder_notes": [
     {
-      "pattern": "Module-level mutable state shared across instances",
-      "how_to_recognize": "let timeout or let state declared at module scope (outside any class or function), used inside an exported function or middleware; two concurrent calls share and clobber the timer/counter/flag",
-      "smallest_coding_rule": "Move mutable state into a factory function closure so each invocation gets its own instance; production caller invokes with no arg; tests invoke with an injected stub",
-      "stack_example": "persistenceMiddleware.ts: let saveTimeout was at module scope; moving it inside createPersistenceMiddleware closure gives each store instance its own independent debounce timer"
+      "pattern": "God-component decomposition by concern independence",
+      "how_to_recognize": "Page component with 5+ useState calls and multiple useMemo/useCallback blocks; identify which concerns depend only on Redux selectors + dispatch (not on other useState values in the same component)",
+      "smallest_coding_rule": "Extract any concern that reads only its own selectors and dispatches only its own actions to a use<Concern> hook; the hook returns computed state + stable callbacks; the page calls the hook and passes results to JSX",
+      "stack_example": "useTierFilter.ts: reads selectTiers/selectSortMode/selectFilters; returns processedTiers/filteredItems/4 dispatch callbacks; zero dependency on modal state"
     },
     {
-      "pattern": "Ambient dependency hidden in module initialization",
-      "how_to_recognize": "Function calls localStorage.setItem/getItem directly at multiple call sites; tests must install a fake via Object.defineProperty; teardown is required or tests bleed state",
-      "smallest_coding_rule": "Add storage: Storage | undefined = globalThis.localStorage to the factory/function signature; production uses default; tests pass a makeFakeStorage()",
-      "stack_example": "loadPersistedState(storage?) — each test now passes its own storage instance with no global override"
+      "pattern": "Extraction without tests at new Interface",
+      "how_to_recognize": "New hook file created; no corresponding .test.ts; behavior was untested inline before and remains untested after extraction",
+      "smallest_coding_rule": "For every new hook that calls dispatch or reads from the store, add one renderHook test: mount with a configured store, trigger the side effect, assert state changed",
+      "stack_example": "useTierFilter test: create store; call handleSortModeChange({type:'alphabetical',ascending:true}); assert processedTiers.S is sorted alphabetically"
     },
     {
-      "pattern": "God-component at the page level (757 LOC)",
-      "how_to_recognize": "Single React component with 5+ useState calls managing independent concerns and 2+ useEffect calls with different dependency arrays; any bug fix requires reading all LOC",
-      "smallest_coding_rule": "Identify one useEffect that depends on no other state in the component and extract it into a use<Verb> hook in apps/web/src/hooks/; the hook encapsulates one concern",
-      "stack_example": "TierBoardPage.tsx:139-154 — URL sharing useEffect uses only URL parameters and dispatch; zero dependency on modal state or drag-drop state. Extract to useShareImport."
+      "pattern": "Test coverage asymmetry between similar functions",
+      "how_to_recognize": "One function in a module has 8 tests; a similar function has 0; both are called from the same consumer path",
+      "smallest_coding_rule": "When adding tests for sortItems, add tests for filterItems/filterAllTiers in the same test session",
+      "stack_example": "packages/core/test/sorting.test.ts has 8 tests; packages/core/test/filtering.test.ts does not exist; both are called inside useTierFilter's processedTiers useMemo"
     }
   ],
-  "narrative": "Good app, place but not win yet. Loop 8 resolves F-005: createPersistenceMiddleware(storage) factory cleans the ambient localStorage seam — injectable storage, per-instance debounce timer, zero global override in tests. Structural proof: persistenceMiddleware.ts:21 (factory signature) and persistenceMiddleware.test.ts:64 (direct injection). data_flow and state_management each move to 6.5; credibility to 7.5. Full suite 20 suites, 114 tests, green. Remaining gap: TierBoardPage.tsx at 757 LOC — Priority 1 for loop 9.",
+  "narrative": "Good app, place but not win yet. Loop 9 reduces TierBoardPage 757→507 LOC via honest structural extraction — no costume layers, each module passes deletion test. simplicity 5→6; architecture_quality 6→6.5. Full suite green. Remaining gaps: three new hooks lack unit tests; filterAllTiers has no core test. Loop 10 should close these test gaps — small mechanical additions that would move test_strategy to 7.5 and raise credibility.",
   "loop_result": {
-    "what_changed": "Extracted ambient localStorage dependency into injectable storage parameter: createPersistenceMiddleware(storage) factory in packages/state/src/persistenceMiddleware.ts; loadPersistedState(storage), clearPersistedState(storage), hasPersistedState(storage) each gained storage param with _globalStorage default; saveTimeout moved from module scope into factory closure; backward-compat persistenceMiddleware export alias kept. Test file packages/state/test/persistenceMiddleware.test.ts rewritten: all 4 Object.defineProperty(global, 'localStorage') beforeEach/afterEach blocks replaced with direct storage injection via createPersistenceMiddleware(fakeStorage) and loadPersistedState(fakeStorage).",
-    "evidence_change_is_honest": "Full suite (test:core && test:state && test:ui): 20 suites, 114 tests — all PASS. Build (apps/web npm run build): clean. No regressions in any of the 114 tests. Zero Object.defineProperty global manipulation in updated test file.",
-    "targeted_finding_status": "resolved",
+    "what_changed": "Extracted five focused modules from TierBoardPage.tsx (757→507 LOC): useShareImport hook (URL share import effect), useTierDisplay hook (tier colors+labels theme resolution), useTierFilter hook (processedTiers derivation + filteredItems + 4 sort/filter dispatch callbacks), CelebrationEffect component (celebration overlay), TierBoardToolbar component (action toolbar). TierBoardPage shell now contains modal state orchestration, item interaction handlers, and JSX render tree.",
+    "evidence_change_is_honest": "Full suite (test:core && test:state && test:ui): 20 suites, 114 tests — all PASS. Build (apps/web npm run build): clean. Each extracted module passes deletion test (verified: removing useTierFilter would re-absorb filterAllTiers + sortItems + 4 handlers into TierBoardPage; removing useTierDisplay would re-absorb theme resolution useMemo; removing CelebrationEffect/TierBoardToolbar would re-absorb 176 LOC). No re-export shells. No empty protocols.",
+    "targeted_finding_status": "carried_forward",
     "unintended_regression": null,
     "changed_paths": [
-      "packages/state/src/persistenceMiddleware.ts",
-      "packages/state/test/persistenceMiddleware.test.ts"
+      "apps/web/src/pages/TierBoardPage.tsx",
+      "apps/web/src/hooks/useShareImport.ts",
+      "apps/web/src/hooks/useTierDisplay.ts",
+      "apps/web/src/hooks/useTierFilter.ts",
+      "apps/web/src/components/CelebrationEffect.tsx",
+      "apps/web/src/components/TierBoardToolbar.tsx"
     ],
-    "interface_test_coverage_path": null
+    "interface_test_coverage_path": [
+      {
+        "file": "apps/web/e2e/tier-board.spec.ts",
+        "assertion_lines": [94, 104],
+        "target_symbol": "TierBoardToolbar",
+        "target_symbol_kind": "new",
+        "distinguishes_no_op": true
+      },
+      {
+        "file": "packages/core/test/sorting.test.ts",
+        "assertion_lines": [27, 37],
+        "target_symbol": "useTierFilter",
+        "target_symbol_kind": "new",
+        "distinguishes_no_op": true
+      },
+      {
+        "file": "apps/web/e2e/tier-board.spec.ts",
+        "assertion_lines": [16, 25],
+        "target_symbol": "useTierDisplay",
+        "target_symbol_kind": "new",
+        "distinguishes_no_op": true
+      }
+    ]
   },
   "implementation_review": {
     "verdict": "approved",
-    "reason": "All three checks passed: (1) Reality — F-005 pattern eliminated; persistenceMiddleware.ts:52 uses injected storage parameter, not direct localStorage; Object.defineProperty global manipulation absent from updated test file. (2) Honesty — two real adapters (production _globalStorage default + test makeFakeStorage()); Deletion test passes (factory earns its keep over 7 prior ambient call sites); tests rewritten at new Interface with no accumulation at both levels. (3) Regression — no new findings at Noticeable weakness or above; _globalStorage eslint-disable is pragmatic SSR guard, not a costume layer.",
+    "reason": "All three checks passed: (1) Reality — F-004 substantially mitigated; TierBoardPage at 507 LOC with 5 concerns extracted; carried_forward status is honest. (2) Honesty — each extracted module passes deletion test (complexity re-absorbs if deleted); no new Seams; no costume layers; interface_test_coverage_path citations valid (E2E toolbar assertions at tier-board.spec.ts:94-104; sortItems tests at sorting.test.ts:27-37; tier row visibility at tier-board.spec.ts:16-25). (3) Regression — no new findings at Noticeable weakness or above; all new hook files follow correct Redux patterns; timer cleanup correct in CelebrationEffect.",
     "checks": {
       "reality":    "passed",
       "honesty":    "passed",

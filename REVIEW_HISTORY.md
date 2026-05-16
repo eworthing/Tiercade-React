@@ -761,3 +761,52 @@ Reviewer verdict: **approved**. All three checks passed: (1) Reality — F-005 p
 
 ## Final Judge Narrative
 Good app, place but not win yet. Loop 8 resolves F-005: storage injection factory cleans the ambient `localStorage` seam. `data_flow` and `state_management` each move to 6.5; `credibility` to 7.5. Full suite 20/114 green. Remaining: `TierBoardPage.tsx` 757 LOC god-component — Priority 1 for loop 9.
+
+--- Loop 9 (UTC 2026-05-16T00:20:00Z) ---
+
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 9 of 10 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 9 reduces TierBoardPage 757→507 LOC via honest structural extraction. `simplicity` 5→6, `architecture_quality` 6→6.5.
+
+## Scorecard (1-10)
+- Architecture quality: 6.5 | UP | apps/web/src/hooks/useTierFilter.ts (new 91-LOC module); TierBoardPage.tsx 757→507 LOC. Five extracted modules each pass deletion test.
+- State management and runtime ownership: 6.5 | SAME | RTK slice ownership unchanged.
+- Domain modeling: 6.0 | SAME | packages/core/src/models.ts:6 Item interface sound.
+- Data flow and dependency design: 6.5 | SAME | useTierFilter/useTierDisplay create cleaner interfaces; broader data flow complexity unchanged.
+- Framework / platform best practices: 7.0 | SAME | React custom hook extraction is idiomatic.
+- Concurrency and runtime safety: 7.0 | SAME | No concurrency changes.
+- Code simplicity and clarity: 6.0 | UP | TierBoardPage.tsx:1-507 — 250 LOC removed. Five focused modules at 33-107 LOC each.
+- Test strategy and regression resistance: 7.0 | SAME | No new unit test surfaces. Extracted modules covered transitively; 20 suites 114 tests green.
+- Overall implementation credibility: 7.5 | SAME | No fake-clean moves. Honest structural reduction.
+
+## Findings
+### F1 (F-004): TierBoardPage.tsx at 507 LOC — carried_forward — Noticeable weakness
+### F2 (F-007): No unit test surface for extracted hooks — open — Noticeable weakness
+### F3 (F-008): filterAllTiers has no direct test in @tiercade/core — open — Noticeable weakness
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | Extractions pass Deletion test — each module earns its keep |
+| new_seam_justified | false |
+| helpful_simplification | TierBoardPage 757→507 LOC; five focused modules |
+| should_not_be_done | Extract modal state — tightly coupled to JSX onPress; costume layer risk |
+| tests_after_fix | No old tests to delete; F-007 in backlog addresses missing hook tests |
+
+## Loop 9 Result
+Changed six files: `TierBoardPage.tsx` (757→507 LOC), `useShareImport.ts` (new, 33 LOC), `useTierDisplay.ts` (new, 63 LOC), `useTierFilter.ts` (new, 91 LOC), `CelebrationEffect.tsx` (new, 69 LOC), `TierBoardToolbar.tsx` (new, 107 LOC). Full suite: 20 suites, 114 tests — all PASS. Build clean. F-004 `carried_forward` (507 LOC; genuine orchestration remains). `architecture_quality`: 6→6.5 (UP). `simplicity`: 5→6 (UP).
+
+## Loop 9 Implementation Review
+Reviewer verdict: **approved**. All three checks passed: (1) Reality — F-004 substantially mitigated; 5 concerns extracted; carried_forward honest. (2) Honesty — each extracted module passes deletion test; no costume layers; interface_test_coverage_path valid. (3) Regression — no new findings at Noticeable weakness or above; all hooks follow correct patterns.
+
+## Final Judge Narrative
+Good app, place but not win yet. Loop 9 reduces TierBoardPage 757→507 LOC via honest structural extraction — no costume layers, each module passes deletion test. `simplicity` 5→6; `architecture_quality` 6→6.5. Full suite green. Remaining gaps: three new hooks lack unit tests; filterAllTiers has no core test. Loop 10 should close these test gaps.
