@@ -7,7 +7,10 @@
       "title": "Build failure blocks structural review",
       "category_hint": "build-failure",
       "primary_file": "packages/state/test/importJSON.test.ts",
-      "primary_evidence_lines": [1, 36],
+      "primary_evidence_lines": [
+        1,
+        36
+      ],
       "test_failed": "n/a",
       "severity": "Likely disqualifier",
       "first_seen_loop": 1,
@@ -53,10 +56,13 @@
     },
     {
       "stable_id": "F-002",
-      "title": "persistenceMiddleware writes ambient localStorage without injection — untestable seam",
+      "title": "persistenceMiddleware writes ambient localStorage without injection \u2014 untestable seam",
       "category_hint": "ambient-dependency",
       "primary_file": "packages/state/src/persistenceMiddleware.ts",
-      "primary_evidence_lines": [40, 63],
+      "primary_evidence_lines": [
+        40,
+        63
+      ],
       "test_failed": "Two-adapter rule",
       "severity": "Serious deduction",
       "first_seen_loop": 5,
@@ -82,10 +88,13 @@
     },
     {
       "stable_id": "F-003",
-      "title": "undoRedoThunks — multi-slice behavior with zero direct tests",
+      "title": "undoRedoThunks \u2014 multi-slice behavior with zero direct tests",
       "category_hint": "missing-tests",
       "primary_file": "packages/state/src/undoRedoThunks.ts",
-      "primary_evidence_lines": [22, 62],
+      "primary_evidence_lines": [
+        22,
+        62
+      ],
       "test_failed": "Interface-as-test-surface",
       "severity": "Serious deduction",
       "first_seen_loop": 5,
@@ -118,16 +127,19 @@
     },
     {
       "stable_id": "F-004",
-      "title": "TierBoardPage.tsx at 757 LOC — god-component fails shallow-module test",
+      "title": "TierBoardPage.tsx at 757 LOC \u2014 god-component fails shallow-module test",
       "category_hint": "god-component",
       "primary_file": "apps/web/src/pages/TierBoardPage.tsx",
-      "primary_evidence_lines": [1, 507],
+      "primary_evidence_lines": [
+        1,
+        507
+      ],
       "test_failed": "Shallow module",
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 10,
-      "last_seen_sha": "332a272fbff32adfda4798eb67e06bc76d722430",
+      "last_seen_loop": 11,
+      "last_seen_sha": "9290a562c359184d2891ce98ef8e7e4a43c81b88",
       "occurrences": [
         {
           "loop": 5,
@@ -170,15 +182,25 @@
           "status": "open",
           "sha": "332a272fbff32adfda4798eb67e06bc76d722430",
           "idempotency_key": "loop10-F-004-open"
+        },
+        {
+          "loop": 11,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "9290a562c359184d2891ce98ef8e7e4a43c81b88",
+          "idempotency_key": "loop11-F-004-open"
         }
       ]
     },
     {
       "stable_id": "F-005",
-      "title": "persistenceMiddleware ambient localStorage — global override required in tests",
+      "title": "persistenceMiddleware ambient localStorage \u2014 global override required in tests",
       "category_hint": "ambient-dependency-injection",
       "primary_file": "packages/state/src/persistenceMiddleware.ts",
-      "primary_evidence_lines": [41, 41],
+      "primary_evidence_lines": [
+        41,
+        41
+      ],
       "test_failed": "Two-adapter rule",
       "severity": "Noticeable weakness",
       "first_seen_loop": 7,
@@ -204,10 +226,13 @@
     },
     {
       "stable_id": "F-006",
-      "title": "saveTimeout module-level singleton — timer interference between store instances",
+      "title": "saveTimeout module-level singleton \u2014 timer interference between store instances",
       "category_hint": "module-level-mutable-state",
       "primary_file": "packages/state/src/persistenceMiddleware.ts",
-      "primary_evidence_lines": [9, 9],
+      "primary_evidence_lines": [
+        9,
+        9
+      ],
       "test_failed": "n/a",
       "severity": "Cosmetic for contest",
       "first_seen_loop": 8,
@@ -226,16 +251,19 @@
     },
     {
       "stable_id": "F-007",
-      "title": "No unit test surface for extracted hooks — indirect coverage only",
+      "title": "No unit test surface for extracted hooks \u2014 indirect coverage only",
       "category_hint": "missing-tests-new-hooks",
       "primary_file": "apps/web/src/hooks/useTierFilter.ts",
-      "primary_evidence_lines": [1, 91],
+      "primary_evidence_lines": [
+        1,
+        91
+      ],
       "test_failed": "Interface-as-test-surface",
       "severity": "Noticeable weakness",
       "first_seen_loop": 9,
       "first_seen_sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
-      "last_seen_loop": 10,
-      "last_seen_sha": "332a272fbff32adfda4798eb67e06bc76d722430",
+      "last_seen_loop": 11,
+      "last_seen_sha": "9290a562c359184d2891ce98ef8e7e4a43c81b88",
       "occurrences": [
         {
           "loop": 9,
@@ -250,6 +278,13 @@
           "status": "open",
           "sha": "332a272fbff32adfda4798eb67e06bc76d722430",
           "idempotency_key": "loop10-F-007-open"
+        },
+        {
+          "loop": 11,
+          "loop_local_id": "F2",
+          "status": "resolved",
+          "sha": "pending-loop11-commit",
+          "idempotency_key": "loop11-F-007-resolved"
         }
       ]
     },
@@ -258,13 +293,16 @@
       "title": "filterAllTiers has no direct test in @tiercade/core",
       "category_hint": "missing-tests-core-filter",
       "primary_file": "packages/core/src",
-      "primary_evidence_lines": [1, 1],
+      "primary_evidence_lines": [
+        1,
+        1
+      ],
       "test_failed": "Interface-as-test-surface",
       "severity": "Noticeable weakness",
       "first_seen_loop": 9,
       "first_seen_sha": "cd00b30f2debb79438aee1198340aa9081cc5113",
-      "last_seen_loop": 10,
-      "last_seen_sha": "332a272fbff32adfda4798eb67e06bc76d722430",
+      "last_seen_loop": 11,
+      "last_seen_sha": "9290a562c359184d2891ce98ef8e7e4a43c81b88",
       "occurrences": [
         {
           "loop": 9,
@@ -279,6 +317,13 @@
           "status": "open",
           "sha": "332a272fbff32adfda4798eb67e06bc76d722430",
           "idempotency_key": "loop10-F-008-open"
+        },
+        {
+          "loop": 11,
+          "loop_local_id": "F3",
+          "status": "resolved",
+          "sha": "pending-loop11-commit",
+          "idempotency_key": "loop11-F-008-resolved"
         }
       ]
     }

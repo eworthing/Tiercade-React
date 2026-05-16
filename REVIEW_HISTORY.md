@@ -886,3 +886,88 @@ Loop 10 final critic pass (HALT_LOOP_CAP; no code changes). Full suite: 20 suite
 
 ## Final Judge Narrative
 Good app, place but not win. 10 loops from build failure to 6.7 avg. Real structural improvements: build baseline green (loop 5), storage injectable (loop 6), undoRedoThunks tested (loop 7), persistenceMiddleware per-instance timer (loop 8), TierBoardPage 757→507 LOC with 5 focused hooks extracted (loop 9). No fake-clean moves; every resolution passed implementation review. Remaining gaps honest and quantified: test_strategy at 7 by F-007 + F-008; architecture_quality at 6.5 by page shell Depth gap. Two test file additions would raise test_strategy to 7.5. The codebase is structurally honest; 9-anchor not yet reached in any dimension but trending correctly.
+
+--- Loop 11 (UTC 2026-05-16T00:02:00Z) ---
+
+### Loop Counter
+Loop 11 of 15 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+see Loop 1 Discovery
+
+---
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 11 resolves F-007 (useTierFilter unit test) and F-008 (filterAllTiers unit test). Suite grows from 20→22 suites, 114→146 tests, all green. test_strategy moves 7.0→7.5: two Interface-level test gaps closed. credibility moves 7.5→8.0.
+
+## Scorecard (1-10)
+- Architecture quality: 6.5 | SAME | `apps/web/src/pages/TierBoardPage.tsx:1-507` (507 LOC, 20 hook calls, shallow orchestration shell); page shells lack Interface Depth.
+- State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — one writer per concern; process-lifetime ownership not explicit.
+- Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — Item is a data bag; no smart constructors.
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace; within-app no module-level enforcement.
+- Framework / platform best practices: 7.0 | SAME | Custom hooks idiomatic; ImportExportPage.tsx at 438 LOC mixes concerns.
+- Concurrency and runtime safety: 7.0 | SAME | JavaScript single-threaded; no floating promises; no AbortController for async fetches.
+- Code simplicity and clarity: 6.0 | SAME | TierBoardPage.tsx:1-507; ImportExportPage.tsx:1-438; AppShell.tsx:1-385. All large orchestration shells.
+- Test strategy and regression resistance: 7.5 | UP | `packages/core/test/filtering.test.ts` — 25 tests at filterAllTiers Interface. `apps/web/src/hooks/useTierFilter.test.ts` — 7 tests via renderHook+Provider. 22 suites, 146 tests. F-007 and F-008 resolved. Ceiling: TierBoardPage page-level surface has no direct test.
+- Overall implementation credibility: 8.0 | UP | 32 new tests at Interfaces of two previously-untested Modules. Implementation reviewer approved. No fake-clean moves loops 5-11.
+
+## Authority Map
+**Tier/Item domain state**: Owner `tierSlice.ts`; single writer; test surface `undoRedoThunks.test.ts`; Single and clear.
+**Sort/filter derived state**: Owner `useTierFilter.ts`; test surface `useTierFilter.test.ts:67-162` (F-007 resolved); Single and clear.
+**filterAllTiers (core pure function)**: Owner `filtering.ts`; test surface `filtering.test.ts:96-176` (F-008 resolved); Single and clear.
+
+## Strengths That Matter
+- packages/core: 12 suites, 94 tests; framework-free.
+- RTK slice ownership: one writer per concern; memoized selectors.
+- persistenceMiddleware: injectable storage + per-instance timer (loops 6+8).
+- useTierFilter.ts: Interface directly tested (loop 11).
+
+## Findings
+
+### Finding #1: `TierBoardPage.tsx` at 507 LOC — god-component carried forward (F-004)
+**Why it matters** — 507 LOC, 20 hook calls; shallow orchestration wrapper.
+**What is wrong** — 7 useState, 8 useCallback, 2 useEffect, JSX all in one file.
+**Evidence** — `apps/web/src/pages/TierBoardPage.tsx:1-507`; `:80-86`; `:133-237`.
+**Architectural test failed** — Shallow module
+**Dependency category** — `in-process`
+**Severity** — Noticeable weakness
+**Minimal correction path** — Evaluate useItemInteraction hook for 4 item handlers; if only dispatch + captureSnapshot dependency, extract.
+
+## Simplification Check
+
+| Field | Value |
+|---|---|
+| structurally_necessary | F-008: filterAllTiers had 0 tests vs sortItems 8; Interface-as-test-surface gap. F-007: useTierFilter highest-risk extracted hook, no Interface test. |
+| new_seam_justified | false |
+| helpful_simplification | apps/web/jest.config.ts + test:hooks script adds sustainable web-hook test path without new npm deps. |
+| should_not_be_done | Adding mock Redux store factory abstraction — one-off makeStore per test file is idiomatic. |
+| tests_after_fix | F-008: filtering.test.ts at filtering Interface (no old tests deleted). F-007: useTierFilter.test.ts at hook Interface (no old tests deleted). |
+
+## Improvement Backlog
+1. **Evaluate useItemInteraction extraction (F-004)** — 4 item handlers may share only dispatch + captureSnapshot; if confirmed extraction passes deletion test; architecture_quality+0.5, simplicity+0.5, test_strategy+0.5. Structural / helpful.
+
+## Loop 11 Result
+
+Two new test files added targeting open Findings F-007 and F-008.
+
+**F-008 (resolved)**: `packages/core/test/filtering.test.ts` — 25 tests covering `filterAllTiers` passthrough (`line 128`), multi-tier structure preservation (`lines 133-147`), empty tiers (`lines 149-152`), `hasMedia` cross-tier (`lines 153-172`), plus `hasActiveFilters`, `itemMatchesFilters`, `filterItems`. `npm run test:core`: 12 suites, 94 tests, all green.
+
+**F-007 (resolved)**: `apps/web/src/hooks/useTierFilter.test.ts` — 7 tests via `renderHook` + `Provider(makeStore())`. `apps/web/jest.config.ts` added (jsdom). Root `package.json` gains `test:hooks`. Tests: passthrough (`lines 67-82`), searchText filter (`lines 84-95`), alphabetical sort (`lines 97-106`), custom order (`lines 108-115`), `handleSearchChange` (`lines 121-132`), `handleClearFilters` (`lines 134-145`), `handleSortModeChange` (`lines 147-162`). `npm run test:hooks`: 1 suite, 7 tests, all green.
+
+Full suite: 22 suites, 146 tests, all green. Targeted findings F-007 and F-008: **resolved**.
+
+## Loop 11 Implementation Review
+
+**Verdict: approved.** All three checks passed: F-007 and F-008 Interface-as-test-surface findings no longer present in current source; test files exercise real behavior (filter/sort outcomes asserted, not just compilation); no ownership ambiguity or new findings introduced.
+
+## Builder Notes
+1. Test gap after extraction → REVIEW_HISTORY.json `loops[10].builder_notes[0]`
+2. Coverage asymmetry between parallel pure functions → REVIEW_HISTORY.json `loops[10].builder_notes[1]`
+3. God-component with partially extractable handlers → REVIEW_HISTORY.json `loops[10].builder_notes[2]`
+
+## Final Judge Narrative
+Good app, place but not win. Loop 11 closes the test-strategy gaps (F-007, F-008) that held test_strategy at 7.0 for loops 9-10. 32 new tests at real Interfaces — no shallow mocks. Suite at 146 tests, 22 suites, all green. credibility moves to 8.0: no remaining honesty leaks from the loop 5-11 trajectory. Remaining backlog: F-004 (TierBoardPage 507 LOC). architecture_quality at 6.5 by page shell Depth gap.
