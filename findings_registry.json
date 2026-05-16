@@ -132,14 +132,14 @@
       "primary_file": "apps/web/src/pages/TierBoardPage.tsx",
       "primary_evidence_lines": [
         1,
-        507
+        456
       ],
       "test_failed": "Shallow module",
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 11,
-      "last_seen_sha": "9290a562c359184d2891ce98ef8e7e4a43c81b88",
+      "last_seen_loop": 12,
+      "last_seen_sha": "pending",
       "occurrences": [
         {
           "loop": 5,
@@ -189,6 +189,13 @@
           "status": "open",
           "sha": "9290a562c359184d2891ce98ef8e7e4a43c81b88",
           "idempotency_key": "loop11-F-004-open"
+        },
+        {
+          "loop": 12,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "pending",
+          "idempotency_key": "loop12-F-004-open"
         }
       ]
     },

@@ -11,7 +11,7 @@
 - Test scope: full (no `--test-filter` set).
 
 ### Loop Counter
-Loop 11 of 15 (cap)
+Loop 12 of 15 (cap)
 
 ### System Flag
 [STATE: CONTINUE]
@@ -21,29 +21,37 @@ Loop 11 of 15 (cap)
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 11 resolves F-007 (useTierFilter unit test) and F-008 (filterAllTiers unit test). Suite grows from 20→22 suites, 114→146 tests, all green. test_strategy moves 7.0→7.5: two Interface-level test gaps closed. Scorecard re-derived from source per G26; all other dimensions unchanged (no structural changes to non-test files).
+Loop 12 extracts `useItemInteraction` hook from TierBoardPage: 3 dispatch-only handlers (`handleItemClick`, `handleFileDrop`, `handleItemMediaDrop`) moved behind a stable Interface. TierBoardPage 507→456 LOC (51 LOC removed). 7 new Interface-level tests at `useItemInteraction.test.ts`. Suite: 23 suites, 153 tests, all green. Vite build clean. architecture_quality 6.5→7.0; simplicity 6.0→6.5.
 
 ## Scorecard (1-10)
-- Architecture quality: 6.5 | SAME | `apps/web/src/pages/TierBoardPage.tsx:1-507` (507 LOC, 20 hook calls, shallow orchestration shell); `apps/web/src/pages/ImportExportPage.tsx:1-438` (438 LOC); `apps/web/src/pages/HeadToHeadPage.tsx:1-378` (378 LOC). 9-anchor requires contest-grade module graph with Interface Depth; page shells remain orchestration wrappers. Package DAG enforced by workspace. No structural changes to source this loop.
+- Architecture quality: 7.0 | UP | `apps/web/src/hooks/useItemInteraction.ts:1-81` — 3 dispatch-only handlers behind `ItemInteractionHandlers` Interface; page shell 507→456 LOC (`TierBoardPage.tsx:1-456`). Package DAG enforced. 9-anchor still not met: ImportExportPage at 438 LOC and HeadToHeadPage at 378 LOC are still large shells; page-level Module Depth across the app remains below contest grade.
 - State management and runtime ownership: 6.5 | SAME | RTK slice ownership clear. One writer per concern across 6 slices (`packages/state/src/tierSlice.ts:1-343`). Memoized selectors in `selectors.ts`. No process-lifetime ownership pattern (store is implicit global). 9-anchor sub-threshold: process lifetime ownership not explicit.
 - Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — `Item` interface is a data bag (`name?`, `imageUrl?`, `description?` all optional). `Items = Record<string, Item[]>` anemic. No smart constructors, no validated values. 9-anchor requires types prove most invariants by construction — not met.
-- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json` (`core←state←apps`). No circular deps. `useTierFilter.ts`, `useTierDisplay.ts` create cleaner hook interfaces. Within-app no module-level DAG enforcement. 9-anchor requires "DAG enforced; effects typed" — partial.
-- Framework / platform best practices: 7.0 | SAME | Custom hooks idiomatic (6 focused hooks in `apps/web/src/hooks/`). RTK patterns correct. `useId()` for stable IDs in modal. `ImportExportPage.tsx` at 438 LOC still mixes orchestration and display logic without hook delegation. 9-anchor nearly met but no documented carve-outs.
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json` (`core←state←apps`). No circular deps. `useTierFilter.ts`, `useTierDisplay.ts`, `useItemInteraction.ts` create cleaner hook interfaces. Within-app no module-level DAG enforcement. 9-anchor requires "DAG enforced; effects typed" — partial.
+- Framework / platform best practices: 7.0 | SAME | Custom hooks idiomatic (7 focused hooks in `apps/web/src/hooks/`). RTK patterns correct. `useId()` for stable IDs in modal. `ImportExportPage.tsx` at 438 LOC still mixes orchestration and display logic without hook delegation. 9-anchor nearly met but no documented carve-outs.
 - Concurrency and runtime safety: 7.0 | SAME | JavaScript single-threaded. No floating promises found in `apps/web/src/`. `useEffect` cleanup present in `CelebrationEffect.tsx`. No AbortController pattern for async fetches. No timer races (persistenceMiddleware per-instance after loop 8). 9-anchor partial.
-- Code simplicity and clarity: 6.0 | SAME | `apps/web/src/pages/TierBoardPage.tsx:1-507` (507 LOC, 20 hook calls). `ImportExportPage.tsx:1-438`. `AppShell.tsx:1-385`. `HeadToHeadPage.tsx:1-378`. `TemplatesPage.tsx:1-361`. All large orchestration shells. No simplification changes this loop.
-- Test strategy and regression resistance: 7.5 | UP | `packages/core/test/filtering.test.ts` — 25 new tests covering `filterAllTiers` happy path (line 128-175), multi-tier structure preservation (lines 129-147), empty tiers (line 150-152), `hasMedia` filter cross-tier (lines 153-172), plus `hasActiveFilters`, `itemMatchesFilters`, `filterItems`. `apps/web/src/hooks/useTierFilter.test.ts` — 7 new tests using `renderHook` + `Provider` wrapper: filter derivation (lines 67-82), searchText filter (lines 84-95), alphabetical sort (lines 97-106), custom order preservation (lines 108-115), all 3 dispatch callbacks (lines 121-162). 22 suites, 146 tests. Authority Map cross-check: useTierFilter Interface now directly tested at `useTierFilter.test.ts:67-162`; filterAllTiers Interface tested at `filtering.test.ts:96-176`. G24 score-ceiling for 7.5 validated: F-007 and F-008 gaps closed; remaining test-strategy ceiling is the TierBoardPage page-level surface (no direct page test), which keeps the 9-anchor unmet.
-- Overall implementation credibility: 8.0 | UP | Loop 11 adds 32 tests at the Interfaces of two untested Modules (filterAllTiers, useTierFilter). Both additions pass deletion test and Replace-don't-layer: no shallow unit tests existed before, so no deletion required. Implementation reviewer approved (see below). Credibility raised because the test gap was the one remaining honesty leak in the otherwise-clean loop 5-10 trajectory.
+- Code simplicity and clarity: 6.5 | UP | `apps/web/src/pages/TierBoardPage.tsx:1-456` (456 LOC, down from 507; 51 LOC extracted to `useItemInteraction.ts`). `ImportExportPage.tsx:1-438`. `AppShell.tsx:1-385`. `HeadToHeadPage.tsx:1-378`. `TemplatesPage.tsx:1-361`. TierBoardPage shrink structural proof: `useItemInteraction.ts` concentrates 3 handlers (82 LOC) behind a 17-line Interface.
+- Test strategy and regression resistance: 7.5 | SAME | Suite: 23 suites, 153 tests (7 new in `useItemInteraction.test.ts`). `useItemInteraction.test.ts` — 7 tests: `onItemClick` toggleSelection (lines 60-75), `onFileDrop` image/video/audio variants (lines 79-117), `onItemMediaDrop` image/video (lines 121-153). Authority Map cross-check: `useItemInteraction` Interface now directly tested. Remaining ceiling: TierBoardPage page-level surface still has no direct test — 9-anchor not met.
+- Overall implementation credibility: 8.0 | SAME | `useItemInteraction` extraction passes deletion test: complexity does not redistribute to callers (page receives single object). Replace-don't-layer satisfied: no prior tests for these handlers existed (no deletion needed); new tests added at the new Interface. Implementation reviewer approved. No fake-clean moves in loops 5-12.
 
 ## Authority Map
-(Re-emitted because test_strategy UP — G24 cross-check.)
+(Re-emitted because architecture_quality UP — structural change.)
 
 **TierBoardPage modal state**
-- Owner: `TierBoardPage` local state (7 `useState` declarations, lines 80-86)
+- Owner: `TierBoardPage` local state (5 `useState` declarations remain post-extraction: `showAddItem`, `showTierSettings`, `showKeyboardHelp`, `showStreamingPanel`, `editingItem`, `showCelebration`, `celebrationTier`)
 - Allowed writers: `TierBoardPage` handlers only (inline setters)
 - Observers / readers: JSX render tree within the same component
 - Persistence seam: none
 - Async mutation entry points: `handleMoveItemWithCelebration` (celebration state)
 - Verdict: Single and clear (local component state; not a shared concern)
+
+**Item interaction (dispatch-only handlers)**
+- Owner: `apps/web/src/hooks/useItemInteraction.ts`
+- Allowed writers: n/a (dispatches to RTK store)
+- Observers / readers: `TierBoardPage` via `useItemInteraction(dispatch)` return value
+- Persistence seam: none (delegates to tierSlice)
+- Async mutation entry points: none (synchronous dispatch)
+- Verdict: Single and clear — **test surface: `useItemInteraction.test.ts` (7 tests, loop 12)**
 
 **Tier/Item domain state**
 - Owner: `packages/state/src/tierSlice.ts`
@@ -70,94 +78,108 @@ Loop 11 resolves F-007 (useTierFilter unit test) and F-008 (filterAllTiers unit 
 - Verdict: Single and clear — **test surface: `filtering.test.ts:96-176` (F-008 resolved loop 11)**
 
 ## Strengths That Matter
-- `packages/core` domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end (filtering.test.ts adds 25 tests loop 11).
+- `packages/core` domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end.
 - RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in `selectors.ts` cover all derived state.
 - Monorepo DAG enforced by workspace `package.json`: `core←state←apps`; no circular dependencies.
 - `persistenceMiddleware` — fully injectable storage (F-005 resolved loop 8); per-instance timer (F-006 resolved loop 8).
 - `undoRedoThunks` — direct test suite covering cross-slice behavior (F-003 resolved loop 7).
-- `TierBoardPage.tsx` — reduced from 757 to 507 LOC; 5 focused modules extracted (loop 9).
-- `useTierFilter.ts` — 91 LOC; Interface now directly tested (`useTierFilter.test.ts`; 7 tests, loop 11).
+- `TierBoardPage.tsx` — reduced from 757 to 456 LOC; 6 focused modules/hooks extracted (loops 9, 12).
+- `useItemInteraction.ts` — 81 LOC; Interface tested at `useItemInteraction.test.ts` (7 tests, loop 12).
 
 ## Findings
 
-### Finding #1: `TierBoardPage.tsx` at 507 LOC — god-component partially resolved, carried forward (F-004)
+### Finding #1: `TierBoardPage.tsx` at 456 LOC — god-component further reduced, carried forward (F-004)
 
-**Why it matters** — At 507 LOC with 20 hook calls (7 useState, 2 useEffect, 8 useCallback, 3 useMemo), the page remains a shallow orchestration wrapper. Shallow-module test still partially applies. No loop-11 changes target this.
+**Why it matters** — At 456 LOC with 14 hook calls (7 useState, 1 useEffect on theme, 1 useEffect on data load, 5 useCallback, 3 useMemo/custom), the page remains a broad orchestration shell. Shallow-module test applies. Loop 12 removed 3 dispatch-only handlers but modal-coupled handlers remain.
 
-**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` still bundles: 7 `useState` modal/UI state declarations (lines 80-86); 4 item interaction handlers (`handleFileDrop`, `handleItemMediaDrop`, `handleItemClick`, `handleMoveItemWithCelebration`) sharing `dispatch` + `captureSnapshot` scope; 2 `useEffect` calls; JSX render tree. Item interaction handlers could pass deletion test as a `useItemInteraction` hook, but evaluation not completed.
+**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` still bundles: 7 `useState` modal/UI state declarations (lines 80-86); `handleItemDoubleClick` (1 line, only `setEditingItem`); `handleMoveItemWithCelebration` (calls `setCelebrationTier` + `setShowCelebration`); `handleCopyLink` (reads 5 selectors); `handleBatchMoveToTier`/`handleBatchDelete` (read `selection`). All remaining handlers require modal state context or multi-selector reads — they either can't extract cleanly or would need the modal state to move with them.
 
 **Evidence** —
-- `apps/web/src/pages/TierBoardPage.tsx:1-507` — 507 LOC
-- `apps/web/src/pages/TierBoardPage.tsx:80-86` — 7 `useState` declarations
-- `apps/web/src/pages/TierBoardPage.tsx:133-237` — 8 `useCallback` declarations
+- `apps/web/src/pages/TierBoardPage.tsx:1-456` — 456 LOC (down from 507)
+- `apps/web/src/pages/TierBoardPage.tsx:80-86` — 7 `useState` declarations (unchanged)
+- `apps/web/src/pages/TierBoardPage.tsx:113-129` — 5 remaining useCallback handlers
 
 **Architectural test failed** — Shallow module
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Modal coordination and item handling require reading 507 LOC.
+**Leverage impact** — Modal coordination still requires reading 456 LOC.
 
-**Locality impact** — Bug in file drop handling requires navigating 507 LOC of orchestration.
+**Locality impact** — Remaining handlers are coupled to modal state; no clean extraction path remains without co-extracting modal state.
 
-**Metric signal, if any** — 507 LOC vs 95 LOC `ThemesPage.tsx`; 438 LOC `ImportExportPage.tsx` also large.
+**Metric signal, if any** — 456 LOC vs 95 LOC `ThemesPage.tsx`; 438 LOC `ImportExportPage.tsx` also large.
 
-**Why this weakens submission** — Page shell still concentrates multiple concerns; test surface at page level is impractical.
+**Why this weakens submission** — Page shell still broad; further reduction requires modal state extraction as a co-move (higher-complexity change than handler extraction).
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Evaluate `useItemInteraction` hook (handleFileDrop + handleItemMediaDrop + handleItemClick + handleItemDoubleClick): if 4 handlers share only `dispatch` + `captureSnapshot` with no modal state dependency, extraction passes deletion test. Otherwise accept 507 LOC as natural page orchestration floor.
+**Minimal correction path** — Evaluate `useBatchActions` hook (`handleBatchMoveToTier` + `handleBatchDelete` share `dispatch` + `selection` — similar pattern to `useItemInteraction` but require `selection` as well). If selection is passed as argument, those 2 handlers extract cleanly. Otherwise accept 456 LOC as the natural orchestration floor given modal state coupling.
 
-**Blast radius** — Change: `apps/web/src/pages/TierBoardPage.tsx`, potentially `apps/web/src/hooks/useItemInteraction.ts`. Avoid: `apps/web/src/components/ItemModal.tsx`, `@tiercade/ui`.
+**Blast radius** — Change: `apps/web/src/pages/TierBoardPage.tsx`, potentially `apps/web/src/hooks/useBatchActions.ts`. Avoid: `apps/web/src/components/ItemModal.tsx`, `@tiercade/ui`.
 
 ---
 
 ## Simplification Check
-- Structurally necessary: F-008 — `filterAllTiers` Interface had zero tests vs `sortItems` 8 tests; Interface-as-test-surface test required parity. F-007 — `useTierFilter` is the highest-risk extracted hook; Interface-as-test-surface test proved filter+sort+dispatch correctness.
-- New seam justified: No new seams introduced. No new modules. Test-only files.
-- Helpful simplification: `apps/web/jest.config.ts` + root `test:hooks` script adds a sustainable path for testing web-layer hooks without adding npm dependencies.
-- Should NOT be done: Adding a mock Redux store factory abstraction — one-off `makeStore` function per test file is the idiomatic pattern (established in `undoRedoThunks.test.ts`).
-- Tests after fix: For F-008: `packages/core/test/filtering.test.ts` at filtering Interface (Replace-don't-layer not triggered — no prior tests existed). For F-007: `apps/web/src/hooks/useTierFilter.test.ts` at hook Interface (Replace-don't-layer not triggered — no prior tests existed).
+- Structurally necessary: `useItemInteraction` extraction — 3 dispatch-only handlers share exactly `dispatch` as their dependency; extraction concentrates them behind a stable Interface. Deletion test passes: complexity vanishes from the page (not redistributed to callers — callers receive a single object).
+- New seam justified: No new architectural Seam introduced. `useItemInteraction` is an in-process hook, not a protocol/port abstraction.
+- Helpful simplification: TierBoardPage.tsx 507→456 LOC; 3 `useCallback` blocks + 2 import lines removed.
+- Should NOT be done: Extracting `handleItemDoubleClick` — single-line body (`setEditingItem(item)`); extraction would be a costume layer. Extracting `handleMoveItemWithCelebration` — calls `setCelebrationTier`/`setShowCelebration` modal state; extraction without co-moving state would require passing setters as params (adding ceremony).
+- Tests after fix: `apps/web/src/hooks/useItemInteraction.test.ts` — 7 tests at new Interface. No old tests to delete (Replace-don't-layer: no prior tests existed for these handlers).
 
 ## Improvement Backlog
 
-### Priority 1: Evaluate `useItemInteraction` extraction — may reduce TierBoardPage below 400 LOC (F-004)
-- Why it matters: 4 item interaction handlers (`handleFileDrop`, `handleItemMediaDrop`, `handleItemClick`, `handleMoveItemWithCelebration`) share only `dispatch` + `captureSnapshot`. If none call local `setShow*` modal setters, extraction to `useItemInteraction.ts` passes deletion test and reduces TierBoardPage from 507 to approximately 400 LOC.
-- Score impact: `architecture_quality` +0.5; `simplicity` +0.5; `test_strategy` +0.5 (new test at useItemInteraction Interface)
+### Priority 1: Evaluate `useBatchActions` extraction — may reduce TierBoardPage to ~420 LOC (F-004)
+- Why it matters: `handleBatchMoveToTier` + `handleBatchDelete` share `dispatch` + `selection`. If `selection` is passed as an argument (read from store in the hook), extraction passes deletion test and removes 2 more useCallback blocks from TierBoardPage.
+- Score impact: `architecture_quality` +0.0-0.5; `simplicity` +0.0-0.5 (modest; handlers are 10 LOC total; evaluate whether LOC reduction justifies the hook)
+- Kind: structural
+- Rank: minor
+
+### Priority 2: ImportExportPage.tsx at 438 LOC — second largest page shell
+- Why it matters: `ImportExportPage.tsx` has no hook delegation pattern applied. Some logic (file parsing, export format selection) may be extractable.
+- Score impact: `architecture_quality` +0.5; `simplicity` +0.5 if extracted cleanly
 - Kind: structural
 - Rank: helpful
 
 ## Deepening Candidates
 
-**`useItemInteraction` (evaluation target)**
-- Candidate module: Item interaction handlers in `TierBoardPage`
-- Source friction proven: F-004 — `apps/web/src/pages/TierBoardPage.tsx:133-237` (8 useCallback declarations; 4 item handlers may share only `dispatch` + `captureSnapshot`)
-- Why shallow or misplaced: If 4 handlers (`handleFileDrop`, `handleItemMediaDrop`, `handleItemClick`, `handleMoveItemWithCelebration`) share only `dispatch` and `captureSnapshot` without modal state dependency, the Interface is misplaced inside the page shell
-- Behavior to move behind Interface: file drop, media drop, item click/double-click, celebration trigger
+**`useBatchActions` (evaluation target)**
+- Candidate module: Batch action handlers in `TierBoardPage`
+- Source friction proven: F-004 — `TierBoardPage.tsx:113-129` (2 useCallback blocks sharing dispatch + selection)
+- Why shallow or misplaced: Both handlers (`handleBatchMoveToTier`, `handleBatchDelete`) share `dispatch` + `selection` as their only dependencies
+- Behavior to move behind Interface: batch-move-to-tier, batch-delete
 - Dependency category: `in-process`
-- Test surface after change: `apps/web/src/hooks/useItemInteraction.test.ts` using `renderHook` + Provider wrapper (same pattern as `useTierFilter.test.ts`)
-- Smallest first step: Verify no `setShow*` modal state setters called from within the 4 handlers; if clean, extract to `hooks/useItemInteraction.ts`
-- What not to do: Do not extract `handleCopyLink` (uses clipboard side-effect differently); do not extract modal setters (tightly coupled to JSX)
+- Test surface after change: `apps/web/src/hooks/useBatchActions.test.ts` using `renderHook` + Provider wrapper (seeded selection in store)
+- Smallest first step: Extract to `hooks/useBatchActions.ts`; pass `dispatch` and optionally read `selection` internally via `useAppSelector`
+- What not to do: Do not pass `setters` as arguments; if selection is needed, read from the store inside the hook
+
+**ImportExportPage orchestration depth**
+- Candidate module: ImportExportPage handlers
+- Source friction proven: F-004 carries forward; ImportExportPage at 438 LOC also flagged in loop 11
+- Why shallow or misplaced: Page bundles file format logic, download triggers, and clipboard behavior without hook delegation
+- Behavior to move behind Interface: export format selection, file download triggering
+- Dependency category: `in-process`
+- Test surface after change: `apps/web/src/hooks/useExportFormat.test.ts` (renderHook pattern)
+- Smallest first step: Audit ImportExportPage for dispatch-only handlers; extract the dispatch-only subset first
+- What not to do: Do not extract handlers that call DOM APIs directly without abstracting the side-effect
 
 ## Builder Notes
-1. **Pattern** — Test gap after extraction. **How to recognize** — A new hook file exists with no corresponding `.test.ts`. **Smallest coding rule** — For any hook that calls `dispatch` or reads from the store, add one `renderHook` test: create store with known state; trigger the callback; assert state changed. **Stack example** — `useTierFilter.test.ts:67-82`: `renderHook(() => useTierFilter(), { wrapper: wrapper(store) })`; assert `processedTiers` counts reflect the loaded tiers.
-2. **Pattern** — Coverage asymmetry between parallel pure functions. **How to recognize** — One function (`sortItems`) has 8 tests; a parallel function (`filterAllTiers`) called from the same consumer has 0. **Smallest coding rule** — When adding tests for any function in `packages/core/`, check its sibling functions in the same file and add proportional tests. **Stack example** — `filtering.ts` and `sorting.ts` both called from `useTierFilter`; loop 11 closed the asymmetry.
-3. **Pattern** — God-component with partially extractable handlers. **How to recognize** — Page component with 8+ `useCallback` hooks; some share only Redux `dispatch` + domain state; others call local `setShow*` modal state setters. **Smallest coding rule** — Group handlers by their dependencies: handlers touching only `dispatch` + domain state extract cleanly; handlers calling local `setShow*` must stay in the component. **Stack example** — `handleFileDrop` and `handleItemMediaDrop` in `TierBoardPage` likely share only `dispatch` + `captureSnapshot`; `handleMoveItemWithCelebration` calls `setShowCelebration`.
+1. **Pattern** — Partial extraction opportunity in large page shells. **How to recognize** — Page has 8+ useCallback hooks; sorting them by dependency reveals a clean subset sharing only `dispatch` and a messier subset calling `setShow*` modal state setters. **Smallest coding rule** — Group handlers by their closure over local modal state vs. only `dispatch`; the dispatch-only group extracts cleanly; the modal-coupled group stays. **Stack example** — `handleFileDrop`, `handleItemMediaDrop`, `handleItemClick` in `TierBoardPage` shared only `dispatch`; extracted to `useItemInteraction.ts` (loop 12). `handleItemDoubleClick` (body: `setEditingItem(item)`) stayed in page.
+2. **Pattern** — Batch operation handlers sharing a selector. **How to recognize** — Two useCallback handlers both read `selection` from the store AND both dispatch to the same concern (batch move / batch delete). **Smallest coding rule** — Extract both to a hook that reads `selection` internally via `useAppSelector`; the hook takes only `dispatch`. **Stack example** — `handleBatchMoveToTier` and `handleBatchDelete` in `TierBoardPage` both check `selection.length === 0` — same guard, same selector dependency.
+3. **Pattern** — Extraction earns its keep when 3+ handlers share the same dependency. **How to recognize** — If only 1-2 handlers would move, the new hook's Interface is nearly as wide as its Implementation (shallow module test triggers). **Smallest coding rule** — Require ≥3 related handlers OR ≥2 handlers with substantial logic per handler before extracting a custom hook. Single-line handlers (`setEditingItem(item)`) stay inline. **Stack example** — `handleItemDoubleClick` has 1 line body; its extraction to `useItemDoubleClick.ts` would be a costume layer.
 
 ## Final Judge Narrative
-Good app, place but not win. Loop 11 closes the two test-strategy gaps (F-007, F-008) that held test_strategy at 7.0 for loops 9-10. 32 new tests at the real Interfaces — no shallow mocks, no implementation mirroring. Suite at 146 tests, 22 suites; all green. credibility moves to 8.0 because the one remaining honesty leak (untested extracted Modules) is now resolved. Remaining backlog: F-004 (TierBoardPage 507 LOC; evaluation needed for useItemInteraction extraction). architecture_quality and simplicity are held at 6.5/6.0 by page shell Depth — the 9-anchor requires Module Depth, not just LOC reduction, and the page-shell pattern is a real gap. Future risk: the useItemInteraction extraction requires a careful dependency audit; premature extraction without confirming modal state independence would add ceremony.
+Good app, place but not win. Loop 12 executes the `useItemInteraction` extraction that loop 10-11 evaluated. TierBoardPage 507→456 LOC; 3 dispatch-only handlers now behind a stable Interface with 7 tests. architecture_quality moves 6.5→7.0; simplicity 6.0→6.5. Both moves are honest: the structural proof is the new hook + removed handlers in the diff. Remaining backlog: F-004 still open (further reduction requires either `useBatchActions` extraction or modal state co-extraction — both more complex than this loop's clean dispatch-only group). architecture_quality and simplicity remain below 9-anchor because page shells across the app lack Interface Depth at the page level; `useItemInteraction` is local progress, not a system-level pattern change.
 
-## Loop 11 Result
+## Loop 12 Result
 
-Two new test files added targeting open Findings F-007 and F-008.
+Three files changed: `useItemInteraction.ts` (new, 81 LOC), `useItemInteraction.test.ts` (new, 153 LOC, 7 tests), `TierBoardPage.tsx` (507→456 LOC, 3 handlers removed).
 
-**F-008 (resolved)**: `packages/core/test/filtering.test.ts` — 25 tests across `hasActiveFilters` (7 tests), `itemMatchesFilters` (8 tests), `filterItems` (3 tests), and `filterAllTiers` (7 tests). Test targets include: passthrough when no active filters (`filtering.test.ts:128-130` — referential identity check); multi-tier structure preservation with matching items across S/A/unranked (`filtering.test.ts:133-147`); empty-tiers edge case (`filtering.test.ts:149-152`); `hasMedia` cross-tier filter (`filtering.test.ts:153-172`). `npm run test:core`: 12 suites, 94 tests, all green.
+`useItemInteraction` extracts `handleItemClick`, `handleFileDrop`, `handleItemMediaDrop` — the three dispatch-only handlers from `TierBoardPage.tsx:133-190`. All three closed over only `dispatch`; no modal state dependency. The hook returns `{ onItemClick, onFileDrop, onItemMediaDrop }` as a single object. Page calls `const { onItemClick: handleItemClick, ... } = useItemInteraction(dispatch)`. Remaining handlers (`handleItemDoubleClick`, `handleCopyLink`, `handleMoveItemWithCelebration`, `handleBatchMoveToTier`, `handleBatchDelete`) stay in the page due to modal state or multi-selector dependencies.
 
-**F-007 (resolved)**: `apps/web/src/hooks/useTierFilter.test.ts` — 7 tests using `renderHook` + `Provider(makeStore())` wrapper. `apps/web/jest.config.ts` added (jsdom environment, uses root-level devDependencies, no new package installs). Root `package.json` gains `test:hooks` script. Tests cover: passthrough when no filters (`useTierFilter.test.ts:67-82`), searchText filter (`lines 84-95`), alphabetical sort (`lines 97-106`), custom order preservation (`lines 108-115`), `handleSearchChange` dispatch (`lines 121-132`), `handleClearFilters` dispatch (`lines 134-145`), `handleSortModeChange` dispatch (`lines 147-162`). `npm run test:hooks`: 1 suite, 7 tests, all green.
+Tests: `npm run test:hooks` (2 suites, 14 tests — 7 existing useTierFilter + 7 new useItemInteraction). Full suite: `npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks` → 23 suites, 153 tests, all green. `npm run build` in `apps/web` → Vite build clean in 2.01s. Targeted finding F-004: **carried forward** (page further reduced; remaining handlers at natural modal-coupled floor).
 
-Full suite: `npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks` → 22 suites, 146 tests, all green. Targeted findings F-007 and F-008: **resolved**. No unintended scorecard regression observed.
-
-## Loop 11 Implementation Review
+## Loop 12 Implementation Review
 
 See `implementation_review` in CURRENT_REVIEW.json.

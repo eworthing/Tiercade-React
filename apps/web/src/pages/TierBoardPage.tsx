@@ -24,11 +24,8 @@ import Addproject from "@react-spectrum/s2/illustrations/linear/Addproject";
 import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
-  toggleSelection,
   clearSelection,
   captureSnapshot,
-  addItemToTier,
-  updateItem,
   moveItemsBetweenTiers,
   deleteItems,
   selectTheme,
@@ -64,6 +61,7 @@ import { usePresentationHandlers } from "../hooks/usePresentationHandlers";
 import { useShareImport } from "../hooks/useShareImport";
 import { useTierDisplay } from "../hooks/useTierDisplay";
 import { useTierFilter } from "../hooks/useTierFilter";
+import { useItemInteraction } from "../hooks/useItemInteraction";
 
 export const TierBoardPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -109,6 +107,12 @@ export const TierBoardPage: React.FC = () => {
     handleClearFilters,
   } = useTierFilter();
 
+  const {
+    onItemClick: handleItemClick,
+    onFileDrop: handleFileDrop,
+    onItemMediaDrop: handleItemMediaDrop,
+  } = useItemInteraction(dispatch);
+
   // Also read sortMode and filters for SortFilterBar props
   const sortMode = useAppSelector(selectSortMode);
   const filters = useAppSelector(selectFilters);
@@ -130,64 +134,9 @@ export const TierBoardPage: React.FC = () => {
     }
   }, [dispatch, tierOrder.length, tiers]);
 
-  const handleItemClick = useCallback(
-    (item: Item) => {
-      dispatch(toggleSelection(item.id));
-    },
-    [dispatch]
-  );
-
   const handleItemDoubleClick = useCallback((item: Item) => {
     setEditingItem(item);
   }, []);
-
-  const handleFileDrop = useCallback(
-    (tierId: string, file: FileDropResult) => {
-      dispatch(captureSnapshot("Add Item from File"));
-
-      const id = `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-      const item: Item = {
-        id,
-        name: file.fileName,
-        mediaType: file.mediaType,
-      };
-
-      if (file.mediaType === "video") {
-        item.videoUrl = file.dataUrl;
-      } else if (file.mediaType === "audio") {
-        item.audioUrl = file.dataUrl;
-      } else {
-        item.imageUrl = file.dataUrl;
-      }
-
-      dispatch(addItemToTier({ item, tierName: tierId }));
-    },
-    [dispatch]
-  );
-
-  const handleItemMediaDrop = useCallback(
-    (itemId: string, file: FileDropResult) => {
-      dispatch(captureSnapshot("Update Item Media"));
-
-      const updates: Partial<Item> = {
-        mediaType: file.mediaType,
-        imageUrl: undefined,
-        videoUrl: undefined,
-        audioUrl: undefined,
-      };
-
-      if (file.mediaType === "video") {
-        updates.videoUrl = file.dataUrl;
-      } else if (file.mediaType === "audio") {
-        updates.audioUrl = file.dataUrl;
-      } else {
-        updates.imageUrl = file.dataUrl;
-      }
-
-      dispatch(updateItem({ itemId, updates }));
-    },
-    [dispatch]
-  );
 
   const handleCopyLink = useCallback(async () => {
     const url = generateShareUrl(
