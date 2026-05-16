@@ -20,6 +20,7 @@ export const persistenceMiddleware: Middleware = (store) => (next) => (action) =
   }
 
   saveTimeout = setTimeout(() => {
+    if (typeof localStorage === "undefined") return;
     const state = store.getState() as RootState;
     try {
       // Trim undo/redo history for storage efficiency
@@ -59,6 +60,7 @@ export interface PersistedState {
  * Returns undefined if no state exists or if parsing fails.
  */
 export function loadPersistedState(): Partial<PersistedState> | undefined {
+  if (typeof localStorage === "undefined") return undefined;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) {
@@ -91,6 +93,7 @@ export function loadPersistedState(): Partial<PersistedState> | undefined {
  * Clear all persisted state from localStorage.
  */
 export function clearPersistedState(): void {
+  if (typeof localStorage === "undefined") return;
   try {
     localStorage.removeItem(STORAGE_KEY);
     console.log("[Tiercade] Cleared persisted state");
@@ -103,6 +106,7 @@ export function clearPersistedState(): void {
  * Check if there is persisted state available.
  */
 export function hasPersistedState(): boolean {
+  if (typeof localStorage === "undefined") return false;
   try {
     return localStorage.getItem(STORAGE_KEY) !== null;
   } catch {

@@ -13,7 +13,7 @@
       "first_seen_loop": 1,
       "first_seen_sha": "4e569ee9601ecf7a8334d84f3e72c22747927399",
       "last_seen_loop": 5,
-      "last_seen_sha": null,
+      "last_seen_sha": "59cf1be",
       "occurrences": [
         {
           "loop": 1,
@@ -46,7 +46,7 @@
           "loop": 5,
           "loop_local_id": "F1",
           "status": "resolved",
-          "sha": null,
+          "sha": "59cf1be",
           "idempotency_key": "loop5-F-001-resolved"
         }
       ]
@@ -60,16 +60,23 @@
       "test_failed": "Two-adapter rule",
       "severity": "Serious deduction",
       "first_seen_loop": 5,
-      "first_seen_sha": null,
-      "last_seen_loop": 5,
-      "last_seen_sha": null,
+      "first_seen_sha": "59cf1be",
+      "last_seen_loop": 6,
+      "last_seen_sha": "<pending-loop6-commit>",
       "occurrences": [
         {
           "loop": 5,
           "loop_local_id": "F2",
           "status": "open",
-          "sha": null,
+          "sha": "59cf1be",
           "idempotency_key": "loop5-F-002-open"
+        },
+        {
+          "loop": 6,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": "<pending-loop6-commit>",
+          "idempotency_key": "loop6-F-002-resolved"
         }
       ]
     },
@@ -82,16 +89,23 @@
       "test_failed": "Interface-as-test-surface",
       "severity": "Serious deduction",
       "first_seen_loop": 5,
-      "first_seen_sha": null,
-      "last_seen_loop": 5,
-      "last_seen_sha": null,
+      "first_seen_sha": "59cf1be",
+      "last_seen_loop": 6,
+      "last_seen_sha": "59cf1be",
       "occurrences": [
         {
           "loop": 5,
           "loop_local_id": "F3",
           "status": "open",
-          "sha": null,
+          "sha": "59cf1be",
           "idempotency_key": "loop5-F-003-open"
+        },
+        {
+          "loop": 6,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "59cf1be",
+          "idempotency_key": "loop6-F-003-open"
         }
       ]
     },
@@ -104,16 +118,23 @@
       "test_failed": "Shallow module",
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
-      "first_seen_sha": null,
-      "last_seen_loop": 5,
-      "last_seen_sha": null,
+      "first_seen_sha": "59cf1be",
+      "last_seen_loop": 6,
+      "last_seen_sha": "59cf1be",
       "occurrences": [
         {
           "loop": 5,
           "loop_local_id": "F4",
           "status": "open",
-          "sha": null,
+          "sha": "59cf1be",
           "idempotency_key": "loop5-F-004-open"
+        },
+        {
+          "loop": 6,
+          "loop_local_id": "F3",
+          "status": "open",
+          "sha": "59cf1be",
+          "idempotency_key": "loop6-F-004-open"
         }
       ]
     }

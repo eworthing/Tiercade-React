@@ -514,3 +514,97 @@ Reviewer verdict: **approved**. All three checks passed. Reality: stale test fix
 
 ## Final Judge Narrative
 Good app, place but not win. Five loops to reach green baseline; first structural review confirms monorepo package boundaries and RTK slice ownership are architecturally honest. packages/core is framework-free and deeply tested. The gaps are real but fixable: persistenceMiddleware writes ambient localStorage without isolation; undo/redo cross-slice thunks have zero unit tests; TierBoardPage.tsx at 757 LOC is a god-component. Runtime ownership trustworthy. Concurrency not a concern. Future work should not over-engineer.
+
+--- Loop 6 (UTC 2026-05-16T02:30:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 6 of 10 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+---
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 6 resolves F-002: persistenceMiddleware.ts now guards all 4 localStorage call sites with typeof localStorage === "undefined" early returns, eliminating test-environment crashes. Full suite green at 17 suites, 84 tests. Remaining gaps: undoRedoThunks zero unit tests (F-003, Priority 1) and TierBoardPage.tsx 757 LOC (F-004).
+
+## Scorecard (1-10)
+- Architecture quality: 6 | SAME | Package DAG intact; TierBoardPage.tsx:757 LOC unchanged.
+- State management and runtime ownership: 6 | SAME | RTK slice ownership solid; saveTimeout singleton still outside Redux.
+- Domain modeling: 6 | SAME | Item.name?: string vs ProjectItem.title: string mapping gap unchanged.
+- Data flow and dependency design: 6 | SAME | localStorage still not injected — guard is SSR-safe but not injection seam.
+- Framework / platform best practices: 7 | UP | packages/state/src/persistenceMiddleware.ts:23,63,96,109 — typeof localStorage === 'undefined' guards at all 4 call sites; idiomatic SSR-safe pattern. Prior score 6 cited unguarded access as the gap; closed this loop.
+- Concurrency and runtime safety: 7 | SAME | No floating Promises; debounce correct; saveTimeout singleton SPA-acceptable.
+- Code simplicity and clarity: 5 | SAME | TierBoardPage.tsx:757 LOC (7 useState, 3 useEffect) unchanged.
+- Test strategy and regression resistance: 5 | SAME | packages/core 11/69; packages/state 4/10; undoRedoThunks.ts zero tests; persistenceMiddleware.ts zero tests.
+- Overall implementation credibility: 6 | UP | npm run test:state loop 6: 4 suites 10 tests PASS, no 'Cannot log after tests are done' error. Prior proof cited 'test-environment localStorage leaks visible on every test run' — gone.
+
+## Authority Map
+
+### Persistence side effect (ambient localStorage)
+- Owner: persistenceMiddleware (packages/state/src/persistenceMiddleware.ts)
+- Allowed writers: every dispatched action triggers debounce
+- Persistence seam: n/a — IS the persistence seam; localStorage guarded but not injected
+- Verdict: Split and ambiguous (SSR-safe now; still ambient; persistence untestable)
+
+## Strengths That Matter
+- packages/core domain layer framework-free; 11 suites 69 tests.
+- RTK slice ownership one clear writer per concern; memoized selectors.
+- Monorepo DAG enforced by workspace package.json.
+- E2E suite (8 spec files) covers primary user flows.
+- persistenceMiddleware.ts guards all 4 localStorage call sites — idiomatic SSR-safe pattern.
+
+## Findings
+
+### Finding #1: persistenceMiddleware writes ambient localStorage — RESOLVED (F-002)
+**Evidence** — persistenceMiddleware.ts:23,63,96,109 — guards added; loop 6 test output: no 'Cannot log after tests are done'.
+**Severity** — Serious deduction (resolved this loop)
+
+### Finding #2: undoRedoThunks — multi-slice behavior with zero direct tests (F-003)
+**Evidence** — packages/state/src/undoRedoThunks.ts:22-56; no undoRedo*.test.ts exists
+**Architectural test failed** — Interface-as-test-surface
+**Severity** — Serious deduction
+**Minimal correction path** — Add packages/state/test/undoRedoThunks.test.ts covering captureSnapshot/performUndo/performRedo round-trip with real store.
+
+### Finding #3: TierBoardPage.tsx at 757 LOC — god-component (F-004)
+**Evidence** — apps/web/src/pages/TierBoardPage.tsx:1-757; 7 useState, 3 useEffect
+**Architectural test failed** — Shallow module
+**Severity** — Noticeable weakness
+**Minimal correction path** — Extract URL-sharing useEffect (lines 139-154) into useShareImport hook.
+
+## Simplification Check
+
+| Field | Value |
+|---|---|
+| structurally_necessary | localStorage guard — passes Deletion test; one-liner at each call site |
+| new_seam_justified | no |
+| helpful_simplification | undo/redo tests add zero ceremony |
+| should_not_be_done | Full Storage port with two adapters as Priority 1 — overshoots |
+| tests_after_fix | No deletions; guard fix required no new tests |
+
+## Improvement Backlog
+1. Add undoRedoThunks.test.ts — cover multi-slice undo/redo round-trip (structural, needed for winning)
+2. Extract useShareImport hook from TierBoardPage — reduce god-component scope (simplification, helpful)
+
+## Builder Notes
+1. Ambient browser globals in middleware → REVIEW_HISTORY.json `loops[5].builder_notes` for full notes
+2. Cross-slice thunks with no integration test → REVIEW_HISTORY.json `loops[5].builder_notes` for full notes
+3. God-page-component → REVIEW_HISTORY.json `loops[5].builder_notes` for full notes
+
+## Loop 6 Result
+
+Changed one file: packages/state/src/persistenceMiddleware.ts — added typeof localStorage === 'undefined' guards at 4 call sites: (1) top of debounce setTimeout callback; (2) top of loadPersistedState; (3) top of clearPersistedState; (4) top of hasPersistedState. No production behavior changed in browser environments. In Node/Jest, functions now return early instead of crashing.
+
+npm run test:state (loop 6): 4 suites, 10 tests — all PASS. No 'Cannot log after tests are done' error. Full suite (test:core && test:state && test:ui): 17 suites, 84 tests — all PASS. Targeted finding F-002 is resolved. framework_idioms +1 (6→7) and credibility +1 (5→6).
+
+## Loop 6 Implementation Review
+
+Reviewer verdict: **approved**. All three checks passed. Reality: unguarded localStorage access pattern gone from current source (all 4 call sites have typeof guards). Honesty: smallest honest fix (4 one-liner guards, no new abstractions, no new seam, runtime unchanged in browser). Regression: no new findings introduced.
+
+## Final Judge Narrative
+Good app, place but not win yet. Loop 6 resolves F-002: persistenceMiddleware now guards all 4 localStorage call sites, eliminating the test-environment crash. Framework idioms and credibility each move up one point. Full suite stays green at 17/84. Two structural gaps remain: undoRedoThunks zero unit tests (Priority 1 next loop) and TierBoardPage.tsx at 757 LOC (Priority 2). Concurrency trustworthy. Runtime ownership honest. Guard fix is idiomatic and minimal.

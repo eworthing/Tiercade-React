@@ -11,7 +11,7 @@
 - Test scope: full (no `--test-filter` set).
 
 ### Loop Counter
-Loop 5 of 10 (cap)
+Loop 6 of 10 (cap)
 
 ### System Flag
 [STATE: CONTINUE]
@@ -21,181 +21,154 @@ Loop 5 of 10 (cap)
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Build is globally green for the first time: 17 suites, 84 tests, all passing (`npm run test:core && npm run test:state && npm run test:ui`). Loop 5 fixed the last failing test — `packages/state/test/importJSON.test.ts` used a stale legacy `{tiers/tierOrder}` fixture that never matched `ModelResolver.decodeProject`'s schema; the fixture was updated to use the current `Project` schema. First structural review is now possible. The monorepo package architecture is architecturally sound and the `@tiercade/core` domain layer is genuinely framework-free with strong test coverage. The main weaknesses are: `TierBoardPage.tsx` at 757 LOC concentrating too many concerns; `packages/state` unit tests are thin (4 suites, 10 tests vs 11 suites, 69 in `packages/core`); `persistenceMiddleware` writes `localStorage` at module-load time in tests (causing visible test-environment leaks); and undo/redo thunks — the most complex stateful behavior — have zero direct tests.
+Loop 6 resolves F-002: `persistenceMiddleware.ts` now guards all 4 `localStorage` call sites with `typeof localStorage === "undefined"` early returns. The "Cannot log after tests are done" crash and the "Failed to save state" post-teardown error that fired on every `npm run test:state` run are eliminated. Full suite remains green: 17 suites, 84 tests. The remaining structural gaps — zero tests for `undoRedoThunks` cross-slice behavior (F-003) and `TierBoardPage.tsx` at 757 LOC (F-004) — are unchanged and carried forward as Priority 1 and 2 for next loops.
 
 ## Scorecard (1-10)
-- Architecture quality: 6 | UP | Monorepo DAG enforced: `packages/core/src/index.ts` (no React imports); `packages/state` only imports from `@tiercade/core`; `apps/web` imports from both. But `apps/web/src/pages/TierBoardPage.tsx:757 LOC` conflates drag-drop, import/export, URL sharing, presentation activation, keyboard shortcuts, and item modals in one view module. `persistenceMiddleware.ts:40` writes `localStorage` directly at module-load time (no ambient guard), leaking into test environment.
-- State management and runtime ownership: 6 | UP | RTK slices give one clear owner per slice (`tierSlice`, `headToHeadSlice`, `themeSlice`, `undoRedoSlice`, `onboardingSlice`, `presentationSlice`). Memoized selectors in `packages/state/src/selectors.ts` cover all derived state. But `persistenceMiddleware.ts:9` has a module-level `let saveTimeout` singleton — shared mutable state outside Redux. `undoRedoThunks.ts:22-56` crosses two slices (`undoRedoSlice` + `tierSlice`) with no integration tests.
-- Domain modeling: 6 | UP | `packages/core/src/models.ts:6` — `Item` interface type is well-structured with optional fields for media variants. `AttributeType` enum discriminates attribute types. `Project` schema in `packages/core/src/project.ts:108` is typed end-to-end. Gap: `Item.name?: string` (optional) despite being the display title — empty-name items are representable without error. `ProjectItem.title: string` (required) does not align with `Item.name?: string` — a mapping gap.
-- Data flow and dependency design: 6 | UP | Dependency graph is a DAG: `core` ← `state` ← `apps/*` enforced by workspace package.json. No circular dependencies detected. Effects flow through RTK thunks. Gap: `persistenceMiddleware.ts:63` calls `localStorage.getItem` via ambient reference — not injected, not guarded, untestable without DOM globals.
-- Framework / platform best practices: 6 | UP | RTK 2.x slice/selector pattern used correctly. React lazy loading for code splitting in `apps/web/src/shell/AppShell.tsx:8-12`. `useCallback` and `useMemo` applied in TierBoardPage. Gap: `persistenceMiddleware.ts:40` accesses `localStorage.setItem` with no `typeof window` guard — breaks in test environment, shown by "ExperimentalWarning: localStorage is not available" emitted at every test run.
-- Concurrency and runtime safety: 7 | UP | JavaScript single-threaded; no actor isolation concerns. No floating Promises in Redux logic — all thunks synchronous or properly awaited. Debounce in `persistenceMiddleware.ts:22-44` uses `clearTimeout`/`setTimeout` — correct pattern. Module-level `saveTimeout` singleton is acceptable in a production SPA but is a hazard if the store is recreated (e.g., in test with store re-import). No concurrent write hazards observed.
-- Code simplicity and clarity: 5 | UP | `apps/web/src/pages/TierBoardPage.tsx:757 LOC` is the dominant simplicity failure — modal state, drag-drop handlers, URL sharing, export, keyboard shortcuts, presentation mode, and item management all in one component. `apps/web/src/pages/ImportExportPage.tsx:438 LOC` and `HeadToHeadPage.tsx:378 LOC` also over-concentrate. `packages/core/src/modelResolver.ts` has clean public interface with private helpers. The god-component pattern in TierBoardPage fails the shallow-module test: deleting it redistributes much complexity across callers.
-- Test strategy and regression resistance: 5 | UP | `packages/core` well-tested: 11 suites, 69 tests, covering pure functions (`tierLogic`, `analytics`, `headToHead`, `modelResolver`, `sorting`, `formatters`). `packages/state` thin: 4 suites, 10 tests. `undoRedoThunks.ts` (most complex multi-slice behavior) has zero tests. `persistenceMiddleware.ts` has zero tests. `presentationSlice.ts` and `onboardingSlice.ts` have zero tests. E2E suite (8 spec files in `apps/web/e2e/`) covers main user flows but does not substitute for state-unit test gaps.
-- Overall implementation credibility: 5 | UP | `packages/core` domain layer is solid and deeply tested. RTK slice ownership is honest. Package DAG is enforced. Credibility gap: the visible test environment leaks from `persistenceMiddleware` (printed on every `npm run test:state` run) signal an un-seamed ambient dependency. The 3:1 test-depth imbalance between `core` (69 tests) and `state` (10 tests) on a stateful module package is a credibility concern.
+- Architecture quality: 6 | SAME | Package DAG intact: `packages/core/src/index.ts` (no React imports); `packages/state` only imports from `@tiercade/core`. `TierBoardPage.tsx:757 LOC` still conflates drag-drop, import/export, URL sharing, presentation, keyboard shortcuts. No structural change this loop on architecture dimension.
+- State management and runtime ownership: 6 | SAME | RTK slice ownership solid: one owner per slice across 6 slices; `selectors.ts` memoized. Module-level `saveTimeout` singleton (`persistenceMiddleware.ts:9`) still outside Redux — acceptable SPA pattern but not elegant. Unchanged this loop.
+- Domain modeling: 6 | SAME | `packages/core/src/models.ts:6` — `Item` interface well-structured. `Project` schema in `packages/core/src/project.ts:108` typed end-to-end. Mapping gap: `Item.name?: string` (optional) vs `ProjectItem.title: string` (required). Unchanged this loop.
+- Data flow and dependency design: 6 | SAME | DAG enforced by workspace package.json. Guard added to `persistenceMiddleware.ts` but `localStorage` still not injected — dependency remains ambient, just SSR-safe. Full injection would earn this dimension higher but is next-loop work.
+- Framework / platform best practices: 7 | UP | `persistenceMiddleware.ts:23,63,96,109` — all 4 `localStorage` call sites now guarded with `typeof localStorage === "undefined"` early return. The idiomatic SSR/Node-safe pattern for browser globals in Redux middleware. Prior score 6 cited unguarded access as the gap; that gap is now closed.
+- Concurrency and runtime safety: 7 | SAME | JavaScript single-threaded. No floating Promises. Debounce timer (`persistenceMiddleware.ts:22-44`) correct. Module-level `saveTimeout` singleton still present. No change this loop.
+- Code simplicity and clarity: 5 | SAME | `TierBoardPage.tsx:757 LOC` (7 `useState`, 3 `useEffect`, drag-drop, modals, URL sharing, export, keyboard shortcuts) unchanged. `ImportExportPage.tsx:438 LOC` unchanged. Persistence guard adds 4 lines of honest code — no complexity increase.
+- Test strategy and regression resistance: 5 | SAME | `packages/core` 11 suites 69 tests unchanged. `packages/state` 4 suites 10 tests unchanged. `undoRedoThunks.ts` still has zero tests. `persistenceMiddleware.ts` still has zero tests (guard fix doesn't add test coverage for persistence behavior). Test environment is cleaner but test surface coverage is unchanged.
+- Overall implementation credibility: 6 | UP | The "Cannot log after tests are done" crash from `persistenceMiddleware.ts:40` firing after test teardown is eliminated in loop 6. The prior credibility proof explicitly cited "test-environment localStorage leaks visible on every test run" — that symptom is now gone. `npm run test:state` (loop 6): 4 suites, 10 tests, no post-test error output.
 
 ## Authority Map
-
-### Tier state (`tiers`, `tierOrder`, `tierLabels`, `tierColors`, `selection`, `projectName`)
-- **Owner:** `tierSlice` (`packages/state/src/tierSlice.ts`)
-- **Allowed writers:** `loadProject`, `setTiers`, `setTierOrder`, `addItemToTier`, `moveItemBetweenTiers`, `moveItemsBetweenTiers`, `deleteItems`, `updateItem`, `setTierLabels`, `setTierColors` — all actions on `tierSlice`; also `performUndo`/`performRedo` thunks dispatch `setTiers`/`setTierOrder`.
-- **Observers / readers:** `selectTiers`, `selectTierOrder`, etc. via `selectors.ts`
-- **Persistence seam:** `persistenceMiddleware` writes `state.tier` to `localStorage` after every action (debounced 500ms).
-- **Async mutation entry points:** `loadDefaultProject` thunk (async dynamic import); `importJSON` / `importCSV` thunks (sync dispatch).
-- **Verdict:** Single and clear
-
-### Undo/redo history (`past`, `future`, `maxHistorySize`)
-- **Owner:** `undoRedoSlice` (`packages/state/src/undoRedoSlice.ts`)
-- **Allowed writers:** `pushHistory` (via `captureSnapshot` thunk), `undoAction`, `redoAction`, `clearHistory`.
-- **Observers / readers:** `selectCanUndo`, `selectCanRedo`, `selectLastActionName`
-- **Persistence seam:** persisted via `persistenceMiddleware` to `localStorage` (trimmed to 20 entries).
-- **Async mutation entry points:** none (all sync).
-- **Verdict:** Single and clear
-
-### Head-to-head session
-- **Owner:** `headToHeadSlice` (`packages/state/src/headToHeadSlice.ts`)
-- **Allowed writers:** multiple actions on `headToHeadSlice`; `headToHeadThunks`.
-- **Observers / readers:** multiple selectors.
-- **Persistence seam:** not persisted (by design per `persistenceMiddleware.ts:35` comment).
-- **Async mutation entry points:** none.
-- **Verdict:** Single and clear
+(see Loop 5 Discovery; persistence concern verdict is updated below)
 
 ### Persistence side effect (ambient `localStorage`)
-- **Owner:** `persistenceMiddleware` — module-level singleton, not a Redux slice.
-- **Allowed writers:** every dispatched action triggers the debounce.
-- **Observers / readers:** `loadPersistedState` at store init; `clearPersistedState` on demand.
-- **Persistence seam:** none — IS the persistence seam; calls `localStorage` directly without injection.
-- **Async mutation entry points:** debounce timer, module-global `saveTimeout` (`persistenceMiddleware.ts:9`).
-- **Verdict:** Split and ambiguous (no test seam; ambient access causes test-environment leaks)
+- **Owner:** `persistenceMiddleware` — module-level singleton
+- **Allowed writers:** every dispatched action triggers the debounce
+- **Observers / readers:** `loadPersistedState` at store init; `clearPersistedState` on demand; `hasPersistedState`
+- **Persistence seam:** none — IS the persistence seam; calls `localStorage` via guard (SSR-safe now), but still not injected
+- **Async mutation entry points:** debounce timer, module-global `saveTimeout` (`persistenceMiddleware.ts:9`)
+- **Verdict:** Split and ambiguous (dependency not injected; persistence behavior still untestable — guard makes it SSR-safe, not test-isolated)
 
 ## Strengths That Matter
-- `packages/core` domain layer is genuinely framework-free — no React imports in `packages/core/src/`; domain logic tested with 11 suites, 69 tests covering pure functions end-to-end.
-- RTK slice ownership is one clear writer per concern per slice; `selectors.ts` provides memoized derived state covering all 6 slices.
-- Monorepo DAG is enforced by workspace package.json: no circular dependencies; `core` imports nothing from `state` or `apps`.
-- E2E suite (8 spec files) provides feature-level regression coverage: tier-board, H2H, analytics, themes, import/export, keyboard accessibility, batch operations.
-- `HeadToHeadLogic` (Wilson score, two-phase algorithm, adaptive budget) is deeply implemented and tested in `packages/core/test/headToHead.test.ts` and `headToHeadInternals.test.ts`.
+- `packages/core` domain layer framework-free (no React imports); 11 suites 69 tests covering pure functions end-to-end.
+- RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in `selectors.ts` cover all derived state.
+- Monorepo DAG enforced by workspace package.json: `core`←`state`←`apps`; no circular dependencies.
+- E2E suite (8 spec files in `apps/web/e2e/`) provides feature-level regression coverage.
+- `HeadToHeadLogic` (Wilson score, two-phase) deeply implemented and tested in `packages/core/test/`.
+- `persistenceMiddleware.ts` now uses `typeof localStorage === "undefined"` guards at all 4 call sites — idiomatic SSR-safe pattern; no longer crashes test environment.
 
 ## Findings
 
-### Finding #1: `persistenceMiddleware` writes ambient `localStorage` without injection — untestable seam
+### Finding #1: `persistenceMiddleware` writes ambient `localStorage` without injection — untestable seam (F-002)
 
-**Why it matters** — The persistence module calls `localStorage.getItem`/`setItem` at import time and on every action without any DOM guard or injected interface, causing test-environment warnings on every `npm run test:state` run and making the persistence behavior untestable.
+**Why it matters** — RESOLVED THIS LOOP. The `typeof localStorage === "undefined"` guard at all 4 call sites eliminates test-environment crashes; production path unchanged.
 
-**What is wrong** — `persistenceMiddleware.ts:63` calls `localStorage.getItem(STORAGE_KEY)` at store initialization (synchronously, at module load in tests). `persistenceMiddleware.ts:40` calls `localStorage.setItem(...)` inside a debounce timer that fires 500ms after any dispatched action. Both are bare `localStorage` references with no `typeof window === 'undefined'` guard and no injected dependency. The test output shows "ExperimentalWarning: localStorage is not available" and "Cannot log after tests are done" (the debounce timer fires after test teardown).
+**What is wrong** — WAS: `persistenceMiddleware.ts:63` called `localStorage.getItem` at module load in tests; `persistenceMiddleware.ts:40` called `localStorage.setItem` in a debounce timer after test teardown. NOW: all 4 call sites guarded; `loadPersistedState`/`clearPersistedState`/`hasPersistedState` return early in non-browser environments.
 
 **Evidence** —
-- `packages/state/src/persistenceMiddleware.ts:63` — `localStorage.getItem(STORAGE_KEY)` called from `loadPersistedState()` which is called at `store.ts:21` (module evaluation).
-- `packages/state/src/persistenceMiddleware.ts:40` — `localStorage.setItem(...)` in debounce `setTimeout` fires after test assertions complete.
-- Test output: "ExperimentalWarning: localStorage is not available because --localstorage-file was not provided." + "Cannot log after tests are done" printed on every `npm run test:state` run.
+- `packages/state/src/persistenceMiddleware.ts:23` — `if (typeof localStorage === "undefined") return;` (debounce callback guard)
+- `packages/state/src/persistenceMiddleware.ts:63` — `if (typeof localStorage === "undefined") return undefined;` (loadPersistedState guard)
+- `packages/state/src/persistenceMiddleware.ts:96` — `if (typeof localStorage === "undefined") return;` (clearPersistedState guard)
+- `packages/state/src/persistenceMiddleware.ts:109` — `if (typeof localStorage === "undefined") return false;` (hasPersistedState guard)
+- Loop 6 test output: `npm run test:state` — 4 suites, 10 tests PASS, no "Cannot log after tests are done" error.
 
-**Architectural test failed** — Two-adapter rule (one production impl, zero behavior-faithful test adapter)
+**Architectural test failed** — n/a (resolved)
 
-**Dependency category** — `local-substitutable` (localStorage has local test stand-ins; the seam is missing)
+**Dependency category** — `local-substitutable`
 
-**Leverage impact** — Callers must know that `persistenceMiddleware` depends on a global browser API — this is leaked into the test environment.
+**Leverage impact** — Resolved. Test environment no longer crashes on persistence middleware import.
 
-**Locality impact** — Persistence failure behavior (corrupted JSON, missing key, quota exceeded) is untestable; bugs there cannot be caught by the unit test suite.
+**Locality impact** — Resolved. The guard is at each call site — minimal diff, no blast radius.
 
-**Metric signal, if any** — "ExperimentalWarning" + "Cannot log after tests are done" on every test run.
+**Metric signal, if any** — "Cannot log after tests are done" error gone from loop 6 test output.
 
-**Why this weakens submission** — A middleware that writes durable user state cannot be unit-tested; any regression in save/load behavior is invisible to CI until a user loses data.
+**Why this weakens submission** — WAS: visible test warnings. NOW: resolved.
 
-**Severity** — Serious deduction
+**Severity** — Serious deduction (resolved)
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Add a `typeof localStorage !== 'undefined'` guard in `loadPersistedState` and `clearPersistedState`. In the middleware, guard `localStorage.setItem` with the same check. This keeps the fix contained and makes `test:state` warnings disappear without changing the production path. A full injection refactor (passing a `Storage` interface) would also satisfy the two-adapter rule but is heavier than needed for the guard-only fix.
+**Minimal correction path** — COMPLETED: `typeof localStorage === "undefined"` guard added at 4 call sites.
 
-**Blast radius** — Change: `packages/state/src/persistenceMiddleware.ts`. Avoid: `packages/state/src/store.ts`, `packages/state/test/` (no new tests required for the guard-only fix; injection approach would require a new adapter).
+**Blast radius** — Changed: `packages/state/src/persistenceMiddleware.ts` (4 guard lines added). No other files touched.
 
 ---
 
-### Finding #2: `undoRedoThunks` — multi-slice behavior with zero direct tests
+### Finding #2: `undoRedoThunks` — multi-slice behavior with zero direct tests (F-003)
 
-**Why it matters** — The undo/redo path reads `undoRedoSlice.past/future` and dispatches into `tierSlice` — it is the most complex cross-slice behavior in the state package and has zero unit tests. A regression here silently breaks a primary user-visible feature.
+**Why it matters** — The undo/redo path reads `undoRedoSlice.past/future` and dispatches into `tierSlice` — the most complex cross-slice behavior in the state package has zero unit tests; a regression breaks a primary user-visible feature invisibly to CI.
 
-**What is wrong** — `undoRedoThunks.ts:22-56` (`performUndo`/`performRedo`) coordinates two slices: dispatches `undoAction()` (moves snapshot between `past`/`future` in `undoRedoSlice`), then reads the mutated state to restore `tiers`/`tierOrder` via `setTiers`/`setTierOrder` in `tierSlice`. The snapshot round-trip — push → undo → redo → state restored — is not tested anywhere in `packages/state/test/`. The `undoRedoSlice.test.ts` file does not exist.
+**What is wrong** — `undoRedoThunks.ts:22-56` (`performUndo`/`performRedo`) coordinates two slices; the snapshot round-trip is not tested anywhere in `packages/state/test/`. `undoRedoSlice.test.ts` does not exist.
 
 **Evidence** —
-- `packages/state/src/undoRedoThunks.ts:22-39` (`performUndo`), `packages/state/src/undoRedoThunks.ts:45-62` (`performRedo`).
-- `find /Users/Shared/git/Tiercade-React/packages/state/test/ -name 'undoRedo*'` — zero results.
-- `packages/state/test/` has 4 files: `headToHeadSlice.test.ts`, `importJSON.test.ts`, `themeSlice.test.ts`, `tierSlice.test.ts` — no undo/redo tests.
+- `packages/state/src/undoRedoThunks.ts:22-39` (`performUndo`), `packages/state/src/undoRedoThunks.ts:45-62` (`performRedo`)
+- `packages/state/test/` — 4 files only: `headToHeadSlice.test.ts`, `importJSON.test.ts`, `themeSlice.test.ts`, `tierSlice.test.ts`. No `undoRedo*.test.ts`.
 
-**Architectural test failed** — Interface-as-test-surface (the undo/redo thunk interface lacks tests)
+**Architectural test failed** — Interface-as-test-surface
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Without tests, every future change to `undoRedoThunks` or the snapshot path carries blind regression risk.
+**Leverage impact** — Without tests, every future change to `undoRedoThunks` carries blind regression risk.
 
-**Locality impact** — The bug surface for undo/redo is spread across two slice reducers and one thunk file — a tester cannot verify the round-trip without running it end-to-end.
+**Locality impact** — Bug surface for undo/redo spreads across two slice reducers and one thunk file with no test boundary.
 
 **Metric signal, if any** — 0 tests for undo/redo in `packages/state/test/`.
 
-**Why this weakens submission** — Undo/redo is a primary user feature. Absence of unit tests at the thunk interface means no CI protection against regressions introduced by future refactors.
+**Why this weakens submission** — Primary user feature with zero unit test coverage at the thunk interface.
 
 **Severity** — Serious deduction
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Add `packages/state/test/undoRedoThunks.test.ts`. Test: (1) `captureSnapshot` pushes a snapshot to `past`; (2) `performUndo` restores the prior state; (3) `performRedo` restores the undone state; (4) new action after undo clears `future`. Use a real `store` instance (same pattern as `importJSON.test.ts`).
+**Minimal correction path** — Add `packages/state/test/undoRedoThunks.test.ts`. Test: (1) `captureSnapshot` pushes snapshot; (2) `performUndo` restores prior state; (3) `performRedo` restores undone state; (4) new action after undo clears `future`. Use real store instance.
 
-**Blast radius** — Change: new file `packages/state/test/undoRedoThunks.test.ts`. Avoid: `packages/state/src/undoRedoThunks.ts` (no production code changes needed).
+**Blast radius** — Change: new file `packages/state/test/undoRedoThunks.test.ts`. Avoid: `packages/state/src/undoRedoThunks.ts`.
 
 ---
 
-### Finding #3: `TierBoardPage.tsx` at 757 LOC — god-component fails shallow-module test
+### Finding #3: `TierBoardPage.tsx` at 757 LOC — god-component fails shallow-module test (F-004)
 
-**Why it matters** — A 757-LOC React component that owns modal state, drag-drop handlers, URL sharing, export, keyboard shortcuts, presentation mode activation, and item management cannot be modified in one concern without risk to the others.
+**Why it matters** — A 757-LOC React component owning 7 independent concerns cannot be modified safely; tests at this surface are impractical.
 
-**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` contains: (1) 7 `useState` calls for modal/UI state (`showAddItem`, `showTierSettings`, `showKeyboardHelp`, `showStreamingPanel`, `editingItem`, `showCelebration`, `celebrationTier`); (2) 3 `useEffect` calls for theme init, project load, and URL share import; (3) custom hook usage (`useTierBoardKeyboard`, `useExport`, `usePresentationHandlers`); (4) inline drag-drop event handlers; (5) `useMemo` for tier colors/labels computation; (6) full render tree including `ItemModal`, `TierSettingsModal`, `BatchActionBar`, `TierBoard`, `SortFilterBar`. Shallow module test: removing this component's implementation detail (e.g., URL sharing) requires editing this one file — it's not modular, but complexity does not vanish when you imagine deleting the component.
+**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` contains: 7 `useState` calls for independent modal/UI state; 3 `useEffect` calls (theme init, project load, URL share import); inline drag-drop handlers; `useMemo` for tier colors; full render tree. Shallow module test: deleting this component's implementation for any one concern requires reading all 757 LOC.
 
 **Evidence** —
-- `apps/web/src/pages/TierBoardPage.tsx:1-757` — LOC count confirmed.
-- `apps/web/src/pages/TierBoardPage.tsx:101-113` — 7 `useState` declarations for independent concerns.
-- `apps/web/src/pages/TierBoardPage.tsx:139-154` — URL sharing `useEffect` directly in TierBoardPage.
+- `apps/web/src/pages/TierBoardPage.tsx:1-757` — LOC count
+- `apps/web/src/pages/TierBoardPage.tsx:101-113` — 7 `useState` declarations
+- `apps/web/src/pages/TierBoardPage.tsx:139-154` — URL sharing `useEffect` directly in page
 
-**Architectural test failed** — Shallow module (Interface ≈ Implementation — the component bundles too many responsibilities behind one React component identity)
+**Architectural test failed** — Shallow module
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Every concern bundled into TierBoardPage must be understood to modify any one of them; callers (tests, reviewers) must learn too much.
+**Leverage impact** — Every concern bundled into TierBoardPage must be understood to modify any one of them.
 
 **Locality impact** — Bug in URL sharing or export requires navigating 757 LOC of unrelated code.
 
-**Metric signal, if any** — 757 LOC vs. 95 LOC for `ThemesPage.tsx` (simplest page); ratio 8:1 suggests severe imbalance.
+**Metric signal, if any** — 757 LOC vs 95 LOC for `ThemesPage.tsx`; ratio 8:1.
 
-**Why this weakens submission** — Tests at the `TierBoardPage` surface are impractical at this size; E2E tests substitute but provide no unit-level regression coverage for individual behaviors.
+**Why this weakens submission** — God-component resists maintenance and unit testing at the individual behavior level.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Extract URL-sharing import logic from the `useEffect` at line 139-154 into a custom hook `useShareImport` (co-locate with `urlSharing.ts`). That is the smallest, most isolated extraction — one behavior, ~15 lines, low blast radius. Do not attempt to split all 7 modals in one loop.
+**Minimal correction path** — Extract URL-sharing `useEffect` (lines 139-154) into `useShareImport` hook — self-contained, ~15 lines, zero blast radius to other page behaviors.
 
-**Blast radius** — Change: `apps/web/src/pages/TierBoardPage.tsx` (remove the URL-share `useEffect` block), new file `apps/web/src/hooks/useShareImport.ts`. Avoid: `apps/web/src/utils/urlSharing.ts` (public API unchanged), any other page.
+**Blast radius** — Change: `apps/web/src/pages/TierBoardPage.tsx`, new file `apps/web/src/hooks/useShareImport.ts`. Avoid: `apps/web/src/utils/urlSharing.ts`, other pages.
 
 ## Simplification Check
-- Structurally necessary: Guarding `localStorage` in `persistenceMiddleware` — passes Deletion test on the ambient dependency (deleting the bare call; complexity (the guard) reappears only at the call site, not across N callers).
-- New seam justified: no new seam for the guard-only fix. A Storage interface injection would satisfy Two-adapter rule but is heavier than the smallest honest fix.
-- Helpful simplification: undo/redo tests add zero ceremony — pure behavioral assertion at the thunk interface.
-- Should NOT be done: introduce a full `Storage` port with two adapters as Priority 1 — overshoots the smallest honest fix for the persistence finding.
-- Tests after fix: no test deletions; add `undoRedoThunks.test.ts` at the thunk interface.
+- Structurally necessary: `localStorage` guard in `persistenceMiddleware` — passes Deletion test: removing the ambient unguarded call eliminates the crash; complexity stays only at the 4 call sites (each one-liner guard).
+- New seam justified: no new seam for the guard-only fix. Storage injection would satisfy Two-adapter rule but overshoots the smallest honest fix.
+- Helpful simplification: undo/redo tests add zero ceremony — pure behavioral assertion at existing thunk interface.
+- Should NOT be done: introduce a full `Storage` port with two adapters as Priority 1 — overshoots the guard fix.
+- Tests after fix: no test deletions needed; guard fix required no new tests.
 
 ## Improvement Backlog
 
-### Priority 1: Add `localStorage` guard to `persistenceMiddleware` — clear test-environment leaks
-- Why it matters: Every `npm run test:state` run emits visible warnings from bare `localStorage` access at module load time; the save debounce fires after test teardown. These are not cosmetic — they signal a real untestable production dependency.
-- Score impact: Framework idioms +0.5; Test strategy +0.5; Overall credibility +0.5
-- Kind: structural (local-substitutable seam without guard)
-- Rank: needed for winning
-
-### Priority 2: Add `undoRedoThunks.test.ts` — cover multi-slice undo/redo round-trip
+### Priority 1: Add `undoRedoThunks.test.ts` — cover multi-slice undo/redo round-trip (F-003)
 - Why it matters: The primary undo/redo path crosses two slices with zero unit test coverage; a regression here breaks a primary user feature invisibly to CI.
 - Score impact: Test strategy +1.0; Overall credibility +0.5
-- Kind: structural (missing test at the thunk interface)
+- Kind: structural (missing test at thunk interface)
 - Rank: needed for winning
 
-### Priority 3: Extract `useShareImport` from `TierBoardPage` — reduce god-component scope
+### Priority 2: Extract `useShareImport` hook from `TierBoardPage` — reduce god-component scope (F-004)
 - Why it matters: Smallest concrete step to decompose the 757-LOC TierBoardPage; URL sharing import is a self-contained behavior with no dependencies on other page state.
 - Score impact: Code simplicity +0.5; Architecture quality +0.5
 - Kind: simplification
@@ -203,25 +176,31 @@ Build is globally green for the first time: 17 suites, 84 tests, all passing (`n
 
 ## Deepening Candidates
 
-### `persistenceMiddleware` — inject Storage interface for test isolation
-- Source friction proven: F1 (test-environment leaks from ambient `localStorage`)
-- Why shallow or misplaced: The middleware calls `localStorage` directly — the dependency is not threaded through any interface, making failure path testing (quota exceeded, corrupted JSON, SSR) impossible.
+### `persistenceMiddleware` — inject Storage interface for test isolation (F-002 post-guard)
+- Source friction proven: F-002 resolved this loop (guard added); deeper injection remains possible.
+- Why shallow or misplaced: Guard makes it SSR-safe but `localStorage` is still ambient — persistence failure behavior (corrupted JSON, quota exceeded) remains untestable.
 - Behavior to move behind deeper interface: `getItem`, `setItem`, `removeItem` calls in `persistenceMiddleware.ts`.
-- Dependency category: `local-substitutable` (in-memory `Storage` stand-in runs in tests with no network)
-- Test surface after change: `persistenceMiddleware.test.ts` asserts save/load/clear behavior against an in-memory `Storage` stub.
-- Smallest first step: Add `typeof localStorage !== 'undefined'` guard (Priority 1); injection refactor is next-loop work.
-- What not to do: Do not introduce a new `StoragePort` protocol with one prod adapter today — that is heavier than the guard-only fix needed to clear Priority 1.
+- Dependency category: `local-substitutable`
+- Test surface after change: `persistenceMiddleware.test.ts` asserts save/load/clear against in-memory `Storage` stub.
+- Smallest first step: Guard is done. Next: inject a `storage?: Storage` parameter with `localStorage` as default.
+- What not to do: Do not extract a full `StoragePort` protocol with ceremony; a simple optional parameter injection is sufficient.
 
 ## Builder Notes
-1. **Pattern** — Ambient browser globals in middleware. **How to recognize** — Test output shows "ExperimentalWarning: localStorage is not available" or "Cannot read properties of undefined (reading 'getItem')". The `window` or `localStorage` object is accessed at module evaluation time (not inside a user gesture handler), making it fire before the test environment sets up globals. **Smallest coding rule** — Always guard `localStorage`/`sessionStorage` access with `typeof localStorage !== 'undefined'` before use, or inject the Storage interface so tests can pass a stub. **Stack example** — `persistenceMiddleware.ts:63`: `const saved = localStorage.getItem(STORAGE_KEY)` should be `const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null`.
-2. **Pattern** — Cross-slice thunks with no integration test. **How to recognize** — A thunk file dispatches to two different slice reducers (e.g., `undoAction()` into `undoRedoSlice` then `setTiers()` into `tierSlice`). If the test suite has coverage for each slice independently but no test that exercises the combined round-trip, the cross-slice coordination is in a test gap. **Smallest coding rule** — For every thunk that spans ≥2 slices, add one integration test using a real store instance that asserts the final state across both slices after dispatch. **Stack example** — `undoRedoThunks.ts:captureSnapshot → performUndo → performRedo`: each action dispatches into a different slice; a test should check `state.undoRedo.past`, `state.undoRedo.future`, AND `state.tier.tiers` after each call.
-3. **Pattern** — God-page-component. **How to recognize** — A React page component over ~300 LOC with 5+ `useState` calls for independent concerns and 3+ `useEffect` calls. Each modal/behavior that could be lifted into its own hook is a candidate. **Smallest coding rule** — Each self-contained behavior (URL sharing on mount, keyboard shortcuts, export, presentation) becomes one custom hook named `use<Behavior>`. The page component becomes a coordinator of hooks and a single JSX tree; all imperative logic lives in hooks. **Stack example** — `TierBoardPage.tsx:139-154` (URL share import `useEffect`) has no local state dependencies — it only calls `dispatch` and URL utilities. Extracting it to `useShareImport()` costs ~15 lines and zero blast radius.
+1. **Pattern** — Ambient browser globals in Redux middleware. **How to recognize** — Test output shows "ExperimentalWarning: localStorage is not available" or "Cannot log after tests are done" with a stack trace pointing to a `setTimeout` callback in middleware. **Smallest coding rule** — Guard every `localStorage`/`sessionStorage` access with `if (typeof localStorage === "undefined") return;` at the top of each exported function AND at the top of any timer callback that accesses the global. **Stack example** — `persistenceMiddleware.ts:23`: `if (typeof localStorage === "undefined") return;` inside the `setTimeout` callback before `store.getState()`.
+2. **Pattern** — Cross-slice thunks with no integration test. **How to recognize** — A thunk dispatches to two different slice reducers; the test suite covers each slice independently but has no test exercising the combined round-trip. **Smallest coding rule** — For every thunk that spans ≥2 slices, add one integration test using a real store instance that asserts the final state across both slices. **Stack example** — `undoRedoThunks.ts`: `captureSnapshot → performUndo → performRedo` dispatch into different slices; a test should check `state.undoRedo.past`, `state.undoRedo.future`, AND `state.tier.tiers` after each call.
+3. **Pattern** — God-page-component. **How to recognize** — A React page component over ~300 LOC with 5+ `useState` calls for independent concerns. **Smallest coding rule** — Each self-contained behavior (URL sharing on mount, keyboard shortcuts, export, presentation) becomes one custom hook named `use<Behavior>`. **Stack example** — `TierBoardPage.tsx:139-154` URL share import `useEffect` — no local state dependencies, only `dispatch` and URL utilities; extracting to `useShareImport()` costs ~15 lines and zero blast radius.
 
 ## Final Judge Narrative
-Good app, place but not win in current state. Five loops to reach green baseline; the first structural review confirms the monorepo package boundaries and RTK slice ownership are architecturally honest — `packages/core` is framework-free, tested deeply, and genuinely domain-focused. The gaps are real but fixable in the remaining 5 loops: persistence middleware writes ambient `localStorage` without isolation, making test warnings fire on every run; undo/redo — the most complex multi-slice behavior — has zero unit tests; and `TierBoardPage.tsx` at 757 LOC is a god-component that resists maintenance. Runtime ownership is trustworthy within Redux state. Concurrency is not a concern (single-threaded JS, synchronous thunks). Tests reduce regressions in `packages/core` but are thin in `packages/state`. Future work should not over-engineer: the persistence guard is a 3-line fix; the undo/redo test is a ~40-line addition; the TierBoardPage decomposition should be incremental, one hook at a time.
+Good app, place but not win yet. Loop 6 resolves the test-environment crash from F-002: `persistenceMiddleware.ts` now guards all 4 `localStorage` call sites with `typeof localStorage === "undefined"`, eliminating the post-teardown debounce timer crash. Full suite stays green at 17/84. Framework idioms and overall credibility both move up one point from the closed gap. Two structural gaps remain: undo/redo cross-slice thunks have zero unit tests (primary user feature, blind CI regression risk), and `TierBoardPage.tsx` at 757 LOC is a god-component. These are the next two loops' work. Concurrency is trustworthy. Runtime ownership is honest. The persistence guard is idiomatic and minimal — no over-engineering.
 
-## Loop 5 Result
+## Loop 6 Result
 
-Fixed one file: `packages/state/test/importJSON.test.ts` — updated the test fixture from a stale legacy `{tiers: {S: [], ...}, tierOrder: [...]}` shape (never supported by `ModelResolver.decodeProject`) to a valid `Project` schema (`schemaVersion: 1`, `projectId`, `tiers: ProjectTier[]`, `items: Record<string, ProjectItem>`, `audit`). Test renamed to "loads a project JSON with items in the unranked tier." Assertions preserved: `tierOrder` equals `["S","A","B","C","D","F"]`, `unranked` has 5 items, first item `name` is "Item Alpha".
+Changed one file: `packages/state/src/persistenceMiddleware.ts` — added `if (typeof localStorage === "undefined") return;` guards at 4 call sites: (1) top of the `setTimeout` debounce callback; (2) top of `loadPersistedState`; (3) top of `clearPersistedState`; (4) top of `hasPersistedState`. No production behavior changed in browser environments. In Node/Jest environments, the functions now return early (undefined, void, false respectively) instead of crashing on an undefined global.
 
-`npm run test:core && npm run test:state && npm run test:ui` (loop 5): 17 suites, 84 tests — ALL PASS. This is the first globally green run across all three workspaces. Targeted finding F-001 "Build failure blocks structural review" is `resolved` — no test failures remain in current source. First real structural scorecard produced this loop. No unintended scorecard regression: all 9 dimensions moved UP from 1 (build-failure floor) to honest mid-range scores (5-7) based on source inspection.
+`npm run test:state` (loop 6): 4 suites, 10 tests — all PASS. No "Cannot log after tests are done" error. No "Failed to save state" error. Full suite (`test:core && test:state && test:ui`): 17 suites, 84 tests — all PASS. Targeted finding F-002 (`persistenceMiddleware` ambient localStorage guard) is `resolved`. No unintended scorecard regression: `framework_idioms` +1 (6→7) and `credibility` +1 (5→6) based on structural proof from this loop's diff.
+
+## Loop 6 Implementation Review
+
+Reviewer verdict: **approved**
+
+All three checks passed: (1) Reality — the finding pattern (unguarded `localStorage` access crashing in test environment) no longer present in current source; all 4 call sites now have `typeof localStorage === "undefined"` guards. (2) Honesty — fix passes Simplify Pressure Test: smallest honest fix (4 one-liner guards, no new abstractions), no new seam, no duplicate layers, runtime behavior unchanged in browser. (3) Regression — no new findings introduced; the one remaining Jest "worker process has failed to exit gracefully" warning is pre-existing behavior from the module-level `saveTimeout` not being cancelled at test teardown (unrelated to this fix; a cosmetic-for-contest concern the next undo/redo test PR can address with a `beforeEach(() => clearAllTimers())`).
