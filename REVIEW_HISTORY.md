@@ -689,3 +689,75 @@ Changed four files: packages/state/test/undoRedoThunks.test.ts (new, 8 tests), p
 ## Loop 7 Implementation Review
 
 Reviewer verdict: **approved**. All three checks passed: Reality — F-003 pattern eliminated (three direct test files now exist); Honesty — test additions pass Simplify Pressure Test; no new seam; selector bug fixes are subtractive; Regression — no new findings at same or higher severity. Full suite green at 114 tests.
+
+--- Loop 8 (UTC 2026-05-16T04:40:00Z) ---
+
+### Loop Counter
+Loop 8 of 10 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+(see Loop 1 Discovery)
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 8 resolves F-005: `createPersistenceMiddleware(storage)` factory replaces ambient `localStorage` dependency with injectable storage. Module-level `saveTimeout` singleton moved inside factory closure. Tests rewritten with direct storage injection; `Object.defineProperty` blocks eliminated. Full suite: 20 suites, 114 tests, all green. `data_flow` 6→6.5, `state_management` 6→6.5, `credibility` 7→7.5.
+
+## Scorecard
+- Architecture quality: 6 | SAME | DAG intact; TierBoardPage.tsx 757 LOC god-component unchanged.
+- State management and runtime ownership: 6.5 | UP | `persistenceMiddleware.ts:22` — `saveTimeout` moved from module-level singleton into factory closure; each instance has independent debounce timer.
+- Domain modeling: 6 | SAME | No domain model changes.
+- Data flow and dependency design: 6.5 | UP | `persistenceMiddleware.ts:21` — `createPersistenceMiddleware(storage)`. Prior: 7 ambient call sites. Now: single injection point + injectable per-function.
+- Framework / platform best practices: 7 | SAME | RTK idioms correct; no framework changes.
+- Concurrency and runtime safety: 7 | SAME | Debounce timer now closure-local; no concurrency model changes.
+- Code simplicity and clarity: 5 | SAME | TierBoardPage.tsx 757 LOC unchanged; factory adds minor ceremony but eliminates 7 scattered guards.
+- Test strategy and regression resistance: 7 | SAME | Tests cleaner (direct injection) but no new surfaces. 20 suites, 114 tests green.
+- Overall implementation credibility: 7.5 | UP | `persistenceMiddleware.test.ts:64` — `createPersistenceMiddleware(fakeStorage)` used directly; 4 `Object.defineProperty` global blocks eliminated.
+
+## Strengths That Matter
+- `packages/core` domain layer framework-free; 11 suites 69 tests.
+- RTK slice ownership: one clear writer per concern across 6 slices.
+- `persistenceMiddleware` fully injectable storage; `saveTimeout` per-instance.
+- `undoRedoThunks` 8 integration tests using real store instances.
+
+## Findings
+
+### Finding F1 (F-004): TierBoardPage.tsx at 757 LOC — god-component fails shallow-module test
+**Evidence:** `apps/web/src/pages/TierBoardPage.tsx:1-757`; 7 useState declarations at lines 101-113; URL sharing useEffect at lines 139-154.
+**Severity:** Noticeable weakness. **Architectural test failed:** Shallow module. **Correction path:** Extract `useShareImport` hook (lines 139-154).
+
+### Finding F2 (F-005): persistenceMiddleware ambient localStorage — RESOLVED THIS LOOP
+**Evidence:** `persistenceMiddleware.ts:21` — `createPersistenceMiddleware(storage)` factory; `persistenceMiddleware.test.ts:64` — direct injection.
+**Severity:** Noticeable weakness (resolved). **Architectural test:** Two-adapter rule now met (production _globalStorage + test makeFakeStorage()).
+
+### Finding F3 (F-006): saveTimeout module-level singleton — RESOLVED THIS LOOP
+**Evidence:** `persistenceMiddleware.ts:22` — `saveTimeout` now closure-local.
+**Severity:** Cosmetic for contest (resolved).
+
+## Simplification Check
+
+| Field | Value |
+|---|---|
+| structurally_necessary | createPersistenceMiddleware(storage) factory — passes Deletion test and Two-adapter rule |
+| new_seam_justified | true — production _globalStorage + test makeFakeStorage() |
+| helpful_simplification | saveTimeout singleton eliminated; Object.defineProperty global manipulation eliminated |
+| should_not_be_done | Full StoragePort protocol — protocol soup (one prod adapter) |
+| tests_after_fix | Tests rewritten at same Interface level with direct injection; no old test deletions |
+
+## Improvement Backlog
+1. Extract `useShareImport` hook from `TierBoardPage` (F-004) — Code simplicity +0.5; Architecture quality +0.5.
+
+## Loop 8 Result
+
+Changed two files: `packages/state/src/persistenceMiddleware.ts` — converted to `createPersistenceMiddleware(storage)` factory; `saveTimeout` moved to closure; standalone functions gained `storage` param; backward-compat `persistenceMiddleware` alias kept. `packages/state/test/persistenceMiddleware.test.ts` — rewrote all 4 describe blocks to use direct injection via `createPersistenceMiddleware(fakeStorage)` etc.; all `Object.defineProperty` blocks eliminated.
+
+Full suite: 20 suites, 114 tests — all PASS. Build: clean. Targeted finding F-005 `resolved`. `data_flow`: 6→6.5. `state_management`: 6→6.5. `credibility`: 7→7.5.
+
+## Loop 8 Implementation Review
+
+Reviewer verdict: **approved**. All three checks passed: (1) Reality — F-005 pattern eliminated; `persistenceMiddleware.ts:52` uses injected storage, not ambient `localStorage`; `Object.defineProperty` absent from updated test file. (2) Honesty — two real adapters (production `_globalStorage` + test `makeFakeStorage()`); Deletion test passes; tests rewritten at new Interface, no accumulation at both levels. (3) Regression — no new findings at Noticeable weakness or above.
+
+## Final Judge Narrative
+Good app, place but not win yet. Loop 8 resolves F-005: storage injection factory cleans the ambient `localStorage` seam. `data_flow` and `state_management` each move to 6.5; `credibility` to 7.5. Full suite 20/114 green. Remaining: `TierBoardPage.tsx` 757 LOC god-component — Priority 1 for loop 9.

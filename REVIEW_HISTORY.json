@@ -1965,6 +1965,291 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 8,
+      "loop_cap": 10,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "subagent",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 8 resolves F-005: createPersistenceMiddleware(storage) factory replaces ambient localStorage dependency with injectable storage. Module-level saveTimeout singleton moved inside factory closure \u2014 each store instance now has an independent debounce timer. Tests rewritten with direct storage injection; Object.defineProperty blocks eliminated. Full suite: 20 suites, 114 tests. data_flow moves 6\u21926.5, state_management 6\u21926.5, credibility 7\u21927.5.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 6.0,
+          "delta": "SAME",
+          "proof": "packages/core/src/index.ts (no React imports); TierBoardPage.tsx 757 LOC god-component unchanged",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "UP",
+          "proof": "packages/state/src/persistenceMiddleware.ts:22 \u2014 saveTimeout moved from module-level singleton into factory closure; each createPersistenceMiddleware() call has independent debounce timer",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 6.0,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts:6 Item interface sound; no domain model changes this loop",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "UP",
+          "proof": "packages/state/src/persistenceMiddleware.ts:21 \u2014 createPersistenceMiddleware(storage: Storage | undefined = _globalStorage). Prior: 7 direct localStorage call sites; ambient dependency. Now: single injection point at factory + 3 standalone functions. F-005 resolved.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "RTK idioms correct; persistenceMiddleware.ts SSR guards replaced with storage parameter injection; no framework pattern changes",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "JavaScript single-threaded; debounce timer now closure-local (minor isolation improvement); no async/concurrency model changes",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 5.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/pages/TierBoardPage.tsx:1-757 \u2014 7 useState, 3 useEffect, 7 bundled concerns unchanged. Factory pattern adds minor ceremony but eliminates scattered guards; net wash on simplicity score.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "packages/state/test/persistenceMiddleware.test.ts \u2014 tests now use direct storage injection (cleaner isolation) but no new test surfaces added. Full suite: 20 suites 114 tests green.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 7.5,
+          "delta": "UP",
+          "proof": "packages/state/test/persistenceMiddleware.test.ts:64 \u2014 makeStoreWithStorage(fakeStorage) uses createPersistenceMiddleware(storage) directly; 4 Object.defineProperty(global, 'localStorage') blocks eliminated. Module Interface is honest and isolation-clean.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [],
+      "strengths": [
+        "packages/core domain layer framework-free; 11 suites 69 tests covering pure functions end-to-end",
+        "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors cover all derived state",
+        "Monorepo DAG enforced by workspace package.json: core\u2190state\u2190apps; no circular dependencies",
+        "persistenceMiddleware \u2014 fully injectable storage (F-005 resolved); saveTimeout per-instance (not module-global singleton)",
+        "undoRedoThunks \u2014 primary user feature covered by 8 integration tests at thunk interface using real store instances",
+        "persistenceMiddleware \u2014 14 behavior tests using injected fake storage (no global override)"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "id": "F1",
+          "title": "TierBoardPage.tsx at 757 LOC \u2014 god-component fails shallow-module test",
+          "why_it_matters": "A 757-LOC React component owning 7 independent concerns cannot be modified safely; tests at this surface are impractical.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx contains 7 useState calls, 3 useEffect calls, inline drag-drop handlers, useMemo for tier colors, and full render tree \u2014 all in one file.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-757",
+            "apps/web/src/pages/TierBoardPage.tsx:101-113 \u2014 7 useState declarations",
+            "apps/web/src/pages/TierBoardPage.tsx:139-154 \u2014 URL sharing useEffect directly in page"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Every concern bundled into TierBoardPage must be understood to modify any one of them.",
+          "locality_impact": "Bug in URL sharing or export requires navigating 757 LOC of unrelated code.",
+          "metric_signal": "757 LOC vs 95 LOC for ThemesPage.tsx; ratio 8:1",
+          "why_weakens_submission": "God-component resists maintenance and unit testing at the individual behavior level.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Extract URL-sharing useEffect (lines 139-154) into useShareImport hook \u2014 self-contained, ~15 lines, zero blast radius to other page behaviors.",
+          "blast_radius": {
+            "change": [
+              "apps/web/src/pages/TierBoardPage.tsx",
+              "apps/web/src/hooks/useShareImport.ts"
+            ],
+            "avoid": [
+              "apps/web/src/utils/urlSharing.ts",
+              "other pages"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-005",
+          "id": "F2",
+          "title": "persistenceMiddleware ambient localStorage \u2014 global override required in tests (resolved this loop)",
+          "why_it_matters": "RESOLVED. createPersistenceMiddleware(storage) factory eliminates all Object.defineProperty(global, 'localStorage') manipulation from tests.",
+          "what_is_wrong": "WAS: persistenceMiddleware.ts called localStorage.setItem directly at 7 call sites; tests required global override. NOW: injectable storage via factory parameter.",
+          "evidence": [
+            "packages/state/src/persistenceMiddleware.ts:21 \u2014 createPersistenceMiddleware(storage: Storage | undefined = _globalStorage)",
+            "packages/state/test/persistenceMiddleware.test.ts:64 \u2014 makeStoreWithStorage(fakeStorage) uses createPersistenceMiddleware(storage) directly"
+          ],
+          "test_failed": "Two-adapter rule",
+          "dependency_category": "local-substitutable",
+          "leverage_impact": "Resolved. Any caller can now inject a storage stub without global manipulation.",
+          "locality_impact": "Resolved. Storage dependency is explicit at one seam.",
+          "metric_signal": "4 Object.defineProperty beforeEach/afterEach blocks eliminated from test file",
+          "why_weakens_submission": "WAS: fragile global override required in tests. NOW: resolved.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "COMPLETED: createPersistenceMiddleware(storage) factory + test rewrite.",
+          "blast_radius": {
+            "change": [
+              "packages/state/src/persistenceMiddleware.ts",
+              "packages/state/test/persistenceMiddleware.test.ts"
+            ],
+            "avoid": [
+              "packages/state/src/store.ts"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F3",
+          "stable_id": "F-006",
+          "id": "F3",
+          "title": "saveTimeout module-level singleton \u2014 timer interference between store instances (resolved this loop)",
+          "why_it_matters": "RESOLVED this loop. saveTimeout moved inside factory closure \u2014 each store instance has independent debounce timer.",
+          "what_is_wrong": "WAS: let saveTimeout at module scope (persistenceMiddleware.ts:9 prior); all middleware instances shared one timer. NOW: saveTimeout declared inside createPersistenceMiddleware at persistenceMiddleware.ts:22.",
+          "evidence": [
+            "packages/state/src/persistenceMiddleware.ts:22 \u2014 saveTimeout now closure-local",
+            "packages/state/test/persistenceMiddleware.test.ts:70,85 \u2014 two test stores no longer share a timer"
+          ],
+          "test_failed": "n/a",
+          "dependency_category": "in-process",
+          "leverage_impact": "Resolved. Multiple store instances now independent.",
+          "locality_impact": "Resolved. Timer state bounded to middleware instance.",
+          "metric_signal": "none",
+          "why_weakens_submission": "WAS: latent bug; concurrent test stores could cancel each other's debounce. NOW: resolved.",
+          "severity": "Cosmetic for contest",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "COMPLETED: saveTimeout moved inside factory closure.",
+          "blast_radius": {
+            "change": [
+              "packages/state/src/persistenceMiddleware.ts"
+            ],
+            "avoid": []
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "createPersistenceMiddleware(storage) factory passes Deletion test \u2014 removing ambient localStorage removes scattered typeof-guards; passes Two-adapter rule (production _globalStorage + test makeFakeStorage())",
+        "new_seam_justified": true,
+        "new_seam_adapters": [
+          "production _globalStorage (globalThis.localStorage)",
+          "test makeFakeStorage() \u2014 in-memory Storage stub"
+        ],
+        "helpful_simplification": "saveTimeout singleton eliminated; Object.defineProperty global manipulation eliminated from 4 test describe blocks",
+        "should_not_be_done": "Introduce a full StoragePort protocol interface \u2014 a simple optional parameter is sufficient; protocol would be protocol soup (one prod adapter)",
+        "tests_after_fix": "No old test deletions. Tests rewritten at same Interface level with direct storage injection via createPersistenceMiddleware(storage)."
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "Extract useShareImport hook from TierBoardPage \u2014 reduce god-component scope (F-004)",
+          "kind": "simplification",
+          "rank": "helpful",
+          "why_it_matters": "URL-sharing useEffect (lines 139-154) is self-contained with zero dependencies on other page state. Extracting it is the smallest honest decomposition step for the 757-LOC god-component.",
+          "score_impact": "Code simplicity +0.5; Architecture quality +0.5"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {
+          "pattern": "Module-level mutable state shared across instances",
+          "how_to_recognize": "let timeout or let state declared at module scope (outside any class or function), used inside an exported function or middleware; two concurrent calls share and clobber the timer/counter/flag",
+          "smallest_coding_rule": "Move mutable state into a factory function closure so each invocation gets its own instance; production caller invokes with no arg; tests invoke with an injected stub",
+          "stack_example": "persistenceMiddleware.ts: let saveTimeout was at module scope; moving it inside createPersistenceMiddleware closure gives each store instance its own independent debounce timer"
+        },
+        {
+          "pattern": "Ambient dependency hidden in module initialization",
+          "how_to_recognize": "Function calls localStorage.setItem/getItem directly at multiple call sites; tests must install a fake via Object.defineProperty; teardown is required or tests bleed state",
+          "smallest_coding_rule": "Add storage: Storage | undefined = globalThis.localStorage to the factory/function signature; production uses default; tests pass a makeFakeStorage()",
+          "stack_example": "loadPersistedState(storage?) \u2014 each test now passes its own storage instance with no global override"
+        },
+        {
+          "pattern": "God-component at the page level (757 LOC)",
+          "how_to_recognize": "Single React component with 5+ useState calls managing independent concerns and 2+ useEffect calls with different dependency arrays; any bug fix requires reading all LOC",
+          "smallest_coding_rule": "Identify one useEffect that depends on no other state in the component and extract it into a use<Verb> hook in apps/web/src/hooks/; the hook encapsulates one concern",
+          "stack_example": "TierBoardPage.tsx:139-154 \u2014 URL sharing useEffect uses only URL parameters and dispatch; zero dependency on modal state or drag-drop state. Extract to useShareImport."
+        }
+      ],
+      "narrative": "Good app, place but not win yet. Loop 8 resolves F-005: createPersistenceMiddleware(storage) factory cleans the ambient localStorage seam \u2014 injectable storage, per-instance debounce timer, zero global override in tests. Structural proof: persistenceMiddleware.ts:21 (factory signature) and persistenceMiddleware.test.ts:64 (direct injection). data_flow and state_management each move to 6.5; credibility to 7.5. Full suite 20 suites, 114 tests, green. Remaining gap: TierBoardPage.tsx at 757 LOC \u2014 Priority 1 for loop 9.",
+      "loop_result": {
+        "what_changed": "Extracted ambient localStorage dependency into injectable storage parameter: createPersistenceMiddleware(storage) factory in packages/state/src/persistenceMiddleware.ts; loadPersistedState(storage), clearPersistedState(storage), hasPersistedState(storage) each gained storage param with _globalStorage default; saveTimeout moved from module scope into factory closure; backward-compat persistenceMiddleware export alias kept. Test file packages/state/test/persistenceMiddleware.test.ts rewritten: all 4 Object.defineProperty(global, 'localStorage') beforeEach/afterEach blocks replaced with direct storage injection via createPersistenceMiddleware(fakeStorage) and loadPersistedState(fakeStorage).",
+        "evidence_change_is_honest": "Full suite (test:core && test:state && test:ui): 20 suites, 114 tests \u2014 all PASS. Build (apps/web npm run build): clean. No regressions in any of the 114 tests. Zero Object.defineProperty global manipulation in updated test file.",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "packages/state/src/persistenceMiddleware.ts",
+          "packages/state/test/persistenceMiddleware.test.ts"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: (1) Reality \u2014 F-005 pattern eliminated; persistenceMiddleware.ts:52 uses injected storage parameter, not direct localStorage; Object.defineProperty global manipulation absent from updated test file. (2) Honesty \u2014 two real adapters (production _globalStorage default + test makeFakeStorage()); Deletion test passes (factory earns its keep over 7 prior ambient call sites); tests rewritten at new Interface with no accumulation at both levels. (3) Regression \u2014 no new findings at Noticeable weakness or above; _globalStorage eslint-disable is pragmatic SSR guard, not a costume layer.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": null
+          }
+        ]
+      }
     }
   ]
 }

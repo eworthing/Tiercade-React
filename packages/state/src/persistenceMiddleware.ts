@@ -6,46 +6,61 @@ const STORAGE_KEY = "tiercade-state";
 const DEBOUNCE_MS = 500;
 const MAX_PERSISTED_HISTORY = 20; // Limit history size for storage efficiency
 
-let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+/**
+ * Creates a persistence middleware that saves Redux state to the provided
+ * Storage instance (defaults to `localStorage`). Pass a custom Storage in
+ * tests to avoid global override via Object.defineProperty.
+ *
+ * Untyped `Middleware` (no state generic) avoids a circular type dependency
+ * with `RootState`, which is derived from `store` which uses this middleware.
+ * State is cast at use site below.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _globalStorage: Storage | undefined = (globalThis as any).localStorage as Storage | undefined;
 
-// Untyped `Middleware` (no state generic) avoids a circular type dependency
-// with `RootState`, which is derived from `store` which uses this middleware.
-// State is cast at use site below.
-export const persistenceMiddleware: Middleware = (store) => (next) => (action) => {
-  const result = next(action);
+export function createPersistenceMiddleware(storage: Storage | undefined = _globalStorage): Middleware {
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  // Debounce saves to avoid excessive writes
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
+  return (store) => (next) => (action) => {
+    const result = next(action);
 
-  saveTimeout = setTimeout(() => {
-    if (typeof localStorage === "undefined") return;
-    const state = store.getState() as RootState;
-    try {
-      // Trim undo/redo history for storage efficiency
-      const trimmedUndoRedo: UndoRedoState = {
-        past: state.undoRedo.past.slice(-MAX_PERSISTED_HISTORY),
-        future: state.undoRedo.future.slice(-MAX_PERSISTED_HISTORY),
-        maxHistorySize: state.undoRedo.maxHistorySize,
-      };
+    if (!storage) return result;
 
-      const persistedState = {
-        tier: state.tier,
-        theme: state.theme,
-        undoRedo: trimmedUndoRedo,
-        // Don't persist headToHead - session-specific state
-        savedAt: Date.now(),
-        version: 2, // Bump version for undo/redo support
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistedState));
-    } catch (error) {
-      console.error("[Tiercade] Failed to save state:", error);
+    // Debounce saves to avoid excessive writes
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
     }
-  }, DEBOUNCE_MS);
 
-  return result;
-};
+    saveTimeout = setTimeout(() => {
+      const state = store.getState() as RootState;
+      try {
+        // Trim undo/redo history for storage efficiency
+        const trimmedUndoRedo: UndoRedoState = {
+          past: state.undoRedo.past.slice(-MAX_PERSISTED_HISTORY),
+          future: state.undoRedo.future.slice(-MAX_PERSISTED_HISTORY),
+          maxHistorySize: state.undoRedo.maxHistorySize,
+        };
+
+        const persistedState = {
+          tier: state.tier,
+          theme: state.theme,
+          undoRedo: trimmedUndoRedo,
+          // Don't persist headToHead - session-specific state
+          savedAt: Date.now(),
+          version: 2, // Bump version for undo/redo support
+        };
+        storage.setItem(STORAGE_KEY, JSON.stringify(persistedState));
+      } catch (error) {
+        console.error("[Tiercade] Failed to save state:", error);
+      }
+    }, DEBOUNCE_MS);
+
+    return result;
+  };
+}
+
+/** Pre-built instance using the global localStorage — used by the production store. */
+export const persistenceMiddleware: Middleware = createPersistenceMiddleware();
 
 export interface PersistedState {
   tier: RootState["tier"];
@@ -56,13 +71,13 @@ export interface PersistedState {
 }
 
 /**
- * Load persisted state from localStorage.
- * Returns undefined if no state exists or if parsing fails.
+ * Load persisted state from the provided Storage (defaults to `localStorage`).
+ * Returns undefined if no state exists, storage is unavailable, or parsing fails.
  */
-export function loadPersistedState(): Partial<PersistedState> | undefined {
-  if (typeof localStorage === "undefined") return undefined;
+export function loadPersistedState(storage: Storage | undefined = _globalStorage): Partial<PersistedState> | undefined {
+  if (!storage) return undefined;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = storage.getItem(STORAGE_KEY);
     if (!saved) {
       return undefined;
     }
@@ -90,12 +105,12 @@ export function loadPersistedState(): Partial<PersistedState> | undefined {
 }
 
 /**
- * Clear all persisted state from localStorage.
+ * Clear all persisted state from the provided Storage (defaults to `localStorage`).
  */
-export function clearPersistedState(): void {
-  if (typeof localStorage === "undefined") return;
+export function clearPersistedState(storage: Storage | undefined = _globalStorage): void {
+  if (!storage) return;
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    storage.removeItem(STORAGE_KEY);
     console.log("[Tiercade] Cleared persisted state");
   } catch (error) {
     console.error("[Tiercade] Failed to clear persisted state:", error);
@@ -103,12 +118,12 @@ export function clearPersistedState(): void {
 }
 
 /**
- * Check if there is persisted state available.
+ * Check if there is persisted state available in the provided Storage (defaults to `localStorage`).
  */
-export function hasPersistedState(): boolean {
-  if (typeof localStorage === "undefined") return false;
+export function hasPersistedState(storage: Storage | undefined = _globalStorage): boolean {
+  if (!storage) return false;
   try {
-    return localStorage.getItem(STORAGE_KEY) !== null;
+    return storage.getItem(STORAGE_KEY) !== null;
   } catch {
     return false;
   }
