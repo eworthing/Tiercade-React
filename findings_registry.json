@@ -283,7 +283,7 @@
           "loop": 11,
           "loop_local_id": "F2",
           "status": "resolved",
-          "sha": "pending-loop11-commit",
+          "sha": "d1e6728",
           "idempotency_key": "loop11-F-007-resolved"
         }
       ]
@@ -322,7 +322,7 @@
           "loop": 11,
           "loop_local_id": "F3",
           "status": "resolved",
-          "sha": "pending-loop11-commit",
+          "sha": "d1e6728",
           "idempotency_key": "loop11-F-008-resolved"
         }
       ]
