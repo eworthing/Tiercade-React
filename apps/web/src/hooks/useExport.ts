@@ -41,6 +41,7 @@ export function useExport({
     }
 
     setIsExporting(true);
+    element.classList.add("export-mode");
     try {
       await exportElementAsPNG(element, {
         filename: `${defaultFilename}.png`,
@@ -53,6 +54,7 @@ export function useExport({
         `Export failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     } finally {
+      element.classList.remove("export-mode");
       setIsExporting(false);
     }
   }, [getElement, defaultFilename]);
@@ -65,6 +67,7 @@ export function useExport({
     }
 
     setIsExporting(true);
+    element.classList.add("export-mode");
     try {
       const success = await copyElementToClipboard(element);
       if (success) {
@@ -76,6 +79,7 @@ export function useExport({
       console.error("Copy failed:", error);
       ToastQueue.negative("Clipboard access denied");
     } finally {
+      element.classList.remove("export-mode");
       setIsExporting(false);
     }
   }, [getElement]);

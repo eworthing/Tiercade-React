@@ -125,7 +125,7 @@ export const TemplatesPage: React.FC = () => {
   return (
     <div className={page}>
       <div className={header}>
-        <Heading level={1}>Template Library</Heading>
+        <Heading level={1} UNSAFE_style={{ fontFamily: "var(--font-display)" }}>Template Library</Heading>
         <Text>Get started quickly with pre-made templates or create your own.</Text>
       </div>
 

@@ -236,7 +236,23 @@ export const HeadToHeadPage: React.FC = () => {
   if (!isActive) {
     return (
       <div className={pageStack} data-testid="h2h-page">
-        <div className={centered}>
+        <div className={centered} style={{
+          background: "radial-gradient(ellipse at center, rgba(255,45,120,0.03), transparent 60%)",
+          padding: "48px 24px",
+          borderRadius: 16,
+        }}>
+          <span style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 48,
+            fontWeight: 700,
+            background: "linear-gradient(135deg, #ff2d78, #00f0ff)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            lineHeight: 1.1,
+          }}>
+            VS
+          </span>
           <Heading level={1} data-testid="h2h-heading">
             Head-to-Head
           </Heading>

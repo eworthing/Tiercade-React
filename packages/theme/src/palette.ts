@@ -1,10 +1,57 @@
+/** Surface elevation system — 4-step luminance ladder */
+export const surface = {
+  /** Level 0 — body/void */
+  body: "#0a0b14",
+  /** Level 1 — main content surfaces (rows, cards at rest) */
+  content: "#0f1019",
+  /** Level 2 — raised elements (hovered cards, active elements) */
+  raised: "#15161f",
+  /** Level 3 — overlays (modals, popovers, drag overlay) */
+  overlay: "#1c1d28",
+} as const;
+
+/** Accent colors for interactive & celebration states */
+export const accent = {
+  /** Selected states, active focus rings ONLY */
+  cyan: "#00f0ff",
+  /** Borders, subtle glows, hover hints */
+  cyanMuted: "#38bdf8",
+  /** S-tier celebrations, H2H VS badge */
+  magenta: "#ff2d78",
+  /** Mystery cards */
+  violet: "#8b5cf6",
+} as const;
+
+/** Text color hierarchy */
+export const text = {
+  /** Primary — slightly warm off-white */
+  primary: "#e2e4e8",
+  /** Labels, metadata */
+  secondary: "#8b90a0",
+  /** Placeholders, disabled */
+  muted: "#4a4f65",
+  /** Dark text on bright tier badges / neon backgrounds */
+  onNeon: "#0a0a12",
+} as const;
+
+/** Border color hierarchy */
+export const border = {
+  /** Barely visible dividers */
+  subtle: "#1a1b2a",
+  /** Card/row borders */
+  default: "#24263a",
+  /** Muted cyan at 25% for hover borders */
+  active: "rgba(56, 189, 248, 0.25)",
+} as const;
+
+// Legacy compat — keep named export so existing imports still work
 export const palette = {
-  background: "#020617",
-  surface: "#020617",
-  surfaceSoft: "#0f172a",
-  border: "#1e293b",
-  text: "#e5e7eb",
-  tierDefault: "#1e293b"
+  background: surface.body,
+  surface: surface.body,
+  surfaceSoft: surface.content,
+  border: border.subtle,
+  text: text.primary,
+  tierDefault: border.default,
 } as const;
 
 /**
@@ -41,7 +88,7 @@ export const SHADOWS = {
   resting: "0 1px 2px rgba(0, 0, 0, 0.1)",
   lifted: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
   dropped: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-  selected: "0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.3)",
+  selected: `0 0 0 2px ${accent.cyan}, 0 0 12px rgba(0, 240, 255, 0.2)`,
 } as const;
 
 /**
@@ -78,4 +125,3 @@ export const TIER_PRESETS = [
     ],
   },
 ] as const;
-

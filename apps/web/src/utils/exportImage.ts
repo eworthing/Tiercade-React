@@ -15,7 +15,7 @@ export async function exportElementAsPNG(
 ): Promise<void> {
   const {
     scale = 2,
-    backgroundColor = "#1a1a2e",
+    backgroundColor = "#0a0b14",
     filename = "tier-list.png",
   } = options;
 
@@ -43,7 +43,7 @@ export async function exportElementAsDataURL(
   element: HTMLElement,
   options: Omit<ExportOptions, "filename"> = {}
 ): Promise<string> {
-  const { scale = 2, backgroundColor = "#1a1a2e" } = options;
+  const { scale = 2, backgroundColor = "#0a0b14" } = options;
 
   const canvas = await html2canvas(element, {
     scale,
@@ -64,7 +64,7 @@ export async function copyElementToClipboard(
   options: Omit<ExportOptions, "filename"> = {}
 ): Promise<boolean> {
   try {
-    const { scale = 2, backgroundColor = "#1a1a2e" } = options;
+    const { scale = 2, backgroundColor = "#0a0b14" } = options;
 
     const canvas = await html2canvas(element, {
       scale,

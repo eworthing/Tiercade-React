@@ -447,17 +447,50 @@ export const TierBoardPage: React.FC = () => {
 
       {/* Empty state hint */}
       {totalItems === 0 && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "32px 0" }}>
-          <IllustratedMessage>
-            <Addproject />
-            <Heading>Your tier list is empty</Heading>
-            <Content>
-              <Text>Add items to start ranking.</Text>
-            </Content>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "56px 24px",
+          borderRadius: 16,
+          border: "1px dashed #24263a",
+          background: "radial-gradient(ellipse at center, rgba(56,189,248,0.03), transparent 60%)",
+        }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            border: "1.5px dashed #38bdf8",
+            background: "rgba(56,189,248,0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 20,
+          }}>
+            <svg width={24} height={24} fill="none" viewBox="0 0 24 24" stroke="#38bdf8" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <span style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 24,
+            fontWeight: 600,
+            color: "#e2e4e8",
+            marginBottom: 8,
+          }}>
+            Ready to rank?
+          </span>
+          <span style={{
+            fontSize: 15,
+            color: "#8b90a0",
+            marginBottom: 20,
+          }}>
+            Drop images, add items, or browse templates.
+          </span>
           <Button variant="accent" onPress={() => setShowAddItem(true)}>
             Add your first item
           </Button>
-          </IllustratedMessage>
         </div>
       )}
 

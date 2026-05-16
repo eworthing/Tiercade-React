@@ -48,7 +48,7 @@ export function ThemesPage() {
   return (
     <div className={page}>
       <div className={header}>
-        <Heading level={1}>Themes</Heading>
+        <Heading level={1} UNSAFE_style={{ fontFamily: "var(--font-display)" }}>Themes</Heading>
         <Text>Choose a color theme for your tier list</Text>
       </div>
 

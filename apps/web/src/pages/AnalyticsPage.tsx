@@ -67,7 +67,7 @@ export function AnalyticsPage() {
     return (
       <div className={page}>
         <div className={pageHeader}>
-          <Heading level={1}>Analytics</Heading>
+          <Heading level={1} UNSAFE_style={{ fontFamily: "var(--font-display)" }}>Analytics</Heading>
           <Text>No tier list loaded. Load or create a tier list to view analytics.</Text>
         </div>
       </div>
@@ -82,7 +82,7 @@ export function AnalyticsPage() {
   return (
     <div className={page}>
       <div className={pageHeader}>
-        <Heading level={1}>Analytics</Heading>
+        <Heading level={1} UNSAFE_style={{ fontFamily: "var(--font-display)" }}>Analytics</Heading>
         <Text>Insights about your tier list distribution</Text>
       </div>
 
@@ -105,19 +105,19 @@ export function AnalyticsPage() {
         style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))" }}
       >
         <div className={statCard}>
-          <Heading level={3}>{analytics.totalItems}</Heading>
+          <Heading level={3} UNSAFE_style={{ fontVariantNumeric: "tabular-nums" }}>{analytics.totalItems}</Heading>
           <Text>Total Items</Text>
         </div>
         <div className={statCard}>
-          <Heading level={3}>{analytics.totalTiers}</Heading>
+          <Heading level={3} UNSAFE_style={{ fontVariantNumeric: "tabular-nums" }}>{analytics.totalTiers}</Heading>
           <Text>Total Tiers</Text>
         </div>
         <div className={statCard}>
-          <Heading level={3}>{analytics.averageItemsPerTier.toFixed(1)}</Heading>
+          <Heading level={3} UNSAFE_style={{ fontVariantNumeric: "tabular-nums" }}>{analytics.averageItemsPerTier.toFixed(1)}</Heading>
           <Text>Avg per Tier</Text>
         </div>
         <div className={statCard}>
-          <Heading level={3}>{seasonStats.totalSeasons}</Heading>
+          <Heading level={3} UNSAFE_style={{ fontVariantNumeric: "tabular-nums" }}>{seasonStats.totalSeasons}</Heading>
           <Text>Unique Seasons</Text>
         </div>
       </section>

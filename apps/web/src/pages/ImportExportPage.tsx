@@ -307,7 +307,7 @@ export function ImportExportPage() {
   return (
     <div className={page}>
       <div className={header}>
-        <Heading level={1}>Import / Export</Heading>
+        <Heading level={1} UNSAFE_style={{ fontFamily: "var(--font-display)" }}>Import / Export</Heading>
         <Text>Save, share, or import your tier lists.</Text>
       </div>
 

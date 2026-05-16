@@ -228,6 +228,7 @@ export const TierBoard: React.FC<TierBoardProps> = ({
               revealMode={revealMode}
               revealedItems={revealedItems}
               onItemReveal={onItemReveal}
+              animationIndex={orderedIds.indexOf(tierId)}
             />
           </SortableContext>
         ))}
@@ -282,7 +283,7 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
     cursor: "grabbing",
     ...(hasMedia
-      ? { width: 80, height: 80 }
+      ? { width: 88, height: 88 }
       : { padding: "8px 12px" }
     ),
   };

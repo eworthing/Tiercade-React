@@ -1,6 +1,6 @@
 /* ============================================================================
-   TIERCADE - SPECTRUM 2 NATIVE STYLING
-   Using Adobe's Spectrum 2 design tokens for consistency
+   TIERCADE - PREMIUM ARCADE STYLING
+   Surface elevation via tone, neon reserved for interactive moments
    ============================================================================ */
 
 @layer reset, tiercade, _;
@@ -8,44 +8,68 @@
 /* Import Spectrum 2 core - provides design tokens and foundation */
 @import "@react-spectrum/s2/page.css";
 
-/* Fonts - Using system fonts for performance, S2 handles typography */
-
 @layer tiercade {
   /* ==========================================================================
-     GLOBAL STYLES - Extend Spectrum 2 foundation
-     ========================================================================== */
-  html, body, #root {
-    height: 100%;
-    /* S2 handles background and text colors via page.css */
-  }
-
-  /* ==========================================================================
-     TIER COLORS - App-specific semantic colors
+     FONT VARIABLES & BASE
      ========================================================================== */
   :root {
-    /* Tier ranking colors - vibrant for visual hierarchy */
-    --tier-color-s: #ef4444;
-    --tier-color-a: #f97316;
-    --tier-color-b: #eab308;
-    --tier-color-c: #22c55e;
-    --tier-color-d: #3b82f6;
-    --tier-color-f: #8b5cf6;
-    --tier-color-unranked: #64748b;
+    --font-display: 'Unbounded', system-ui, sans-serif;
+    --font-body: 'Outfit', system-ui, sans-serif;
+  }
 
-    /* Custom surface colors for tier board */
-    --tier-row-bg: rgba(255, 255, 255, 0.03);
-    --tier-row-bg-hover: rgba(255, 255, 255, 0.06);
-    --tier-row-border: rgba(255, 255, 255, 0.08);
-    --tier-item-bg: rgba(255, 255, 255, 0.05);
-    --tier-item-bg-hover: rgba(255, 255, 255, 0.1);
+  html, body, #root {
+    height: 100%;
+    font-family: var(--font-body);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: #0a0b14;
+    color: #e2e4e8;
+  }
+
+  /* Atmospheric glow — fixed via position:fixed, no scroll repaint */
+  #root::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 70% 40% at 50% 0%,
+      rgba(56, 189, 248, 0.025) 0%,
+      rgba(139, 92, 246, 0.015) 50%,
+      transparent 80%
+    );
   }
 
   /* ==========================================================================
-     SCROLLBAR - Subtle, matches Spectrum style
+     TIER COLORS - Apple SF-inspired, slightly more saturated
+     ========================================================================== */
+  :root {
+    --tier-color-s: #ff2d55;
+    --tier-color-a: #ff9500;
+    --tier-color-b: #ffcc00;
+    --tier-color-c: #30d158;
+    --tier-color-d: #0a84ff;
+    --tier-color-f: #bf5af2;
+    --tier-color-unranked: #48485a;
+
+    /* Surface colors for tier board */
+    --tier-row-bg: #0f1019;
+    --tier-row-bg-hover: #15161f;
+    --tier-row-border: #1a1b2a;
+    --tier-item-bg: #15161f;
+    --tier-item-bg-hover: #1c1d28;
+  }
+
+  /* ==========================================================================
+     SCROLLBAR - Subtle, matches dark surfaces
      ========================================================================== */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -58,39 +82,25 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.15);
     border-radius: 4px;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.25);
   }
 
   /* ==========================================================================
-     ANIMATIONS
+     ANIMATIONS - Only the 4 that matter
      ========================================================================== */
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
+  /* 1. Loading states */
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
   }
 
+  /* 2. S-tier celebration */
   @keyframes confetti {
     from {
       transform: translateY(0) rotate(0deg);
@@ -102,14 +112,28 @@
     }
   }
 
-  @keyframes bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
+  /* 3. Staggered row entrance */
+  @keyframes tierRowEnter {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
   }
 
-  @keyframes pulseGlow {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+  /* 4. Page transitions */
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Keep slideUp for existing animate-in utilities */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .confetti-particle {
@@ -125,6 +149,10 @@
     pointer-events: none;
     overflow: hidden;
     z-index: 9999;
+  }
+
+  .page-enter {
+    animation: pageEnter 250ms ease-out;
   }
 
   /* ==========================================================================
@@ -167,6 +195,25 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* ==========================================================================
+     EXPORT MODE — Applied during PNG export for polished output
+     ========================================================================== */
+  .export-mode {
+    padding: 20px;
+    border-radius: 14px;
+    background: #0a0b14;
+  }
+
+  .export-mode::after {
+    content: "Made with Tiercade";
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: #4a4f65;
   }
 
   /* ==========================================================================
