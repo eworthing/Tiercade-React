@@ -4,7 +4,8 @@
  * Encodes the monorepo layering rules from CLAUDE.md:
  *   packages/theme  — no @tiercade deps
  *   packages/core   — no @tiercade deps
- *   packages/state  — depends on @tiercade/core only
+ *   packages/state  — depends on @tiercade/core; may depend on @tiercade/theme
+ *                     for theme data in initial slice state; must NOT depend on @tiercade/ui
  *   packages/ui     — depends on @tiercade/core, @tiercade/theme only (NOT state)
  *   apps/*          — leaves; may depend on packages/*
  *
@@ -95,11 +96,11 @@ describe("DAG: packages/core — no upstream @tiercade deps", () => {
   });
 });
 
-describe("DAG: packages/state — no ui or theme @tiercade deps", () => {
-  it("must not import from @tiercade/ui or @tiercade/theme", () => {
+describe("DAG: packages/state — no ui @tiercade dep", () => {
+  it("must not import from @tiercade/ui", () => {
     const violations = collectViolations(
       path.join(REPO_ROOT, "packages/state/src"),
-      [/^@tiercade\/(ui|theme)$/]
+      [/^@tiercade\/ui$/]
     );
     expect(violations).toEqual([]);
   });

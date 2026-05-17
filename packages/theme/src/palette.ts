@@ -51,6 +51,7 @@ export const palette = {
   surfaceSoft: surface.content,
   border: border.subtle,
   text: text.primary,
+  textOnColor: "#ffffff",
   tierDefault: border.default,
 } as const;
 

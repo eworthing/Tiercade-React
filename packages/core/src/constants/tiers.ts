@@ -32,7 +32,7 @@ export function isCelebrationTier(tierName: string): boolean {
   return tierName.toLowerCase() === CELEBRATION_TIER_ID.toLowerCase();
 }
 
-/** Check if a tier ID is the unranked tier */
+/** Check if a tier ID is the unranked tier (case-insensitive) */
 export function isUnrankedTier(tierName: string): boolean {
-  return tierName === UNRANKED_TIER_ID;
+  return tierName.toLowerCase() === UNRANKED_TIER_ID.toLowerCase();
 }

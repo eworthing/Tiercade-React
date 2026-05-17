@@ -195,13 +195,16 @@ export const SuccessAnimation: React.FC<{ show: boolean; onComplete?: () => void
       setPhase("check");
       setScale(0);
       // Animate in
-      requestAnimationFrame(() => {
+      const frameId = requestAnimationFrame(() => {
         setScale(1);
       });
       const timer = setTimeout(() => {
         setPhase("confetti");
       }, 300);
-      return () => clearTimeout(timer);
+      return () => {
+        cancelAnimationFrame(frameId);
+        clearTimeout(timer);
+      };
     } else {
       setPhase("idle");
       setScale(0);

@@ -31,7 +31,8 @@ describe("Analytics", () => {
       const analytics = analyzeTierDistribution(sampleTiers, ["S", "A", "B", "C"]);
 
       expect(analytics.totalItems).toBe(6); // Including unranked
-      expect(analytics.totalTiers).toBe(4);
+      // totalTiers matches distribution.length (includes unranked) post-87382b6 fix
+      expect(analytics.totalTiers).toBe(5);
       expect(analytics.distribution).toHaveLength(5); // 4 tiers + unranked
 
       const sTier = analytics.distribution.find((d) => d.tierName === "S");
@@ -63,8 +64,8 @@ describe("Analytics", () => {
     test("calculates average items per tier", () => {
       const analytics = analyzeTierDistribution(sampleTiers, ["S", "A", "B", "C"]);
 
-      // totalItems includes unranked (2+2+1+0+1=6) / tierOrder.length (4) = 1.5
-      expect(analytics.averageItemsPerTier).toBeCloseTo(1.5, 2);
+      // totalItems (6) / distribution.length (5, includes unranked) = 1.2 post-87382b6 fix
+      expect(analytics.averageItemsPerTier).toBeCloseTo(1.2, 2);
     });
   });
 
@@ -100,7 +101,7 @@ describe("Analytics", () => {
       const summary = generateAnalyticsSummary(analytics);
 
       expect(summary).toContain("Total Items: 6");
-      expect(summary).toContain("Total Tiers: 4");
+      expect(summary).toContain("Total Tiers: 5");
       expect(summary).toContain("S: 2 items");
       expect(summary).toContain("Empty Tiers: C");
       expect(summary).toContain("Largest Tier: S");

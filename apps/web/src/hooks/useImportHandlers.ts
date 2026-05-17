@@ -64,6 +64,9 @@ export function useImportHandlers(dispatch: AppDispatch): ImportHandlers {
           );
         }
       };
+      reader.onerror = () => {
+        ToastQueue.negative("Failed to read file");
+      };
       reader.readAsText(file);
     },
     [dispatch]

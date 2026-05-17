@@ -102,6 +102,19 @@ export const selectSelectedThemeId = (state: RootState) => state.theme.selectedT
 /** Select the current theme ID (alias kept for backward compat) */
 export const selectCurrentThemeId = selectSelectedThemeId;
 
+/** Select available themes from the theme slice */
+export const selectAvailableThemes = (state: RootState) => state.theme.availableThemes;
+
+/** Select the current theme object */
+export const selectCurrentTheme = createSelector(
+  [selectSelectedThemeId, selectAvailableThemes],
+  (selectedId, themes) => {
+    if (!themes || themes.length === 0) return null;
+    if (!selectedId) return themes[0];
+    return themes.find((t) => t.id === selectedId) ?? themes[0];
+  }
+);
+
 // ============================================================================
 // Undo/Redo Selectors
 // ============================================================================
