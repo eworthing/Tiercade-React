@@ -229,7 +229,7 @@
           "loop": 17,
           "loop_local_id": "F1",
           "status": "open",
-          "sha": "pending",
+          "sha": "fa7707d",
           "idempotency_key": "loop17-F-004-open"
         }
       ]
@@ -460,7 +460,7 @@
           "loop": 17,
           "loop_local_id": "F2",
           "status": "open",
-          "sha": "pending",
+          "sha": "fa7707d",
           "idempotency_key": "loop17-F-011-open"
         }
       ]
@@ -485,7 +485,7 @@
           "loop": 17,
           "loop_local_id": "F3",
           "status": "resolved",
-          "sha": "pending",
+          "sha": "fa7707d",
           "idempotency_key": "loop17-F-012-resolved"
         }
       ]
