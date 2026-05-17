@@ -2,7 +2,7 @@
 
 ## Loop 1 Archive
 
-**Commit:** (post-commit SHA — see git log)
+**Commit:** 5ab6270
 **State:** CONTINUE
 **Verdict:** Good app, but not top-tier yet
 

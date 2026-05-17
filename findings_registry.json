@@ -53,7 +53,7 @@
       "test_failed": false,
       "occurrences": [
         { "loop": 1, "loop_local_id": "F3", "status": "open", "sha": "bff1eff" },
-        { "loop": 2, "loop_local_id": "F1", "status": "resolved", "sha": "<pending>" }
+        { "loop": 2, "loop_local_id": "F1", "status": "resolved", "sha": "03e21db" }
       ],
       "fuzzy_match_hints": ["Item imageUrl videoUrl audioUrl parallel optional fields", "discriminated union not enforced at type level", "impossible combination representable"]
     }
