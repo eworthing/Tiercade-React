@@ -46,7 +46,7 @@
     "state_management": { "score": 8.5, "delta": "SAME", "proof": "loadInitialState() ambient dependency resolved (F1). dynamic require() resolved (F2). Scores reflect pre-fix baseline; expected UP next critic pass." },
     "domain_modeling": { "score": 8.5, "delta": "SAME", "proof": "models.ts:17-28 — Item interface retains three independent URL fields alongside ItemMedia discriminated union. F3 open." },
     "data_flow": { "score": 8.5, "delta": "SAME", "proof": "onboardingSlice back-channel resolved (F1). All other flows explicit; unidirectional dependency graph." },
-    "framework_practices": { "score": 8.5, "delta": "SAME", "proof": "require() in ESM thunk resolved (F2). Reducer side effects resolved (F1). Scores reflect pre-fix baseline." },
+    "framework_idioms": { "score": 8.5, "delta": "SAME", "proof": "require() in ESM thunk resolved (F2). Reducer side effects resolved (F1). Scores reflect pre-fix baseline." },
     "concurrency": { "score": 9.5, "delta": "SAME", "proof": "No actor isolation concerns. debounce with clearTimeout. No floating promises. Synchronous require() (now resolved) was not a concurrency hazard." },
     "simplicity": { "score": 8.5, "delta": "SAME", "proof": "clearDeferredPairs unused import resolved (F2). require() ceremony resolved (F2). headToHead.ts ~1356 lines passes deletion test." },
     "test_strategy": { "score": 8.5, "delta": "SAME", "proof": "238 pre-loop tests, 34 suites. onboardingSlice persistence paths now tested (new test added). 239 post-loop." },
@@ -117,21 +117,35 @@
     "Discriminated union invariant only as strong as the type that enforces it — if Item itself allows impossible state, createItem is policy not type constraint."
   ],
   "narrative": "Place — not top-tier yet. The H2H algorithm, injectable-storage middleware, and memoized selector graph are genuinely strong structural choices. Post-loop-1: onboarding persistence violation (F1) and dynamic require() (F2) resolved. Domain modeling residual (F3) remains. Next critic pass expected to show UP on architecture, state management, framework practices, test strategy, credibility after F1+F2 resolution is scored fresh.",
-  "loop_1_result": {
-    "finding_resolved": "F-001",
-    "findings_incidentally_resolved": ["F-002"],
-    "files_changed": [
+  "loop_result": {
+    "what_changed": "Moved onboarding persistence into createPersistenceMiddleware (F-001 resolved); replaced dynamic require() with static import + removed unused clearDeferredPairs import (F-002 incidentally resolved).",
+    "evidence_change_is_honest": "Tests 238 → 239 across 36 suites, all pass (0 failures, 0 skips). Removed loadInitialState(), STORAGE_KEY, and all localStorage.* calls from onboardingSlice reducer bodies. Extended createPersistenceMiddleware persistedState with onboarding. Added persistenceMiddleware.test for completeOnboarding via fakeStorage seam.",
+    "targeted_finding_status": "resolved",
+    "unintended_regression": null,
+    "changed_paths": [
       "packages/state/src/onboardingSlice.ts",
       "packages/state/src/persistenceMiddleware.ts",
       "packages/state/src/store.ts",
       "packages/state/test/persistenceMiddleware.test.ts",
       "packages/state/src/headToHeadThunks.ts"
     ],
-    "tests_pre": 238,
-    "tests_post": 239,
-    "suites_pre": 34,
-    "suites_post": 36,
-    "replace_dont_layer": true,
-    "new_seam_added": false
+    "interface_test_coverage_path": null
+  },
+  "implementation_review": {
+    "verdict": "approved",
+    "reason": "All three checks passed; F-001 + F-002 no longer present in current source; 239/239 tests pass; no unintended regression.",
+    "checks": {
+      "reality": "passed",
+      "honesty": "passed",
+      "regression": "passed"
+    },
+    "regressions": [],
+    "conditions": [],
+    "rounds": 1,
+    "retry_count": 1,
+    "retry_cause": null,
+    "retry_attempts": [
+      {"attempt": 1, "outcome": "ok", "error": null, "duration_ms": null}
+    ]
   }
 }
