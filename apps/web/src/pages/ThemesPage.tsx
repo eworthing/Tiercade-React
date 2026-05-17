@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { selectTheme } from "@tiercade/state";
+import { selectTheme, selectSelectedThemeId } from "@tiercade/state";
 import { Card, CardView, Heading, Text } from "@react-spectrum/s2";
 import {
   BUNDLED_THEMES,
@@ -38,7 +38,7 @@ const cardViewHeight = style({ height: 640 });
 
 export function ThemesPage() {
   const dispatch = useAppDispatch();
-  const selectedThemeId = useAppSelector((state) => state.theme.selectedThemeId);
+  const selectedThemeId = useAppSelector(selectSelectedThemeId);
   const currentThemeId = selectedThemeId ?? DEFAULT_THEME_ID;
 
   const handleSelectTheme = (themeId: string) => {

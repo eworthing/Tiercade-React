@@ -1,9 +1,11 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
 import {
   captureSnapshot,
   loadDefaultProject,
+  selectProjectName,
+  selectTotalItemCount,
 } from "@tiercade/state";
 import { useImportHandlers } from "../hooks/useImportHandlers";
 import { useExportHandlers } from "../hooks/useExportHandlers";
@@ -99,13 +101,11 @@ const dataCard = style({
 
 export function ImportExportPage() {
   const dispatch = useAppDispatch();
-  const tiers = useAppSelector((state) => state.tier.tiers);
-  const projectName = useAppSelector((state) => state.tier.projectName);
+  const projectName = useAppSelector(selectProjectName);
+  const totalItems = useAppSelector(selectTotalItemCount);
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const importFileInputRef = useRef<HTMLInputElement>(null);
-
-  const totalItems = useMemo(() => Object.values(tiers).flat().length, [tiers]);
 
   const {
     isExporting,

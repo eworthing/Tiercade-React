@@ -2,73 +2,70 @@
 see Loop 1 Discovery
 
 ### Loop Counter
-Loop 26 of 27 (cap)
+Loop 27 of 27 (cap — final)
 
 ### System Flag
-[STATE: CONTINUE]
+[STATE: HALT_LOOP_CAP]
 
 ---
 
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 26: Page-level tests for ThemesPage, TemplatesPage, and ImportExportPage added — 3 + 4 + 5 = 12 new tests at page Interface. test_strategy 9.0→9.5 (UP, accepted residual). 34 suites, 227 tests, all green.
+Loop 27: Centralized inline selectors in AnalyticsPage, ThemesPage, and ImportExportPage — replaced inline `useAppSelector(state => state.tier.*)` calls and inline `useMemo` with named selectors from `@tiercade/state`. framework_idioms 8.0→8.5 (UP). 34 suites, 227 tests, all green.
 
 ## Scorecard (1-10)
 - Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; package DAG enforced; within-app module DAG enforced only by convention; implicit global store. 9-anchor not met.
 - State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern. 9-anchor not met.
 - Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` + `apps/web/src/components/ItemModal.tsx:114-135` — createItem smart constructor + ItemMedia discriminated union; primary caller migrated. Residual: `packages/core/src/models.ts:22-31` parallel URL fields (backward compat, framework-constrained, accepted).
 - Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json`. Within-app no module-level DAG enforcement. 9-anchor partial.
-- Framework / platform best practices: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup aborts reader on unmount; idiomatic React lifecycle pattern. 9-anchor not yet met: remaining minor carve-outs.
+- Framework / platform best practices: 8.5 | UP | `apps/web/src/pages/AnalyticsPage.tsx:63-64` — `selectTiers`, `selectTierOrder` named selectors replace `state => state.tier.tiers/tierOrder`. `apps/web/src/pages/ThemesPage.tsx:41` — `selectSelectedThemeId` replaces `state => state.theme.selectedThemeId`. `apps/web/src/pages/ImportExportPage.tsx:104-106` — `selectProjectName`, `selectTotalItemCount` replace inline `useMemo(() => Object.values(tiers).flat().length)` and `state => state.tier.projectName`. RTK idiomatic: named centralized selectors per CLAUDE.md.
 - Concurrency and runtime safety: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup; abort previous reader on second call. Two abort tests at Interface.
 - Code simplicity and clarity: 9.5 | SAME | All simplification candidates exhausted. Accepted residual: `apps/web/src/pages/TierBoardPage.tsx:1-443` — 443 LOC modal orchestration floor (framework-constrained).
-- Test strategy and regression resistance: 9.5 | UP | `apps/web/src/pages/ThemesPage.test.tsx` — 3 tests: Themes heading, one card per BUNDLED_THEMES, theme display names. `apps/web/src/pages/TemplatesPage.test.tsx` — 4 tests: heading, search+category controls, search state machine (searchQuery setState → "Search Results" heading), default all-templates state. `apps/web/src/pages/ImportExportPage.test.tsx` — 5 tests: heading, empty state message, export cards when items present, showResetConfirm open (Reset click), showResetConfirm close (Cancel click). 34 suites, 227 tests, all green. G24: all 6 pages now have direct page-level test files. G26: 3 new test files in this loop's diff prove structural change. Accepted residual: AppShell routing (thin wrapper; no AppRuntime/root-scene shell in React/Vite; E2E surface covers integration paths; accepted carve-out).
+- Test strategy and regression resistance: 9.5 | SAME | All 6 web pages have direct page-level test files. Accepted residual: AppShell routing (thin wrapper; E2E covers integration paths).
 - Overall implementation credibility: 9.5 | SAME | Code earns its architecture; few honesty leaks remain. Accepted residual: `packages/core/src/models.ts:22-31` — Item parallel URL fields backward compat.
 
 ## Strengths That Matter
 - `packages/core` domain layer framework-free; 12 suites, 102 tests; `createItem` smart constructor with `ItemMedia` discriminated union enforces media invariant at construction.
 - `ItemModal.tsx` primary add-item path uses `createItem` — media mutual exclusivity enforced at primary caller.
-- RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in `selectors.ts` cover all derived state.
+- RTK slice ownership: one clear writer per concern across 6 slices; all derived state uses memoized named selectors from `selectors.ts`; pages now fully centralized (loop 27).
 - Monorepo DAG enforced by workspace `package.json`: `core←state←apps`; no circular dependencies.
 - `persistenceMiddleware` — fully injectable storage; per-instance timer.
 - `useImportHandlers.ts` — FileReader abort on unmount + abort on second call; lifecycle gap closed.
-- All 6 web pages now have direct page-level test files: `TierBoardPage.test.tsx` (4 tests, loop 24), `HeadToHeadPage.test.tsx` (7 tests, loop 25), `AnalyticsPage.test.tsx` (4 tests, loop 25), `ThemesPage.test.tsx` (3 tests, loop 26), `TemplatesPage.test.tsx` (4 tests, loop 26), `ImportExportPage.test.tsx` (5 tests, loop 26).
+- All 6 web pages have direct page-level test files: `TierBoardPage.test.tsx` (4 tests, loop 24), `HeadToHeadPage.test.tsx` (7 tests, loop 25), `AnalyticsPage.test.tsx` (4 tests, loop 25), `ThemesPage.test.tsx` (3 tests, loop 26), `TemplatesPage.test.tsx` (4 tests, loop 26), `ImportExportPage.test.tsx` (5 tests, loop 26).
 
 ## Findings
 
-### Finding #1: Page-level test surface absent for ThemesPage, TemplatesPage, and ImportExportPage (F-018)
+### Finding #1: Inline selectors in AnalyticsPage, ThemesPage, ImportExportPage bypassing named RTK selectors (F-019)
 
-**Why it matters** — Resolved this loop. ThemesPage's theme-select dispatch path, TemplatesPage's searchQuery/selectedCategory filter state machine + previewTemplate modal, and ImportExportPage's showResetConfirm state machine had zero page-level test coverage.
+**Why it matters** — Resolved this loop. Three pages used inline `useAppSelector(state => state.tier.*)` and inline `useMemo` instead of the named, memoized selectors already exported from `@tiercade/state`.
 
-**What is wrong** — No test files existed for the three secondary pages before this loop.
+**What is wrong** — `AnalyticsPage.tsx:63-64` used `state => state.tier.tiers` and `state => state.tier.tierOrder` inline. `ThemesPage.tsx:41` used `state => state.theme.selectedThemeId` inline. `ImportExportPage.tsx:108` computed total items via `useMemo(() => Object.values(tiers).flat().length)` instead of `selectTotalItemCount`.
 
 **Evidence** —
-- `apps/web/src/pages/ThemesPage.tsx:41` — `useAppSelector((state) => state.theme.selectedThemeId)` dispatch path untested at page level before this loop
-- `apps/web/src/pages/TemplatesPage.tsx:76-78` — `searchQuery`, `selectedCategory`, `previewTemplate` useState with no page-level test before this loop
-- `apps/web/src/pages/ImportExportPage.tsx:105` — `showResetConfirm` useState with no page-level test before this loop
-- `apps/web/src/pages/ThemesPage.test.tsx` (this loop) — 3 tests: heading, theme cards, display names
-- `apps/web/src/pages/TemplatesPage.test.tsx` (this loop) — 4 tests: heading, filter controls, search state machine, default state
-- `apps/web/src/pages/ImportExportPage.test.tsx` (this loop) — 5 tests: heading, empty state, export cards, reset-confirm open/close
+- `apps/web/src/pages/AnalyticsPage.tsx:63-64` (pre-loop 27) — inline selectors replaced with `selectTiers`, `selectTierOrder`
+- `apps/web/src/pages/ThemesPage.tsx:41` (pre-loop 27) — inline selector replaced with `selectSelectedThemeId`
+- `apps/web/src/pages/ImportExportPage.tsx:104-106` (pre-loop 27) — `tiers` var + `useMemo` replaced with `selectProjectName`, `selectTotalItemCount`; `useMemo` import removed
 
-**Architectural test failed** — Interface-as-test-surface
+**Architectural test failed** — RTK idiomatic pattern (CLAUDE.md: use `createSelector`-backed named selectors; avoid inline arrow selectors)
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Without page tests, TemplatesPage's filter state machine and ImportExportPage's showResetConfirm had no regression barrier.
+**Leverage impact** — Inline selectors create new function references per render; named selectors colocate derivation logic in `selectors.ts` (single source of truth).
 
-**Locality impact** — Page state logic (showResetConfirm useState, searchQuery useState) co-located in pages; only page-level tests can assert open/close flows.
+**Locality impact** — Derivation logic co-located in pages instead of package-level selector module.
 
-**Metric signal, if any** — Zero page-level tests for these three pages before this loop; 12 new tests added (3 + 4 + 5).
+**Metric signal, if any** — 3 pages × 1-2 inline selectors; `useMemo` redundant with `selectTotalItemCount`.
 
-**Why this weakens submission** — test_strategy 9-anchor requires page-surface coverage for all primary and secondary pages; missing page tests reduce regression resistance.
+**Why this weakens submission** — framework_idioms 8.0 residual: pages bypass centralized selector layer already present in `@tiercade/state`.
 
-**Severity** — Noticeable weakness
+**Severity** — Polish (minor)
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Create `ThemesPage.test.tsx`, `TemplatesPage.test.tsx`, `ImportExportPage.test.tsx` using `@testing-library/react` + real RTK store + minimal mocks for S2, react-router-dom, and import/export hooks.
+**Minimal correction path** — Import and use named selectors from `@tiercade/state` in each page.
 
-**Blast radius** — change: three new test files. avoid: all existing source files.
+**Blast radius** — change: `AnalyticsPage.tsx`, `ThemesPage.tsx`, `ImportExportPage.tsx`. avoid: `selectors.ts` (read-only, no changes needed).
 
 ---
 
@@ -138,28 +135,49 @@ Loop 26: Page-level tests for ThemesPage, TemplatesPage, and ImportExportPage ad
 ## Simplification Check
 | field | value |
 |---|---|
-| structurally_necessary | Page-level tests for ThemesPage, TemplatesPage, and ImportExportPage — passes Interface-as-test-surface: tests live at the page Interface; showResetConfirm, searchQuery/selectedCategory filter state, and theme-select dispatch are not reachable via hook-level tests alone |
+| structurally_necessary | Named selector imports — passes deletion test: `selectTiers`, `selectTierOrder`, `selectSelectedThemeId`, `selectProjectName`, `selectTotalItemCount` are all defined with memoization in `selectors.ts`; pages are the canonical consumers; inline duplicates were the non-idiomatic copies |
 | new_seam_justified | false |
-| helpful_simplification | None — purely additive test files; no source changes |
-| should_not_be_done | Mocking the entire Redux store with pre-set dialog state — would test mocks not the component state machine |
-| tests_after_fix | No old tests deleted (all tests are new); 12 new tests at ThemesPage, TemplatesPage, and ImportExportPage Interfaces |
+| helpful_simplification | ImportExportPage: removed `tiers` variable entirely (no callers after useMemo removed); removed `useMemo` import; 3 fewer lines of derivation logic per render |
+| should_not_be_done | Duplicating selector logic in pages via inline useMemo |
+| tests_after_fix | No tests deleted; 34 suites 227 tests all green |
 
 ## Improvement Backlog
-1. **Investigate inline non-memoized selectors in pages/hooks for data_flow / state_management** — `ImportExportPage.tsx:108` uses inline `useMemo(() => Object.values(tiers).flat().length)` instead of `selectTotalItemCount`; `AnalyticsPage.tsx:63-64` uses inline `useAppSelector(state => state.tier.tiers/tierOrder)` instead of centralized selectors; `ThemesPage.tsx:41` uses inline selector for `selectedThemeId`. None are structural blockers at 6.5 (state_management/data_flow 9-anchors require process-lifetime pattern or DAG enforcement, not mere selector centralization). `kind: polish`, `rank: minor`. Score impact: state_management/data_flow remain at 6.5 — this is not the structural blocker.
+
+No backlog items remain within the rubric's reach. The two structural 6.5 dimensions (state_management, data_flow) require process-lifetime ownership or module-level DAG enforcement — both are out of scope for this codebase's architecture without a major refactor.
 
 ## Deepening Candidates
 
-None. The test additions deepen test coverage at the page Interface — the Interface is already the right shape; tests are additive.
+None. Loop cap reached.
 
 ## Builder Notes
 1. **Pattern** — CardView in S2 uses a render-prop pattern (children as factory function). When stubbing for jsdom tests, the mock must call `props.items.map((item) => props.children(item))` to render each card. A simple `{children}` stub will silently render nothing — assertions on individual card test IDs will fail. **How to recognize** — CardView `<CardView items={...}>{(item) => ...}</CardView>` — children is a callback, not a node. **Smallest coding rule** — Stub CardView as: `({ items, children }) => <div>{...items.map(item => children(item))}</div>`.
 2. **Pattern** — SearchField and Picker in S2 use `onChange`/`onSelectionChange` (not standard DOM `onChange`). When stubbing, render a native `<input onChange>` and `<select onChange>` that call the S2 callbacks with the value string. **How to recognize** — `<SearchField onChange={(value) => ...}>` — callback receives string not event. **Smallest coding rule** — Stub: `onChange: (e) => props.onChange?.(e.target.value)`.
 3. **Pattern** — DialogTrigger isOpen-aware stub must only render dialog children when `isOpen=true`. For ImportExportPage/TemplatesPage the trigger is a hidden span — childArray[0] is the trigger, childArray[1] is the dialog. Use `props.isOpen ? childArray : childArray.slice(0, 1)` to prevent the AlertDialog from appearing before the Reset button is clicked. Same pattern as HeadToHeadPage's DialogTrigger stub.
+4. **Pattern** — RTK named selectors in `selectors.ts` are the canonical derivation point. Pages must import from `@tiercade/state`, not inline `state => state.*` or `useMemo`. When a selector already exists in `selectors.ts` and a page uses an inline version, the inline version is always the non-idiomatic copy. **How to recognize** — `useAppSelector((state) => state.tier.*)` or `useMemo(() => Object.values(state.*).flat())` in a page or component. **Smallest coding rule** — Replace with named import from `@tiercade/state`; delete the `useMemo` if it was computing derived state already covered by a selector.
 
 ## Final Judge Narrative
-Good app, place but not win. Loop 26: test_strategy 9.0→9.5 via page-level tests for ThemesPage (3 tests: theme cards + heading), TemplatesPage (4 tests: filter state machine, search state machine), and ImportExportPage (5 tests: empty state, export cards, showResetConfirm open/close state machine). 34 suites, 227 tests, all green. All 6 web pages now have direct page-level test files. Remaining blockers: implicit global store (state_management 6.5), within-app DAG convention-only (data_flow 6.5) — both require process-lifetime ownership changes or module-level DAG enforcement that are out of scope for contest loop. Loop 27 is the final cap loop.
+Good app, place but not win. Loop 27 (cap): framework_idioms 8.0→8.5 via RTK selector centralization — AnalyticsPage, ThemesPage, ImportExportPage all now use named selectors from `@tiercade/state`; ImportExportPage drops a redundant `useMemo` and the `tiers` intermediate variable. 34 suites, 227 tests, all green. Final average ~8.33 (up from 8.28 at loop start). Hard structural blockers remain: implicit global Redux store (state_management 6.5), within-app DAG convention-only (data_flow 6.5) — both require process-lifetime ownership changes outside loop scope.
 
-## Loop 26 Result
-Three files added: `apps/web/src/pages/ThemesPage.test.tsx` (3 tests), `apps/web/src/pages/TemplatesPage.test.tsx` (4 tests), `apps/web/src/pages/ImportExportPage.test.tsx` (5 tests). ThemesPage tests use `@testing-library/react` + real RTK store + mocks for `@react-spectrum/s2`. TemplatesPage tests mock `react-router-dom` (useNavigate) + `@react-spectrum/s2` (SearchField, Picker, CardView, DialogTrigger). ImportExportPage tests mock `useImportHandlers`, `useExportHandlers`, `useExport` + `@react-spectrum/s2`. Tests assert: ThemesPage heading + one card per BUNDLED_THEMES; TemplatesPage heading + filter controls + search state machine + default all-templates state; ImportExportPage heading + empty-state message + export cards + showResetConfirm open/close.
+## Loop 27 Result
+Three source files modified: `apps/web/src/pages/AnalyticsPage.tsx` (inline selectors → `selectTiers`, `selectTierOrder`), `apps/web/src/pages/ThemesPage.tsx` (inline selector → `selectSelectedThemeId`), `apps/web/src/pages/ImportExportPage.tsx` (`tiers` var + `useMemo` → `selectProjectName`, `selectTotalItemCount`; `useMemo` import removed). Finding F-019 resolved. framework_idioms UP: 8.0→8.5. Tests: 34 suites, 227 tests, all green.
 
-Tests: 34 suites, 227 tests (up from 31/215), all green. Targeted finding F-018 (page-level tests absent for ThemesPage, TemplatesPage, ImportExportPage): **resolved** (12 tests now exercise all three page Interfaces). test_strategy UP: 9.0→9.5 (accepted residual). No unintended scorecard regression observed.
+## HALT_LOOP_CAP Handoff
+
+**Loop cap reached (27 of 27). Stopping.**
+
+### What improved across the run
+- **test_strategy**: 5.0 → 9.5 — page-level tests for all 6 web pages; hook-level tests for useImportHandlers + abort lifecycle; FileReader concurrency gap closed
+- **domain_modeling**: 7.0 → 9.5 — `createItem` smart constructor + `ItemMedia` discriminated union; primary caller (ItemModal) migrated
+- **simplicity**: 8.0 → 9.5 — modal extraction, selector simplification, dead-code pruning across loops
+- **credibility**: 8.0 → 9.5 — code earns architecture; honesty leaks closed loop by loop
+- **framework_idioms**: 7.0 → 8.5 — FileReader abort lifecycle, RTK named selector centralization (loop 27)
+
+### What is structurally blocked (next session priorities)
+1. **state_management 6.5** — requires explicit process-lifetime store ownership (e.g., store passed via Provider with defined lifetime, not ambient global). No rubric-safe fix in a standard React/RTK single-store app without architectural change.
+2. **data_flow 6.5** — requires module-level DAG enforcement within `apps/web/src` (e.g., path aliases enforced by ESLint import plugin, or package extraction). Within-app DAG is convention-only today.
+3. **architecture_quality 7.5** — follows from state_management + data_flow; held by the same two structural gaps.
+
+### Recommended next actions (post-loop-cap)
+- Add `eslint-plugin-import` with `no-restricted-imports` or `import/no-cycle` rules to enforce within-app DAG at the linter level (data_flow 6.5 → 8.5 path)
+- Document Redux store lifetime explicitly — even a comment in `store.ts` naming the process boundary and injection point — or add a `configureStore` factory for testability (state_management 6.5 → 7.5 path)
+- Run E2E Playwright tests to verify integration paths (complements the unit + page-level test surface)

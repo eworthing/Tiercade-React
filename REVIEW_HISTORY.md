@@ -2217,3 +2217,21 @@ Verdict: approved. All three checks passed: page-level tests added at ThemesPage
 
 ## Final Judge Narrative
 Good app, place but not win. Loop 26: test_strategy 9.0→9.5 via page-level tests for ThemesPage, TemplatesPage, ImportExportPage. 34 suites, 227 tests, all green. All 6 web pages now have direct page-level test files. Remaining hard blockers: state_management 6.5, data_flow 6.5 (implicit global store, within-app DAG convention-only). Loop 27 is final cap loop.
+
+--- Loop 27 (UTC 2026-05-16T00:10:00Z) ---
+## Loop 27 Scorecard
+architecture_quality: 7.5 SAME | state_management: 6.5 SAME | domain_modeling: 9.5 SAME (residual accepted) | data_flow: 6.5 SAME | framework_idioms: 8.5 UP | concurrency: 8.0 SAME | simplicity: 9.5 SAME (residual accepted) | test_strategy: 9.5 SAME (residual accepted) | credibility: 9.5 SAME (residual accepted)
+
+## Loop 27 Findings
+F1 (F-019) resolved: Inline selectors in AnalyticsPage/ThemesPage/ImportExportPage bypassing named RTK selectors. Replaced with selectTiers, selectTierOrder, selectSelectedThemeId, selectProjectName, selectTotalItemCount. useMemo removed from ImportExportPage.
+F2 (F-004) accepted_residual: TierBoardPage.tsx god-component floor (carry-forward)
+F3 (F-014) accepted_residual: Item interface parallel URL fields (carry-forward)
+
+## Loop 27 Implementation Review
+Verdict: approved. Named selectors replace inline patterns at all three pages; selectTotalItemCount eliminates redundant useMemo; no test regressions (34/227 green).
+
+## Loop 27 State
+[STATE: HALT_LOOP_CAP] — cap 27 of 27 reached.
+
+## Final Judge Narrative
+Good app, place but not win. Loop 27 (cap): framework_idioms 8.0→8.5 via RTK selector centralization. 34 suites, 227 tests, all green. Final avg ~8.33. Hard structural blockers remain: state_management 6.5 (implicit global store), data_flow 6.5 (within-app DAG convention-only).

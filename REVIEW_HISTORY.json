@@ -7440,6 +7440,307 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 27,
+      "loop_cap": 27,
+      "state": "HALT_LOOP_CAP",
+      "halt_subtype": null,
+      "halt_handoff_text": "Loop cap reached (27 of 27). Stopping.",
+      "halt_handoff": {
+        "trigger": "HALT_LOOP_CAP",
+        "loop": 27,
+        "cap": 27,
+        "final_avg": 8.33,
+        "score_deltas_this_loop": {
+          "framework_idioms": "8.0 \u2192 8.5 (UP)"
+        },
+        "what_improved_across_run": [
+          "test_strategy: 5.0 \u2192 9.5 \u2014 page-level tests for all 6 web pages; hook-level tests for useImportHandlers abort lifecycle",
+          "domain_modeling: 7.0 \u2192 9.5 \u2014 createItem smart constructor + ItemMedia discriminated union; primary caller migrated",
+          "simplicity: 8.0 \u2192 9.5 \u2014 modal extraction, selector simplification, dead-code pruning",
+          "credibility: 8.0 \u2192 9.5 \u2014 honesty leaks closed loop by loop",
+          "framework_idioms: 7.0 \u2192 8.5 \u2014 FileReader abort lifecycle (loop 23), RTK named selector centralization (loop 27)"
+        ],
+        "structural_blockers_remaining": [
+          "state_management 6.5 \u2014 implicit global Redux store; no process-lifetime ownership pattern",
+          "data_flow 6.5 \u2014 within-app DAG convention-only; no module-level enforcement",
+          "architecture_quality 7.5 \u2014 follows from state_management + data_flow gaps"
+        ],
+        "recommended_next_actions": [
+          "Add eslint-plugin-import with no-restricted-imports or import/no-cycle to enforce within-app DAG (data_flow 6.5 \u2192 8.5 path)",
+          "Document Redux store lifetime explicitly or add configureStore factory for testability (state_management 6.5 \u2192 7.5 path)",
+          "Run E2E Playwright tests to verify integration paths"
+        ]
+      },
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "inline",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 27 (cap): framework_idioms 8.0\u21928.5 via RTK selector centralization in AnalyticsPage, ThemesPage, ImportExportPage. 34 suites, 227 tests, all green.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 H2H action dep-cluster behind Interface; package DAG enforced; within-app module DAG enforced only by convention; implicit global store; 9-anchor not met",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern; 9-anchor not met",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts \u2014 createItem smart constructor + ItemMedia discriminated union (loop 20); apps/web/src/components/ItemModal.tsx:114-135 \u2014 primary add-item path migrated to createItem (loop 21). Residual Accounting Pass: 9-anchor met.",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl/videoUrl/audioUrl/mediaType remain independently optional for backward compat with persisted JSON data",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: changing Item interface would break deserialization of existing persisted state; migration is cross-cutting and out of scope. Primary construction path enforced via createItem.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "Package-level DAG enforced by workspace package.json. Within-app no module-level DAG enforcement; Redux ambient global; 9-anchor partial.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 8.5,
+          "delta": "UP",
+          "proof": "apps/web/src/pages/AnalyticsPage.tsx:63-64 \u2014 selectTiers, selectTierOrder named selectors replace inline state => state.tier.tiers/tierOrder. apps/web/src/pages/ThemesPage.tsx:41 \u2014 selectSelectedThemeId replaces inline state => state.theme.selectedThemeId. apps/web/src/pages/ImportExportPage.tsx:104-106 \u2014 selectProjectName, selectTotalItemCount replace inline useMemo + tiers var. All named selectors are memoized createSelector in @tiercade/state/selectors.ts. RTK idiomatic per CLAUDE.md.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 \u2014 useEffect cleanup; abort previous reader on second call. Two abort tests at Interface. No change this loop.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "ImportExportPage: removed tiers var + useMemo import (3 fewer lines, derived state now via selectTotalItemCount). apps/web/src/pages/TierBoardPage.tsx:1-443 accepted residual (modal-coupled LOC floor).",
+          "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 \u2014 443 LOC modal orchestration floor; deletion test fails for any extraction without co-moving modal state",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: React component pattern requires co-location of modal state with handlers that close over it. Extraction adds ceremony without removing coupling. Accepted floor.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "All 6 web pages have direct page-level test files (loop 24-26). 34 suites, 227 tests, all green. No test changes this loop.",
+          "residual_blocking_10": "AppShell routing thin wrapper \u2014 no AppRuntime/root-scene shell analog in React/Vite; E2E surface covers integration; direct AppShell test would be ceremony over a 3-route switch",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "React/Vite stack does not have the Apple AppRuntime/root-scene shell pattern. AppShell is a thin react-router-dom BrowserRouter + 6 routes. E2E suite covers integration paths. Accepted carve-out.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/components/ItemModal.tsx:114-135 \u2014 primary item creation uses createItem; hooks extracted and tested at Interface; FileReader lifecycle gap closed (loop 23); all 6 page Interfaces covered by direct test files (loop 26); all pages use named RTK selectors (loop 27). Residual Accounting Pass: 9-anchor met.",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item interface parallel URL fields retained for backward compat; direct Item construction still valid TypeScript",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Same as domain_modeling residual: framework-constrained backward compat with persisted JSON data.",
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [],
+      "strengths": [
+        "packages/core domain layer framework-free; 12 suites, 102 tests; createItem smart constructor + ItemMedia discriminated union enforces media invariant at construction",
+        "ItemModal.tsx add-item path uses createItem \u2014 media invariant enforced at primary caller",
+        "RTK slice ownership: one clear writer per concern across 6 slices; all derived state uses memoized named selectors from selectors.ts; pages fully centralized (loop 27)",
+        "Monorepo DAG enforced by workspace package.json: core\u2190state\u2190apps; no circular dependencies",
+        "useImportHandlers.ts \u2014 FileReader abort on unmount + abort on second call; lifecycle gap closed",
+        "All 6 web pages have direct page-level test files: TierBoardPage (loop 24), HeadToHeadPage + AnalyticsPage (loop 25), ThemesPage + TemplatesPage + ImportExportPage (loop 26)"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-019",
+          "id": "F1",
+          "title": "Inline selectors in AnalyticsPage, ThemesPage, ImportExportPage bypassing named RTK selectors",
+          "why_it_matters": "Resolved this loop. Three pages used inline useAppSelector(state => state.tier.*) and inline useMemo instead of named, memoized selectors from @tiercade/state.",
+          "what_is_wrong": "AnalyticsPage.tsx:63-64 used state => state.tier.tiers/tierOrder inline. ThemesPage.tsx:41 used state => state.theme.selectedThemeId inline. ImportExportPage.tsx:108 computed totalItems via useMemo(() => Object.values(tiers).flat().length) instead of selectTotalItemCount.",
+          "evidence": [
+            "apps/web/src/pages/AnalyticsPage.tsx:63-64 (pre-loop 27) \u2014 replaced with selectTiers, selectTierOrder",
+            "apps/web/src/pages/ThemesPage.tsx:41 (pre-loop 27) \u2014 replaced with selectSelectedThemeId",
+            "apps/web/src/pages/ImportExportPage.tsx:104-106 (pre-loop 27) \u2014 tiers var + useMemo replaced with selectProjectName, selectTotalItemCount; useMemo import removed"
+          ],
+          "test_failed": "RTK idiomatic pattern",
+          "dependency_category": "in-process",
+          "leverage_impact": "Inline selectors duplicate derivation logic already centralized in selectors.ts; named selectors are the single source of truth for derived state.",
+          "locality_impact": "Derivation logic co-located in pages instead of package-level selector module.",
+          "metric_signal": "3 pages, 4 inline selector instances replaced; 1 useMemo removed.",
+          "why_weakens_submission": "framework_idioms 8.0 residual: pages bypass centralized selector layer already present in @tiercade/state.",
+          "severity": "Polish (minor)",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Import and use named selectors from @tiercade/state in each page.",
+          "blast_radius": {
+            "change": [
+              "apps/web/src/pages/AnalyticsPage.tsx",
+              "apps/web/src/pages/ThemesPage.tsx",
+              "apps/web/src/pages/ImportExportPage.tsx"
+            ],
+            "avoid": [
+              "packages/state/src/selectors.ts"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-004",
+          "id": "F2",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 god-component at natural modal-coupled floor",
+          "why_it_matters": "Accepted residual. Framework-constrained floor.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState modal/UI state declarations + 3 inline handlers.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443",
+            "apps/web/src/pages/TierBoardPage.tsx:75-82"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell still broad; accepted residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept. Already accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/pages/TierBoardPage.tsx"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F3",
+          "stable_id": "F-014",
+          "id": "F3",
+          "title": "Item interface backward-compat parallel URL fields",
+          "why_it_matters": "Terminal accepted residual. Item interface parallel fields for backward compat with persisted data.",
+          "what_is_wrong": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl, videoUrl, audioUrl, mediaType remain independently optional.",
+          "evidence": [
+            "packages/core/src/models.ts:22-31"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "No new leverage lost. Primary path enforced via createItem.",
+          "locality_impact": "Terminal: Item interface can't change without breaking persisted data deserialization.",
+          "metric_signal": "none",
+          "why_weakens_submission": "domain_modeling can't reach 10 without Item using ItemMedia natively.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept as terminal residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "packages/core/src/models.ts"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "Named selector imports \u2014 passes deletion test: selectTiers, selectTierOrder, selectSelectedThemeId, selectProjectName, selectTotalItemCount are defined with memoization in selectors.ts; inline duplicates were the non-idiomatic copies",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "ImportExportPage: removed tiers variable entirely + useMemo import; 3 fewer lines of derivation logic per render",
+        "should_not_be_done": "Duplicating selector logic in pages via inline useMemo",
+        "tests_after_fix": "No tests deleted; 34 suites 227 tests all green"
+      },
+      "backlog": [],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {
+          "pattern": "CardView children is a render-prop (factory function), not a static node",
+          "how_to_recognize": "<CardView items={...}>{(item) => ...}</CardView> \u2014 children receives each item and returns a node",
+          "smallest_coding_rule": "Stub: ({ items, children }) => <div>{...items.map(item => children(item))}</div>",
+          "stack_example": "ThemesPage.test.tsx and TemplatesPage.test.tsx CardView stub"
+        },
+        {
+          "pattern": "S2 SearchField and Picker use value/onChange patterns with string (not event) callbacks",
+          "how_to_recognize": "onChange={(value) => setSearchQuery(value)} \u2014 callback receives string value, not a DOM event",
+          "smallest_coding_rule": "Stub SearchField as native input: onChange: (e) => props.onChange?.(e.target.value). Stub Picker as native select: onChange: (e) => props.onSelectionChange?.(e.target.value).",
+          "stack_example": "TemplatesPage.test.tsx SearchField stub"
+        },
+        {
+          "pattern": "DialogTrigger isOpen-aware stub required for AlertDialog open/close assertions",
+          "how_to_recognize": "DialogTrigger with isOpen={showResetConfirm} \u2014 simple children pass-through always renders AlertDialog",
+          "smallest_coding_rule": "Stub: props.isOpen ? render all children : render only children[0]",
+          "stack_example": "ImportExportPage.test.tsx: const childArray = React.Children.toArray(props.children); return props.isOpen ? childArray : childArray.slice(0, 1)"
+        },
+        {
+          "pattern": "RTK named selectors in selectors.ts are canonical; inline selectors in pages are always the non-idiomatic duplicate",
+          "how_to_recognize": "useAppSelector((state) => state.tier.*) or useMemo(() => Object.values(state.*).flat()) in a page/component",
+          "smallest_coding_rule": "Replace with named import from @tiercade/state; delete useMemo if it was computing derived state already covered by a selector",
+          "stack_example": "Loop 27: AnalyticsPage, ThemesPage, ImportExportPage all centralized to named selectors"
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 27 (cap): framework_idioms 8.0\u21928.5 via RTK selector centralization \u2014 AnalyticsPage, ThemesPage, ImportExportPage all now use named selectors from @tiercade/state; ImportExportPage drops redundant useMemo and tiers intermediate variable. 34 suites, 227 tests, all green. Final avg ~8.33. Hard structural blockers remain: implicit global Redux store (state_management 6.5), within-app DAG convention-only (data_flow 6.5).",
+      "loop_result": {
+        "what_changed": "AnalyticsPage.tsx: added import { selectTiers, selectTierOrder } from @tiercade/state, replaced 2 inline selectors. ThemesPage.tsx: added selectSelectedThemeId to import, replaced 1 inline selector. ImportExportPage.tsx: removed useMemo import, removed tiers var, added selectProjectName + selectTotalItemCount, replaced inline useMemo pattern.",
+        "evidence_change_is_honest": "34 suites, 227 tests all green. git diff HEAD shows 3 page files changed, 4 lines net reduction. Named selectors confirmed in packages/state/src/selectors.ts (all createSelector-backed).",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "apps/web/src/pages/AnalyticsPage.tsx",
+          "apps/web/src/pages/ThemesPage.tsx",
+          "apps/web/src/pages/ImportExportPage.tsx"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: named selectors replace inline patterns at all three pages; selectTotalItemCount eliminates redundant useMemo; no test regressions (34/227 green); no new adapters introduced.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": null
+          }
+        ]
+      }
     }
   ]
 }

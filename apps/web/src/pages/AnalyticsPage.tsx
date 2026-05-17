@@ -1,4 +1,5 @@
 import { useAppSelector } from "../hooks/useAppSelector";
+import { selectTiers, selectTierOrder } from "@tiercade/state";
 import {
   analyzeTierDistribution,
   analyzeSeasonDistribution,
@@ -60,8 +61,8 @@ const summaryBox = style({
 });
 
 export function AnalyticsPage() {
-  const tiers = useAppSelector((state) => state.tier.tiers);
-  const tierOrder = useAppSelector((state) => state.tier.tierOrder);
+  const tiers = useAppSelector(selectTiers);
+  const tierOrder = useAppSelector(selectTierOrder);
 
   if (!tierOrder || tierOrder.length === 0) {
     return (
