@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "loop": 16,
+  "loop": 17,
   "loop_cap": 18,
   "state": "CONTINUE",
   "halt_subtype": null,
@@ -22,21 +22,30 @@
   "discovery": null,
 
   "verdict": "Good app, but not top-tier yet",
-  "verdict_explanation": "Loop 16 extracts useExportHandlers hook: 5 export handlers + downloadFile behind stable Interface. ImportExportPage 401->253 LOC. 5 Interface tests. Suite: 27 suites, 184 tests, all green. simplicity 7.5->8.0, arch 7.0->7.5.",
+  "verdict_explanation": "Loop 17 extracts useHeadToHeadHandlers hook: 5 action handlers + keyboard useEffect behind stable Interface. HeadToHeadPage 378->312 LOC. 5 Interface tests. Suite: 28 suites, 189 tests, all green. simplicity 8.0->8.5.",
 
   "scorecard": {
-    "architecture_quality":   {"score": 7.5, "delta": "UP",   "proof": "apps/web/src/hooks/useExportHandlers.ts:1-182 — 5-selector export dep-cluster behind Interface; ImportExportPage reduced to orchestration-only; package DAG enforced; 9-anchor not met: domain model anemic, store implicit global", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "architecture_quality":   {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — H2H action dep-cluster behind Interface; HeadToHeadPage reduced to display-only orchestration; package DAG enforced; 9-anchor not met: domain model anemic, store implicit global", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
     "state_management":       {"score": 6.5, "delta": "SAME", "proof": "packages/state/src/tierSlice.ts:1-343 — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
     "domain_modeling":        {"score": 6.0, "delta": "SAME", "proof": "packages/core/src/models.ts:6 — Item interface: name?, imageUrl?, description? all optional; Items = Record<string, Item[]> anemic; no smart constructors", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "data_flow":              {"score": 6.5, "delta": "SAME", "proof": "package.json workspace — core<-state<-apps DAG enforced; 11 focused hooks; within-app no module-level DAG enforcement", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "framework_idioms":       {"score": 7.5, "delta": "UP",   "proof": "apps/web/src/hooks/ — 11 custom hooks idiomatic; RTK correct; useId() for stable IDs; ImportExportPage at 253 LOC with 3 hook delegations (useImportHandlers, useExportHandlers, useExport)", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "apps/web/src/ — single-threaded JS; no floating promises; useEffect cleanup in CelebrationEffect.tsx; no AbortController for fetches", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "simplicity":             {"score": 8.0, "delta": "UP",   "proof": "apps/web/src/hooks/useExportHandlers.ts:1-182 — 5 export handlers + downloadFile extracted; ImportExportPage 401->253 LOC; 5 useCallback blocks + 3 useAppSelector calls removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "test_strategy":          {"score": 8.0, "delta": "SAME", "proof": "apps/web/src/hooks/useExportHandlers.test.ts — 5 tests: JSON download filename, CSV filename, Markdown filename, onExport routes json, onExport routes png; 27 suites 184 tests; page-level surface still untested", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-    "credibility":            {"score": 8.0, "delta": "SAME", "proof": "useExportHandlers passes deletion test; Replace-don't-layer satisfied (5 new tests at new Interface; no prior tests existed); ExportFormatter + urlSharing imports removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
+    "data_flow":              {"score": 6.5, "delta": "SAME", "proof": "package.json workspace — core<-state<-apps DAG enforced; 12 focused hooks; within-app no module-level DAG enforcement", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "framework_idioms":       {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/ — 12 custom hooks idiomatic; RTK correct; useId() for stable IDs; keyboard shortcut effect co-located with action handlers in useHeadToHeadHandlers", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "apps/web/src/ — single-threaded JS; no floating promises; useEffect cleanup in useHeadToHeadHandlers removes keydown listener; no AbortController for fetches", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "simplicity":             {"score": 8.5, "delta": "UP",   "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — 5 H2H action handlers + keyboard useEffect extracted; HeadToHeadPage 378->312 LOC (-66 lines); 5 useCallback blocks + keyboard useEffect + 2 internal selectors removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "test_strategy":          {"score": 8.0, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.test.ts — 5 tests: onStart activates, onVoteLeft advances pair, onSkip moves pair, onFinish dispatches+navigates, onGoHome navigates without finishing; 28 suites 189 tests; page-level surface still untested", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+    "credibility":            {"score": 8.0, "delta": "SAME", "proof": "useHeadToHeadHandlers passes deletion test; Replace-don't-layer satisfied (5 new tests at new Interface; no prior tests existed); action creators + useNavigate imports removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
   },
 
   "authority_map": [
+    {
+      "concern": "Head-to-Head action handlers + keyboard routing",
+      "owner": "apps/web/src/hooks/useHeadToHeadHandlers.ts",
+      "allowed_writers": ["n/a — no mutable state; dispatches RTK actions + navigate"],
+      "readers": ["HeadToHeadPage via useHeadToHeadHandlers(onOpenEndConfirm) return value"],
+      "persistence_seam": null,
+      "async_mutation_entry_points": [],
+      "verdict": "Single and clear"
+    },
     {
       "concern": "Export handlers (text serialization + URL generation)",
       "owner": "apps/web/src/hooks/useExportHandlers.ts",
@@ -89,10 +98,12 @@
     "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts",
     "Monorepo DAG enforced by workspace package.json: core<-state<-apps; no circular deps",
     "persistenceMiddleware — fully injectable storage + per-instance timer (loop 8)",
+    "useHeadToHeadHandlers.ts — 115 LOC; action handlers + keyboard routing; Interface tested (5 tests, loop 17)",
     "useExportHandlers.ts — 182 LOC; 5-selector cluster; Interface tested (5 tests, loop 16)",
     "useImportHandlers.ts — 62 LOC; Interface tested (5 tests, loop 15)",
     "useBatchActions.ts — 40 LOC; Interface tested (6 tests, loop 14)",
     "useItemInteraction.ts — 81 LOC; Interface tested (7 tests, loop 12)",
+    "HeadToHeadPage.tsx — reduced from 378 to 312 LOC; action handlers + keyboard effect extracted (loop 17)",
     "ImportExportPage.tsx — reduced from 438 to 253 LOC; both import and export handlers extracted (loops 15-16)",
     "TierBoardPage.tsx — reduced from 757 to 443 LOC; 7 focused modules/hooks extracted (loops 9-14)"
   ],
@@ -141,12 +152,12 @@
   ],
 
   "simplification_check": {
-    "structurally_necessary": "useExportHandlers extraction — 5 handlers share identical 5-selector dep cluster; extraction concentrates dep cluster + format logic behind stable Interface. Deletion test passes.",
+    "structurally_necessary": "useHeadToHeadHandlers extraction — 5 action handlers + keyboard useEffect share action dispatch dep-cluster (isActive, currentPair, dispatch, navigate); extraction concentrates dep cluster + keyboard routing behind stable Interface. Deletion test passes.",
     "new_seam_justified": false,
     "new_seam_adapters": [],
-    "helpful_simplification": "ImportExportPage 401->253 LOC; 5 useCallback blocks removed; 3 useAppSelector calls removed from page; downloadFile helper moved to hook file; ExportFormatter + urlSharing imports removed from page.",
-    "should_not_be_done": "Wrapping downloadFile in a testability seam — one-line DOM utility. Merging useExportHandlers with useExport — different concern (text serialization vs image capture).",
-    "tests_after_fix": "apps/web/src/hooks/useExportHandlers.test.ts — 5 tests at new Interface. No old tests to delete (no prior tests existed for these handlers)."
+    "helpful_simplification": "HeadToHeadPage 378->312 LOC (-66 lines); 5 useCallback blocks removed; keyboard useEffect removed; selectHeadToHeadIsActive + selectHeadToHeadCurrentPair removed from page; useNavigate + useAppDispatch + action creators removed from page imports.",
+    "should_not_be_done": "Extracting showEndConfirm modal state — page-local boolean, not shared concern. Extracting display-only selectors (pairsQueue, deferredPairs, phase) — render-only, no dep cluster.",
+    "tests_after_fix": "apps/web/src/hooks/useHeadToHeadHandlers.test.ts — 5 tests at new Interface. No old tests to delete (no prior tests existed for these handlers)."
   },
 
   "backlog": [
@@ -192,24 +203,24 @@
     }
   ],
 
-  "narrative": "Good app, place but not win. Loop 16 executes useExportHandlers extraction: 5-selector dep cluster + format serialization + downloadFile behind stable Interface; ImportExportPage 401->253 LOC. simplicity 7.5->8.0, arch 7.0->7.5, framework_idioms 7.0->7.5: structural proof is the hook + removed useCallback blocks + 5 Interface tests. Two loops remain at cap 18. Remaining backlog is residual acceptance only — no further extraction candidates pass deletion test at current scope. Average score ~7.3.",
+  "narrative": "Good app, place but not win. Loop 17 executes useHeadToHeadHandlers extraction: action dispatch + keyboard routing behind stable Interface; HeadToHeadPage 378->312 LOC. simplicity 8.0->8.5: structural proof is hook + removed useCallback blocks + keyboard useEffect + 5 Interface tests. One loop remains at cap 18. Remaining backlog is residual acceptance only — no further extraction candidates pass deletion test at current scope. Average score ~7.3.",
 
   "loop_result": {
-    "what_changed": "Extracted handleCopyLink, handleExportJSON, handleExportCSV, handleExportMarkdown, handleExport from ImportExportPage.tsx into useExportHandlers hook. Moved downloadFile utility to hook file. Created useExportHandlers.test.ts (5 Interface-level tests).",
-    "evidence_change_is_honest": "27 suites 184 tests all green; useExportHandlers.test.ts passes 5 tests including JSON/CSV/Markdown download filename assertions, onExport routing for json and png formats",
+    "what_changed": "Extracted handleStart, handleVoteLeft, handleVoteRight, handleSkip, handleFinish and keyboard shortcut useEffect from HeadToHeadPage.tsx into useHeadToHeadHandlers hook. Added onGoHome for empty-state navigation (page previously had inline navigate). Created useHeadToHeadHandlers.test.ts (5 Interface-level tests).",
+    "evidence_change_is_honest": "28 suites 189 tests all green; useHeadToHeadHandlers.test.ts passes 5 tests: onStart activates isActive, onVoteLeft advances pair, onSkip moves pair, onFinish dispatches+navigates, onGoHome navigates without finishing",
     "targeted_finding_status": "resolved",
     "unintended_regression": null,
     "changed_paths": [
-      "apps/web/src/hooks/useExportHandlers.ts",
-      "apps/web/src/hooks/useExportHandlers.test.ts",
-      "apps/web/src/pages/ImportExportPage.tsx"
+      "apps/web/src/hooks/useHeadToHeadHandlers.ts",
+      "apps/web/src/hooks/useHeadToHeadHandlers.test.ts",
+      "apps/web/src/pages/HeadToHeadPage.tsx"
     ],
     "interface_test_coverage_path": null
   },
 
   "implementation_review": {
     "verdict": "approved",
-    "reason": "All three checks passed: handleCopyLink, handleExportJSON, handleExportCSV, handleExportMarkdown, handleExport are no longer inline in ImportExportPage; deletion test passes (complexity moved to useExportHandlers); 5 Interface-level tests at useExportHandlers.test.ts; no new ownership drift, floating promises, or costume layers introduced.",
+    "reason": "All three checks passed: handleStart, handleVoteLeft, handleVoteRight, handleSkip, handleFinish and keyboard useEffect are no longer inline in HeadToHeadPage; deletion test passes (complexity moved to useHeadToHeadHandlers); 5 Interface-level tests at useHeadToHeadHandlers.test.ts; no new ownership drift, floating promises, or costume layers introduced.",
     "checks": {
       "reality":    "passed",
       "honesty":    "passed",
@@ -221,7 +232,7 @@
     "retry_count": 1,
     "retry_cause": null,
     "retry_attempts": [
-      {"attempt": 1, "outcome": "ok", "error": null, "duration_ms": 3100}
+      {"attempt": 1, "outcome": "ok", "error": null, "duration_ms": 2800}
     ]
   }
 }

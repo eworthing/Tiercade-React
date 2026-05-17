@@ -1405,3 +1405,81 @@ conditions: none
 
 ## Final Judge Narrative
 Good app, place but not win. Loop 16 executes useExportHandlers extraction: 5-selector dep cluster + format serialization + downloadFile behind stable Interface; ImportExportPage 401->253 LOC. simplicity 7.5->8.0, arch 7.0->7.5, framework_idioms 7.0->7.5. Two loops remain at cap 18. Remaining backlog is residual acceptance only. Average score ~7.3.
+
+--- Loop 17 (UTC 2026-05-16T21:15:00Z) ---
+
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 17 of 18 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 17 extracts `useHeadToHeadHandlers` from HeadToHeadPage: 5 inline action `useCallback` blocks + keyboard shortcut `useEffect` moved behind stable Interface. HeadToHeadPage 378→312 LOC (-66 lines). 5 new Interface-level tests. Suite: 28 suites, 189 tests, all green. simplicity 8.0→8.5.
+
+## Scorecard
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage reduced to display-only orchestration.
+- State management and runtime ownership: 6.5 | SAME | one writer per concern across 6 slices; store implicit global.
+- Domain modeling: 6.0 | SAME | packages/core/src/models.ts:6 — Item all-optional; anemic.
+- Data flow and dependency design: 6.5 | SAME | package DAG enforced; 12 focused hooks; no within-app module-level DAG.
+- Framework / platform best practices: 7.5 | SAME | 12 custom hooks; keyboard shortcut effect co-located with action handlers in hook.
+- Concurrency and runtime safety: 7.0 | SAME | single-threaded; useEffect cleanup removes keydown listener.
+- Code simplicity and clarity: 8.5 | UP | HeadToHeadPage 378→312 LOC; 5 useCallback blocks + keyboard useEffect removed from page.
+- Test strategy and regression resistance: 8.0 | SAME | 28 suites 189 tests; useHeadToHeadHandlers.test.ts 5 tests at Interface.
+- Overall implementation credibility: 8.0 | SAME | deletion test passes; Replace-don't-layer satisfied; implementation reviewer approved.
+
+## Strengths That Matter
+- useHeadToHeadHandlers.ts — 115 LOC; action handlers + keyboard routing; Interface tested (5 tests, loop 17)
+- useExportHandlers.ts — 182 LOC; 5-selector cluster; 5 Interface tests (loop 16)
+- ImportExportPage — 438→253 LOC across loops 15-16
+- HeadToHeadPage — 378→312 LOC (loop 17)
+- packages/core — 12 suites, 94 tests, framework-free
+
+## Findings
+### Finding F1 (F-004): TierBoardPage.tsx at 443 LOC — at natural modal-coupled floor
+Severity: Noticeable weakness. Remaining handlers all modal-state coupled. Minimal correction: accept as residual.
+
+### Finding F2 (F-011): Domain model anemic — Item all-optional fields, no smart constructors
+Severity: Noticeable weakness. packages/core/src/models.ts:6-19. Cross-cutting refactor out of scope at cap 18.
+
+### Finding F3 (F-012): HeadToHeadPage action handlers inline — RESOLVED THIS LOOP
+Evidence: HeadToHeadPage.tsx:1-378 — 5 useCallback blocks + keyboard useEffect extracted to useHeadToHeadHandlers.
+Severity: Noticeable weakness (resolved).
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | useHeadToHeadHandlers extraction — 5 action handlers + keyboard useEffect share action dispatch dep-cluster; deletion test passes |
+| new_seam_justified | false |
+| helpful_simplification | HeadToHeadPage 378->312 LOC; 5 useCallback blocks removed; keyboard useEffect removed; useNavigate+useAppDispatch+action creators removed from page |
+| should_not_be_done | Extracting showEndConfirm modal state; extracting display-only selectors |
+| tests_after_fix | useHeadToHeadHandlers.test.ts — 5 tests at new Interface |
+
+## Improvement Backlog
+1. Accept F-004 residual — TierBoardPage at natural modal floor (polish, minor)
+2. Accept F-011 residual — domain model anemic (polish, minor)
+
+## Builder Notes
+4. pattern: keyboard shortcut useEffect that only calls handlers → belongs in same hook as handlers (effect's dep cluster IS the handler set)
+
+## Loop 17 Result
+
+Three files changed: `useHeadToHeadHandlers.ts` (new, 115 LOC), `useHeadToHeadHandlers.test.ts` (new, 5 tests), `HeadToHeadPage.tsx` (378→312 LOC, 5 `useCallback` blocks removed, keyboard `useEffect` removed, action creator imports removed).
+
+`useHeadToHeadHandlers` extracts `handleStart`, `handleVoteLeft`, `handleVoteRight`, `handleSkip`, `handleFinish`. Reads `selectHeadToHeadIsActive` and `selectHeadToHeadCurrentPair` internally. Accepts `onOpenEndConfirm` as parameter. Keyboard effect co-located inside hook. Adds `onGoHome` for empty-state navigation. Full suite: 28 suites, 189 tests, all green. New finding F-012 (HeadToHeadPage action handlers inline): **resolved**.
+
+## Loop 17 Implementation Review
+verdict: approved
+reason: All three checks passed: 5 inline handlers + keyboard useEffect are no longer in HeadToHeadPage; deletion test passes; 5 Interface tests at useHeadToHeadHandlers.test.ts; no new ownership drift, floating promises, or costume layers.
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none
+
+## Final Judge Narrative
+Good app, place but not win. Loop 17 executes useHeadToHeadHandlers extraction: action dispatch + keyboard routing behind stable Interface; HeadToHeadPage 378->312 LOC. simplicity 8.0->8.5. One loop remains at cap 18. Remaining backlog is residual acceptance only. Average score ~7.3.

@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 12,
+  "next_serial": 13,
   "entries": [
     {
       "stable_id": "F-001",
@@ -224,6 +224,13 @@
           "status": "open",
           "sha": "0de487e",
           "idempotency_key": "loop16-F-004-open"
+        },
+        {
+          "loop": 17,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "pending",
+          "idempotency_key": "loop17-F-004-open"
         }
       ]
     },
@@ -448,6 +455,38 @@
           "status": "open",
           "sha": "0de487e",
           "idempotency_key": "loop16-F-011-open"
+        },
+        {
+          "loop": 17,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "pending",
+          "idempotency_key": "loop17-F-011-open"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-012",
+      "title": "HeadToHeadPage.tsx — action handlers + keyboard effect inline",
+      "category_hint": "god-component-h2h-handlers",
+      "primary_file": "apps/web/src/pages/HeadToHeadPage.tsx",
+      "primary_evidence_lines": [
+        1,
+        378
+      ],
+      "test_failed": "Shallow module",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 17,
+      "first_seen_sha": "pending",
+      "last_seen_loop": 17,
+      "last_seen_sha": "pending",
+      "occurrences": [
+        {
+          "loop": 17,
+          "loop_local_id": "F3",
+          "status": "resolved",
+          "sha": "pending",
+          "idempotency_key": "loop17-F-012-resolved"
         }
       ]
     }

@@ -1,12 +1,7 @@
-import React, { useEffect, useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../hooks/useAppDispatch";
+import React, { useState } from "react";
 import { useAppSelector } from "../hooks/useAppSelector";
+import { useHeadToHeadHandlers } from "../hooks/useHeadToHeadHandlers";
 import {
-  startHeadToHead,
-  voteCurrentPair,
-  skipPair,
-  finishHeadToHead,
   selectHeadToHeadCurrentPair,
   selectHeadToHeadDeferredPairs,
   selectHeadToHeadIsActive,
@@ -137,8 +132,6 @@ const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, o
 };
 
 export const HeadToHeadPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const isActive = useAppSelector(selectHeadToHeadIsActive);
   const currentPair = useAppSelector(selectHeadToHeadCurrentPair);
   const pairsQueue = useAppSelector(selectHeadToHeadPairsQueue);
@@ -149,73 +142,14 @@ export const HeadToHeadPage: React.FC = () => {
   const skippedCount = useAppSelector(selectHeadToHeadSkippedCount);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
 
-  const handleStart = useCallback(() => {
-    dispatch(startHeadToHead());
-  }, [dispatch]);
-
-  const handleVoteLeft = useCallback(() => {
-    if (!currentPair) return;
-    dispatch(voteCurrentPair(currentPair[0].id));
-  }, [dispatch, currentPair]);
-
-  const handleVoteRight = useCallback(() => {
-    if (!currentPair) return;
-    dispatch(voteCurrentPair(currentPair[1].id));
-  }, [dispatch, currentPair]);
-
-  const handleSkip = useCallback(() => {
-    // Properly defer the pair for later instead of fake voting
-    if (!currentPair) return;
-    dispatch(skipPair());
-  }, [dispatch, currentPair]);
-
-  const handleFinish = useCallback(() => {
-    dispatch(finishHeadToHead());
-    navigate("/");
-  }, [dispatch, navigate]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    if (!isActive || !currentPair) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-
-      // Ignore keyboard shortcuts when a modal/dialog is open
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
-        return;
-      }
-
-      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable) {
-        return;
-      }
-
-      switch (e.key) {
-        case "ArrowLeft":
-        case "1":
-          e.preventDefault();
-          handleVoteLeft();
-          break;
-        case "ArrowRight":
-        case "2":
-          e.preventDefault();
-          handleVoteRight();
-          break;
-        case " ":
-          e.preventDefault();
-          handleSkip();
-          break;
-        case "Escape":
-          e.preventDefault();
-          setShowEndConfirm(true);
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isActive, currentPair, handleVoteLeft, handleVoteRight, handleSkip]);
+  const {
+    onStart: handleStart,
+    onVoteLeft: handleVoteLeft,
+    onVoteRight: handleVoteRight,
+    onSkip: handleSkip,
+    onFinish: handleFinish,
+    onGoHome,
+  } = useHeadToHeadHandlers(() => setShowEndConfirm(true));
 
   // Empty state - not enough items
   if (totalItems < 2) {
@@ -225,7 +159,7 @@ export const HeadToHeadPage: React.FC = () => {
         <Text>
           Head-to-Head comparison requires at least 2 items in your tier list.
         </Text>
-        <Button variant="secondary" onPress={() => navigate("/")}>
+        <Button variant="secondary" onPress={onGoHome}>
           Go to Board
         </Button>
       </div>

@@ -4993,6 +4993,96 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 17,
+      "loop_cap": 18,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "subagent",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 17 extracts useHeadToHeadHandlers hook: 5 action handlers + keyboard useEffect behind stable Interface. HeadToHeadPage 378->312 LOC. 5 Interface tests. Suite: 28 suites, 189 tests, all green. simplicity 8.0->8.5.",
+      "scorecard": {
+        "architecture_quality":   {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration; package DAG enforced", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "state_management":       {"score": 6.5, "delta": "SAME", "proof": "packages/state/src/tierSlice.ts:1-343 — one writer per concern across 6 slices; store implicit global", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "domain_modeling":        {"score": 6.0, "delta": "SAME", "proof": "packages/core/src/models.ts:6 — Item interface all-optional; Items = Record<string, Item[]> anemic; no smart constructors", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "data_flow":              {"score": 6.5, "delta": "SAME", "proof": "package.json workspace — core<-state<-apps DAG enforced; 12 focused hooks; no within-app module-level DAG", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "framework_idioms":       {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/ — 12 custom hooks idiomatic; RTK correct; keyboard shortcut effect co-located with action handlers in useHeadToHeadHandlers", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "apps/web/src/ — single-threaded JS; no floating promises; useEffect cleanup in useHeadToHeadHandlers removes keydown listener", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "simplicity":             {"score": 8.5, "delta": "UP",   "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — 5 H2H handlers + keyboard useEffect extracted; HeadToHeadPage 378->312 LOC (-66 lines); 5 useCallback blocks + keyboard useEffect + 2 internal selectors removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "test_strategy":          {"score": 8.0, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.test.ts — 5 tests: onStart activates, onVoteLeft advances pair, onSkip moves pair, onFinish dispatches+navigates, onGoHome navigates without finishing; 28 suites 189 tests", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "credibility":            {"score": 8.0, "delta": "SAME", "proof": "useHeadToHeadHandlers passes deletion test; Replace-don't-layer satisfied (5 new tests; no prior tests existed); action creators + useNavigate imports removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
+      },
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "title": "TierBoardPage.tsx at 443 LOC — at natural modal-coupled floor",
+          "status": "open",
+          "severity": "Noticeable weakness"
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-011",
+          "title": "Domain model anemic — Item all-optional fields, no smart constructors",
+          "status": "open",
+          "severity": "Noticeable weakness"
+        },
+        {
+          "loop_local_id": "F3",
+          "stable_id": "F-012",
+          "title": "HeadToHeadPage action handlers inline — resolved this loop",
+          "status": "resolved",
+          "severity": "Noticeable weakness"
+        }
+      ],
+      "loop_result": {
+        "what_changed": "Extracted handleStart, handleVoteLeft, handleVoteRight, handleSkip, handleFinish and keyboard shortcut useEffect from HeadToHeadPage.tsx into useHeadToHeadHandlers hook. Added onGoHome. Created useHeadToHeadHandlers.test.ts (5 Interface-level tests).",
+        "evidence_change_is_honest": "28 suites 189 tests all green; useHeadToHeadHandlers.test.ts passes 5 tests: onStart activates isActive, onVoteLeft advances pair, onSkip moves pair, onFinish dispatches+navigates, onGoHome navigates without finishing",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "apps/web/src/hooks/useHeadToHeadHandlers.ts",
+          "apps/web/src/hooks/useHeadToHeadHandlers.test.ts",
+          "apps/web/src/pages/HeadToHeadPage.tsx"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: 5 inline handlers + keyboard useEffect no longer in HeadToHeadPage; deletion test passes; 5 Interface tests at useHeadToHeadHandlers.test.ts; no new ownership drift, floating promises, or costume layers introduced.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": 2800
+          }
+        ]
+      }
     }
   ]
 }
