@@ -6,9 +6,30 @@
   "halt_subtype": null,
   "halt_handoff_text": null,
   "halt_handoff": {
-    "reason": "All 9 scorecard dimensions at 9.5 with accepted residuals. No open findings. HALT_SUCCESS criteria met per G21.",
-    "next_loop_hint": null,
-    "backlog": []
+    "text": "Loop 2 ended at HALT_SUCCESS — every scorecard category is at 10 or 9.5+ with an accepted residual. The codebase meets the contest target.\n\nFinal scorecard:\n  - Architecture quality: 9.5 (accepted residual)\n  - State management: 9.5 (accepted residual)\n  - Domain modeling: 9.5 (accepted residual)\n  - Data flow: 9.5 (accepted residual)\n  - Framework idioms: 9.5 (accepted residual)\n  - Concurrency: 10\n  - Simplicity: 9.5 (accepted residual)\n  - Test strategy: 9.5 (accepted residual)\n  - Credibility: 9.5 (accepted residual)\n\nAccepted residuals (won't be revisited unless you ask):\n  - architecture_quality: HeadToHeadPage.tsx ~450 lines — within accepted complexity for a page-level orchestrator.\n  - state_management: Undo history capped at 20 snapshots — deliberate product decision.\n  - domain_modeling: Item.status plain string (not enum) — acceptable for a user-defined label.\n  - data_flow: urlSharing.ts encodes only image/gif media as compact.u — intentional lossy encode for URL length.\n  - framework_idioms: ItemModal.tsx mediaType form-value type cast — safe given controlled input constraints.\n  - simplicity: headToHead.ts ~1356 lines — substantive algorithm, passes deletion test.\n  - test_strategy: No Playwright E2E for ItemMedia rendering paths — unit tests cover the discriminated union exhaustively.\n  - credibility: useItemForm.ts local mediaType state string default 'image' — UI-only concern.\n\nFindings resolved this run:\n  - F-001 (loop 1): onboardingSlice reducer-body localStorage I/O — moved into createPersistenceMiddleware.\n  - F-002 (loop 1): dynamic require() for vote + unused clearDeferredPairs import — replaced with static import.\n  - F-003 (loop 2): Item allowed impossible multi-URL combinations — replaced 4 parallel URL fields with media?: ItemMedia discriminated union; 18 reader/writer sites updated; net deletion.\n\nTests: 239/239 pass across 36 suites. Tree clean.\n\nNext step options:\n  (a) Tag the commit (03e21db, or d57e96d for the registry SHA backfill) and move on.\n  (b) Spot-check one accepted residual — say \"verify <category>\" and I'll re-read the cited source.\n  (c) Reset and run again from current source — type \"/contest-refactor --reset\" (useful if the codebase has changed materially since this halt).",
+    "expected_actions": [
+      {
+        "action_id": "accept-halt",
+        "description": "User accepts HALT_SUCCESS; no further commits expected against current source.",
+        "match_keywords": [],
+        "match_paths": [],
+        "match_kind": "no_drift_expected"
+      },
+      {
+        "action_id": "tag-commit",
+        "description": "Tag the loop-2 commit as the new baseline.",
+        "match_keywords": ["tag"],
+        "match_paths": [],
+        "match_kind": "any_of"
+      },
+      {
+        "action_id": "spot-check-residual",
+        "description": "User asks main agent to spot-check one of the eight accepted residuals.",
+        "match_keywords": ["verify", "spot-check"],
+        "match_paths": [],
+        "match_kind": "any_of"
+      }
+    ]
   },
   "re_validated_at_sha": null,
   "re_validation_context": null,
@@ -51,7 +72,7 @@
       "score": 9.5,
       "delta": "UP",
       "proof": "F-001 resolved loop 1: onboardingSlice reducer-body I/O removed; createPersistenceMiddleware now sole persistence authority. F-003 resolved loop 2: Item model no longer admits impossible multi-URL combos. Module graph: packages/core has zero React deps; packages/state depends only on @tiercade/core. Dependency inversion enforced throughout.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "apps/web/src/pages/HeadToHeadPage.tsx ~450 lines page-level orchestrator",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "HeadToHeadPage.tsx ~450 lines — approaching single-responsibility threshold but does not cross it; within accepted complexity for a page-level orchestrator.",
       "unverifiable_due_to_build_failure": false
@@ -60,7 +81,7 @@
       "score": 9.5,
       "delta": "UP",
       "proof": "F-001 resolved loop 1: onboarding no longer writes localStorage inside reducers. F-002 resolved loop 1: dynamic require() replaced with static import. All state mutations go through Redux actions. createSelector memoization consistent. updateItem accepts Partial<Item> — compatible with new ItemMedia union field.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "packages/state/src/undoRedoSlice.ts MAX_PERSISTED_HISTORY=20 snapshot cap",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "Undo history capped at 20 snapshots by trim logic in undoRedoSlice — deliberate product decision, not a state management flaw.",
       "unverifiable_due_to_build_failure": false
@@ -69,7 +90,7 @@
       "score": 9.5,
       "delta": "UP",
       "proof": "F-003 resolved loop 2: Item.imageUrl/videoUrl/audioUrl/mediaType removed; replaced by media?: ItemMedia where ItemMedia = { type: 'image'|'gif'; url: string } | { type: 'video'; url: string } | { type: 'audio'; url: string }. Impossible multi-URL state unrepresentable. createItem factory simplified from 12 lines to 6. filtering.ts getItemMediaType reduced from 10 lines to 1.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "packages/core/src/models.ts Item.status plain string",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "Item.status field is a plain string (not an enum) — acceptable for a user-defined label; no invariant violation.",
       "unverifiable_due_to_build_failure": false
@@ -78,7 +99,7 @@
       "score": 9.5,
       "delta": "UP",
       "proof": "F-001 resolved loop 1: onboardingSlice back-channel eliminated. All data flows are now explicit dispatch → reducer → selector → component. modelResolver.ts resolvedItemToItem constructs ItemMedia correctly (type: 'image', url: thumbUri). No ambient state reads.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "apps/web/src/utils/urlSharing.ts lossy image/gif-only compact.u encoding",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "URL sharing (urlSharing.ts) encodes only image/gif media as compact.u — intentional lossy encode for URL-length reasons; documented in-file.",
       "unverifiable_due_to_build_failure": false
@@ -87,25 +108,25 @@
       "score": 9.5,
       "delta": "UP",
       "proof": "F-001 resolved loop 1: reducer side effects eliminated. F-002 resolved loop 1: ESM dynamic require() replaced with static import. createSlice, createSelector, createAsyncThunk used throughout. useId() for SSR-safe IDs. React 19 functional components only.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "apps/web/src/components/ItemModal.tsx mediaType form-value type cast",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "ItemModal.tsx uses a type cast (values.mediaType as 'image'|'gif'|'video'|'audio') for the form string value — standard and safe given the controlled input constraints.",
       "unverifiable_due_to_build_failure": false
     },
     "concurrency": {
-      "score": 9.5,
+      "score": 10,
       "delta": "SAME",
-      "proof": "No actor isolation concerns. debounce with clearTimeout cleanup. No floating promises. All async entry points (startHeadToHead, finishHeadToHead) use createAsyncThunk with proper lifecycle. No shared mutable state outside Redux store.",
-      "residual_blocking_10": false,
-      "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "No concurrency residuals identified.",
+      "proof": "No actor isolation concerns (Node single-threaded). debounce with clearTimeout cleanup in createPersistenceMiddleware. No floating promises (all async thunks awaited or dispatch-returned). createAsyncThunk lifecycle drives startHeadToHead/finishHeadToHead. No shared mutable state outside Redux store. No source-backed behavior-preserving improvement identifiable.",
+      "residual_blocking_10": null,
+      "residual_disposition": null,
+      "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "simplicity": {
       "score": 9.5,
       "delta": "UP",
       "proof": "F-002 resolved loop 1: clearDeferredPairs unused import removed; require() ceremony eliminated. F-003 resolved loop 2: 4 parallel URL fields on Item deleted (net deletion). createItem: 12 lines → 6 lines. getItemMediaType: 10 lines → 1 line. itemHasMedia: 3 lines → 1 line. onFileDrop: 8 lines → 3 lines. onItemMediaDrop: eliminated triple-clear pattern.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "packages/core/src/headToHead.ts ~1356 lines substantive algorithm",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "headToHead.ts ~1356 lines — passes deletion test (core algorithm, not decomposable further without losing locality); accepted.",
       "unverifiable_due_to_build_failure": false
@@ -114,7 +135,7 @@
       "score": 9.5,
       "delta": "UP",
       "proof": "238 → 239 tests across 34+ suites (loop 1 added persistenceMiddleware.test for onboarding seam). Loop 2: 6 test files updated to assert on item.media?.type/url instead of old parallel fields. All 239 pass post-loop-2. Impossible-state construction no longer possible in tests or production code.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "apps/web/e2e/ no Playwright coverage of ItemMedia rendering paths",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "No Playwright E2E tests cover the ItemMedia rendering paths — acceptable; unit tests cover the discriminated union exhaustively.",
       "unverifiable_due_to_build_failure": false
@@ -123,7 +144,7 @@
       "score": 9.5,
       "delta": "UP",
       "proof": "F-001 loop 1: reducer-body I/O (honesty leak) removed. F-002 loop 1: dynamic require() (honesty leak) removed. F-003 loop 2: impossible multi-URL type combinations eliminated. No open findings. 239/239 tests pass. No magic numbers, no dead code branches on Item media access.",
-      "residual_blocking_10": false,
+      "residual_blocking_10": "apps/web/src/hooks/useItemForm.ts local mediaType form state string default 'image'",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "useItemForm.ts retains a local mediaType state string initialized to 'image' as default — UI-only concern, not a credibility gap.",
       "unverifiable_due_to_build_failure": false
