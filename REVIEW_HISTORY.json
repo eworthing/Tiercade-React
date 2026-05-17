@@ -4294,6 +4294,366 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 15,
+      "loop_cap": 18,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "subagent",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 15 extracts useImportHandlers hook from ImportExportPage: FileReader + format dispatch moved behind a stable Interface. ImportExportPage 438->401 LOC. 5 new Interface-level tests. Suite: 26 suites, 179 tests, all green. simplicity 7.0->7.5.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useImportHandlers.ts:1-62 \u2014 file I/O orchestration behind Interface; package DAG enforced; 9-anchor not met: export handlers (5 useCallback) still inline in ImportExportPage",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 6.0,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts:6 \u2014 Item interface: name?, imageUrl?, description? all optional; Items = Record<string, Item[]> anemic; no smart constructors",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "package.json workspace \u2014 core<-state<-apps DAG enforced; 10 focused hooks; within-app no module-level DAG enforcement",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/ \u2014 10 custom hooks idiomatic; RTK correct; useId() for stable IDs; ImportExportPage 401 LOC still has 5 export useCallback blocks",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/ \u2014 single-threaded JS; no floating promises; useEffect cleanup in CelebrationEffect.tsx; no AbortController for fetches",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 7.5,
+          "delta": "UP",
+          "proof": "apps/web/src/hooks/useImportHandlers.ts:1-62 \u2014 FileReader + format dispatch extracted; ImportExportPage 438->401 LOC; 2 useCallback blocks removed; bug fix (unsupported-ext snapshot) included",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useImportHandlers.test.ts \u2014 5 tests: JSON import, CSV import, empty-content guard, unsupported-ext guard, file-selection delegate; 26 suites 179 tests; page-level surface still untested",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "useImportHandlers passes deletion test; Replace-don't-layer satisfied (5 new tests at new Interface; no prior tests existed); bug fix honest improvement",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [
+        {
+          "concern": "TierBoardPage modal state",
+          "owner": "TierBoardPage local state (7 useState, lines 75-82)",
+          "allowed_writers": [
+            "TierBoardPage handlers (inline setters)"
+          ],
+          "readers": [
+            "JSX render tree within TierBoardPage"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [
+            "handleMoveItemWithCelebration (celebration state)"
+          ],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Import handlers (file I/O + format dispatch)",
+          "owner": "apps/web/src/hooks/useImportHandlers.ts",
+          "allowed_writers": [
+            "n/a \u2014 dispatches to RTK store via thunks"
+          ],
+          "readers": [
+            "ImportExportPage via useImportHandlers(dispatch) return value"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [
+            "onImportFile \u2014 FileReader.onload callback"
+          ],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Batch action handlers",
+          "owner": "apps/web/src/hooks/useBatchActions.ts",
+          "allowed_writers": [
+            "n/a \u2014 dispatches to RTK store"
+          ],
+          "readers": [
+            "TierBoardPage via useBatchActions(dispatch)"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Item interaction handlers",
+          "owner": "apps/web/src/hooks/useItemInteraction.ts",
+          "allowed_writers": [
+            "n/a \u2014 dispatches to RTK store"
+          ],
+          "readers": [
+            "TierBoardPage via useItemInteraction(dispatch)"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Tier/Item domain state",
+          "owner": "packages/state/src/tierSlice.ts",
+          "allowed_writers": [
+            "dispatched actions: captureSnapshot, moveItemBetweenTiersWithUndo, addItemToTier, updateItem, deleteItems, moveItemsBetweenTiers"
+          ],
+          "readers": [
+            "all page components via useAppSelector"
+          ],
+          "persistence_seam": "persistenceMiddleware (injectable storage, per-instance timer, loop 8)",
+          "async_mutation_entry_points": [
+            "thunks in packages/state/src/"
+          ],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Sort/filter derived state",
+          "owner": "apps/web/src/hooks/useTierFilter.ts",
+          "allowed_writers": [
+            "setSortMode, setFilters dispatched from hook callbacks"
+          ],
+          "readers": [
+            "TierBoardPage via useTierFilter return value"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [],
+          "verdict": "Single and clear"
+        }
+      ],
+      "strengths": [
+        "packages/core domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end",
+        "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts",
+        "Monorepo DAG enforced by workspace package.json: core<-state<-apps; no circular deps",
+        "persistenceMiddleware \u2014 fully injectable storage + per-instance timer (loop 8)",
+        "useImportHandlers.ts \u2014 62 LOC; Interface tested at useImportHandlers.test.ts (5 tests, loop 15)",
+        "useBatchActions.ts \u2014 40 LOC; Interface tested (6 tests, loop 14)",
+        "useItemInteraction.ts \u2014 81 LOC; Interface tested (7 tests, loop 12)",
+        "TierBoardPage.tsx \u2014 reduced from 757 to 443 LOC across 7 extractions (loops 9-14)",
+        "ImportExportPage.tsx \u2014 reduced from 438 to 401 LOC; import handlers extracted (loop 15)"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "id": "F1",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 at natural modal-coupled floor",
+          "why_it_matters": "Remaining handlers all require modal state context; further extraction would add ceremony. Should be accepted as residual.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState declarations + 3 inline handlers all requiring modal state.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443",
+            "apps/web/src/pages/TierBoardPage.tsx:75-82",
+            "apps/web/src/pages/TierBoardPage.tsx:140-183"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell broad; floor is real but needs documented acceptance as residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept 443 LOC as natural orchestration floor. Promote F-004 to accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/components/ItemModal.tsx",
+              "@tiercade/ui"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-010",
+          "id": "F2",
+          "title": "ImportExportPage.tsx export handlers \u2014 5 useCallback blocks still inline after import extraction",
+          "why_it_matters": "5 export handlers share 5 identical selectors; same dep-cluster pattern as prior successful extractions.",
+          "what_is_wrong": "apps/web/src/pages/ImportExportPage.tsx:127-260 \u2014 5 export useCallback handlers sharing projectName, tierOrder, tierLabels, tierColors, tiers. No extraction applied to export side.",
+          "evidence": [
+            "apps/web/src/pages/ImportExportPage.tsx:127-260",
+            "apps/web/src/pages/ImportExportPage.tsx:401"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Export orchestration mixed with JSX; 5-selector dep cluster repeated across 3 handlers.",
+          "locality_impact": "Export format changes require reading the full page.",
+          "metric_signal": "401 LOC; 5 export callbacks share identical selector deps",
+          "why_weakens_submission": "Export handlers share a natural cluster; extraction opportunity remains.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Extract handleExportJSON, handleExportCSV, handleExportMarkdown, handleExport (switch) to useExportHandlers hook reading selectors internally.",
+          "blast_radius": {
+            "change": [
+              "apps/web/src/pages/ImportExportPage.tsx",
+              "apps/web/src/hooks/useExportHandlers.ts"
+            ],
+            "avoid": [
+              "@tiercade/core/ExportFormatter",
+              "apps/web/src/hooks/useExport.ts"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "useImportHandlers extraction \u2014 handleImportFile and handleImportFileSelection share only dispatch as dep; extraction concentrates FileReader + format dispatch behind stable Interface. Deletion test passes.",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "ImportExportPage 438->401 LOC; 2 useCallback blocks removed; importJSON/importCSV imports removed from page; latent bug fixed (unsupported-ext no longer captures snapshot).",
+        "should_not_be_done": "Extracting handleReset \u2014 closes over dispatch + setShowResetConfirm modal state; passing setter as param produces a costume layer.",
+        "tests_after_fix": "apps/web/src/hooks/useImportHandlers.test.ts \u2014 5 tests at new Interface. No old tests to delete (no prior tests existed for these handlers)."
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "Extract export handlers from ImportExportPage.tsx to useExportHandlers hook",
+          "kind": "structural",
+          "rank": "helpful",
+          "why_it_matters": "5 export useCallback handlers share 5 identical selectors \u2014 same dep-cluster pattern as prior extractions. ImportExportPage still 401 LOC.",
+          "score_impact": "architecture_quality +0.0-0.5; simplicity +0.0-0.5 if extracted cleanly"
+        },
+        {
+          "priority": 2,
+          "title": "Accept F-004 residual \u2014 TierBoardPage at natural modal floor",
+          "kind": "polish",
+          "rank": "minor",
+          "why_it_matters": "Remaining TierBoardPage handlers are all modal-state coupled; no further clean extraction without co-moving state.",
+          "score_impact": "Promotes F-004 to accepted residual; minor architecture_quality re-assessment"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [
+        {
+          "candidate_module": "Export handlers cluster in ImportExportPage",
+          "source_friction_proven": "F2 (F-010) \u2014 ImportExportPage.tsx:127-260 (5 export callbacks, 5 shared selectors)",
+          "why_shallow_or_misplaced": "handleExportJSON, handleExportCSV, handleExportMarkdown all read the same 5 state values; cluster is tight and extractable",
+          "behavior_to_move_behind_interface": "Format-specific serialization dispatch + downloadFile trigger + toast feedback",
+          "dependency_category": "in-process",
+          "test_surface_after_change": "apps/web/src/hooks/useExportHandlers.test.ts (renderHook + Provider; assert file content or DOM side-effect)",
+          "smallest_first_step": "Grep for useCallback blocks in ImportExportPage closing over tiers/tierOrder/tierLabels/tierColors/projectName; extract to useExportHandlers.ts reading selectors internally",
+          "what_not_to_do": "Do not wrap downloadFile in a seam \u2014 one-line DOM utility. Do not merge with existing useExport \u2014 different concern."
+        }
+      ],
+      "builder_notes": [
+        {
+          "pattern": "Unsupported-format bug revealed by test: original page called captureSnapshot before checking file extension",
+          "how_to_recognize": "When extracting a multi-branch handler, trace each branch's side-effects independently; the guard belongs before the side-effect, not after",
+          "smallest_coding_rule": "Mutation (snapshot/dispatch) only runs when the guard passes \u2014 never before the if.",
+          "stack_example": "useImportHandlers.ts:31-40: captureSnapshot now inside each if/else if branch, not before the conditional."
+        },
+        {
+          "pattern": "5-selector dep cluster in export handlers",
+          "how_to_recognize": "Look for useCallback blocks with identical dependency arrays listing 4+ state values",
+          "smallest_coding_rule": "When 3+ callbacks share the same 4+ deps, they belong in one hook.",
+          "stack_example": "handleExportJSON, handleExportCSV, handleExportMarkdown all have [projectName, tierOrder, tierLabels, tierColors, tiers] as deps."
+        },
+        {
+          "pattern": "Test-at-new-Interface: FileReader async callback tested synchronously via jest.spyOn",
+          "how_to_recognize": "Any hook whose side-effect flows through a DOM/platform callback requires a synchronous test double",
+          "smallest_coding_rule": "jest.spyOn(globalThis, 'FileReader') overrides new FileReader() calls.",
+          "stack_example": "useImportHandlers.test.ts mockFileReaderWith() spies on globalThis.FileReader and calls onload synchronously."
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 15 executes useImportHandlers extraction: FileReader + format dispatch behind stable Interface; ImportExportPage 438->401 LOC. simplicity 7.0->7.5: structural proof is the hook + removed useCallback blocks + bug fix. Remaining backlog: export handlers extraction (5 callbacks, shared selector cluster); F-004 should be accepted as residual. Average score 7.1. architecture_quality at 7.0 \u2014 page-level Depth gap persists.",
+      "loop_result": {
+        "what_changed": "Extracted handleImportFile and handleImportFileSelection from ImportExportPage.tsx into useImportHandlers hook. Fixed unsupported-extension snapshot bug. Created useImportHandlers.test.ts (5 Interface-level tests).",
+        "evidence_change_is_honest": "26 suites 179 tests all green; useImportHandlers.test.ts passes 5 tests including JSON import dispatch, CSV import dispatch, empty-content guard, unsupported-ext guard, file-selection delegate",
+        "targeted_finding_status": "carried_forward",
+        "unintended_regression": null,
+        "changed_paths": [
+          "apps/web/src/hooks/useImportHandlers.ts",
+          "apps/web/src/hooks/useImportHandlers.test.ts",
+          "apps/web/src/pages/ImportExportPage.tsx"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: handleImportFile and handleImportFileSelection are no longer inline in ImportExportPage; deletion test passes for the new hook; 5 Interface-level tests exist at useImportHandlers.test.ts; bug fix (unsupported-extension snapshot) is honest and tested.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": 4200
+          }
+        ]
+      }
     }
   ]
 }

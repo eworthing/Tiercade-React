@@ -3,10 +3,9 @@ import { useAppDispatch } from "../hooks/useAppDispatch";
 import { useAppSelector } from "../hooks/useAppSelector";
 import {
   captureSnapshot,
-  importCSV,
-  importJSON,
   loadDefaultProject,
 } from "@tiercade/state";
+import { useImportHandlers } from "../hooks/useImportHandlers";
 import { ExportFormatter } from "@tiercade/core";
 import {
   AlertDialog,
@@ -119,6 +118,11 @@ export function ImportExportPage() {
   } = useExport({
     defaultFilename: projectName || "tier-list",
   });
+
+  const {
+    onImportFile: handleImportFile,
+    onImportFileSelection: handleImportFileSelection,
+  } = useImportHandlers(dispatch);
 
   const handleCopyLink = useCallback(async () => {
     try {
@@ -253,48 +257,6 @@ export function ImportExportPage() {
       }
     },
     [handleCopyLink, exportAsPNG, handleExportCSV, handleExportJSON, handleExportMarkdown]
-  );
-
-  const handleImportFile = useCallback(
-    (file: File) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        if (!content) {
-          ToastQueue.negative("Could not read file");
-          return;
-        }
-
-        try {
-          dispatch(captureSnapshot("Import"));
-          if (file.name.endsWith(".json")) {
-            dispatch(importJSON(content));
-            ToastQueue.positive("JSON imported!");
-          } else if (file.name.endsWith(".csv")) {
-            dispatch(importCSV(content));
-            ToastQueue.positive("CSV imported!");
-          } else {
-            ToastQueue.negative("Unsupported file type (only .json and .csv)");
-          }
-        } catch (error) {
-          console.error("Import failed:", error);
-          ToastQueue.negative(
-            `Import failed: ${error instanceof Error ? error.message : "Unknown error"}`
-          );
-        }
-      };
-      reader.readAsText(file);
-    },
-    [dispatch]
-  );
-
-  const handleImportFileSelection = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) handleImportFile(file);
-      event.currentTarget.value = "";
-    },
-    [handleImportFile]
   );
 
   const handleReset = useCallback(() => {

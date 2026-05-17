@@ -1237,3 +1237,88 @@ verdict: **approved**
 - regression: passed
 regressions: none
 conditions: none
+
+--- Loop 15 (UTC 2026-05-16T20:50:00Z) ---
+
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 15 of 18 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 15 extracts useImportHandlers hook from ImportExportPage: FileReader + format dispatch moved behind a stable Interface. ImportExportPage 438→401 LOC. 5 new Interface-level tests. Suite: 26 suites, 179 tests, all green. simplicity 7.0→7.5.
+
+## Scorecard (1-10)
+- Architecture quality: 7.0 | SAME | apps/web/src/hooks/useImportHandlers.ts:1-62 — file I/O orchestration behind Interface; 9-anchor not met: export handlers still inline
+- State management and runtime ownership: 6.5 | SAME | packages/state/src/tierSlice.ts:1-343
+- Domain modeling: 6.0 | SAME | packages/core/src/models.ts:6 — Item data bag, no smart constructors
+- Data flow and dependency design: 6.5 | SAME | package.json DAG; 10 hooks; within-app no module-level DAG
+- Framework / platform best practices: 7.0 | SAME | 10 custom hooks idiomatic; ImportExportPage 401 LOC has 5 export useCallback still inline
+- Concurrency and runtime safety: 7.0 | SAME | single-threaded JS; no floating promises
+- Code simplicity and clarity: 7.5 | UP | apps/web/src/hooks/useImportHandlers.ts:1-62 — 438→401 LOC; 2 useCallback removed; bug fix included
+- Test strategy and regression resistance: 8.0 | SAME | apps/web/src/hooks/useImportHandlers.test.ts — 5 tests; 26 suites 179 tests; page-level still untested
+- Overall implementation credibility: 8.0 | SAME | deletion test passes; Replace-don't-layer satisfied; bug fix honest
+
+## Authority Map
+**Import handlers** — Owner: apps/web/src/hooks/useImportHandlers.ts; test surface: useImportHandlers.test.ts (5 tests, loop 15); Verdict: Single and clear
+**Batch actions** — Owner: apps/web/src/hooks/useBatchActions.ts; Verdict: Single and clear
+**Item interaction** — Owner: apps/web/src/hooks/useItemInteraction.ts; Verdict: Single and clear
+**Tier/Item domain state** — Owner: packages/state/src/tierSlice.ts; Verdict: Single and clear
+**Sort/filter derived state** — Owner: apps/web/src/hooks/useTierFilter.ts; Verdict: Single and clear
+
+## Strengths That Matter
+- packages/core domain layer framework-free; 12 suites, 94 tests
+- RTK slice ownership: one writer per concern; memoized selectors
+- Monorepo DAG enforced; no circular deps
+- useImportHandlers.ts — 62 LOC; Interface tested (5 tests, loop 15)
+- TierBoardPage.tsx — 757→443 LOC; ImportExportPage.tsx — 438→401 LOC
+
+## Findings
+
+### Finding #1: TierBoardPage.tsx at 443 LOC — at natural modal-coupled floor (F-004)
+**Severity** — Noticeable weakness
+**Evidence** — apps/web/src/pages/TierBoardPage.tsx:1-443; lines 75-82 (7 useState); lines 140-183 (3 remaining handlers)
+**Minimal correction path** — Accept as residual. No further extraction — all remaining handlers require modal state.
+
+### Finding #2: ImportExportPage.tsx export handlers — 5 useCallback blocks still inline (F-010)
+**Severity** — Noticeable weakness
+**Evidence** — apps/web/src/pages/ImportExportPage.tsx:127-260
+**Minimal correction path** — Extract to useExportHandlers hook reading selectors internally.
+
+## Simplification Check
+
+| field | value |
+|---|---|
+| structurally_necessary | useImportHandlers extraction — dispatch-only cluster; deletion test passes |
+| new_seam_justified | false |
+| helpful_simplification | ImportExportPage 438→401 LOC; 2 useCallback blocks removed; bug fix (unsupported-ext snapshot) |
+| should_not_be_done | Extracting handleReset (modal state coupling). |
+| tests_after_fix | apps/web/src/hooks/useImportHandlers.test.ts (5 tests at new Interface) |
+
+## Improvement Backlog
+### Priority 1: Extract export handlers from ImportExportPage.tsx to useExportHandlers hook (F-010)
+### Priority 2: Accept F-004 residual — TierBoardPage at natural modal floor
+
+## Builder Notes (compressed)
+- Pattern: Unsupported-format bug revealed by test — captureSnapshot fired before guard → REVIEW_HISTORY.json loops[14].builder_notes
+- Pattern: 5-selector dep cluster in export handlers → REVIEW_HISTORY.json loops[14].builder_notes
+- Pattern: FileReader async tested via jest.spyOn(globalThis, 'FileReader') → REVIEW_HISTORY.json loops[14].builder_notes
+
+## Final Judge Narrative
+Good app, place but not win. Loop 15 closes useImportHandlers gap: FileReader + format dispatch behind stable Interface; ImportExportPage 438→401 LOC. simplicity 7.0→7.5. Remaining backlog: export handlers extraction (5 callbacks, shared selector cluster); F-004 should be accepted as residual. Average score 7.1.
+
+## Loop 15 Result
+Three files changed: useImportHandlers.ts (new, 62 LOC), useImportHandlers.test.ts (new, 5 tests), ImportExportPage.tsx (438→401 LOC). Full suite: 26 suites, 179 tests, all green. F-010: carried_forward (import handlers extracted; export handlers remain — Priority 1 next loop).
+
+## Loop 15 Implementation Review
+verdict: **approved**
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none

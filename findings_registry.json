@@ -138,8 +138,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 13,
-      "last_seen_sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
+      "last_seen_loop": 15,
+      "last_seen_sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
       "occurrences": [
         {
           "loop": 5,
@@ -210,6 +210,13 @@
           "status": "open",
           "sha": "2852fac",
           "idempotency_key": "loop14-F-004-open"
+        },
+        {
+          "loop": 15,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
+          "idempotency_key": "loop15-F-004-open"
         }
       ]
     },
@@ -386,8 +393,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 14,
       "first_seen_sha": "2852fac",
-      "last_seen_loop": 14,
-      "last_seen_sha": "2852fac",
+      "last_seen_loop": 15,
+      "last_seen_sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
       "occurrences": [
         {
           "loop": 14,
@@ -395,6 +402,13 @@
           "status": "open",
           "sha": "2852fac",
           "idempotency_key": "loop14-F-010-open"
+        },
+        {
+          "loop": 15,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
+          "idempotency_key": "loop15-F-010-open"
         }
       ]
     }
