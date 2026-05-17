@@ -628,13 +628,13 @@
       "first_seen_loop": 23,
       "first_seen_sha": "7e0b68cca4af37f494246837c36e378874a53d6b",
       "last_seen_loop": 23,
-      "last_seen_sha": "<pending>",
+      "last_seen_sha": "cd462ece4b94d05ddb4cb213782f8856ace2472d",
       "occurrences": [
         {
           "loop": 23,
           "loop_local_id": "F1",
           "status": "resolved",
-          "sha": "<pending>",
+          "sha": "cd462ece4b94d05ddb4cb213782f8856ace2472d",
           "idempotency_key": "loop23-F-015-resolved"
         }
       ]
