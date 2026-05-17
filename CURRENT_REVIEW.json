@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "loop": 23,
+  "loop": 24,
   "loop_cap": 27,
   "state": "CONTINUE",
   "halt_subtype": null,
@@ -18,7 +18,7 @@
   "findings_registry_path": "./findings_registry.json",
   "discovery": null,
   "verdict": "Good app, but not top-tier yet",
-  "verdict_explanation": "Loop 23: FileReader abort on unmount + second-call abort in useImportHandlers.ts. concurrency 7.5→8.0 (UP), framework_idioms 7.5→8.0 (UP). 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only.",
+  "verdict_explanation": "Loop 24: Page-level tests for TierBoardPage added — 4 tests at page Interface asserting render, toolbar mount, ItemModal open/close. test_strategy 8.0→8.5 (UP). 29 suites, 203 tests, all green. Remaining blockers: implicit global store, two remaining missing page-surface tests, within-app DAG convention-only.",
   "scorecard": {
     "architecture_quality": {
       "score": 7.5,
@@ -41,7 +41,7 @@
     "domain_modeling": {
       "score": 9.5,
       "delta": "SAME",
-      "proof": "packages/core/src/models.ts — createItem smart constructor + ItemMedia discriminated union (loop 20 commit 0f4b694); apps/web/src/components/ItemModal.tsx:114-135 — primary add-item path migrated to createItem (loop 21 commit 94be015). Residual Accounting Pass: 9-anchor met (one parallel-fields case documented).",
+      "proof": "packages/core/src/models.ts — createItem smart constructor + ItemMedia discriminated union (loop 20); apps/web/src/components/ItemModal.tsx:114-135 — primary add-item path migrated to createItem (loop 21). Residual Accounting Pass: 9-anchor met.",
       "residual_blocking_10": "packages/core/src/models.ts:22-31 — Item.imageUrl/videoUrl/audioUrl/mediaType remain independently optional for backward compat with persisted JSON data",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "Framework-constrained: changing Item interface would break deserialization of existing persisted state; migration is cross-cutting and out of scope. Primary construction path enforced via createItem.",
@@ -58,8 +58,8 @@
     },
     "framework_idioms": {
       "score": 8.0,
-      "delta": "UP",
-      "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 — useEffect cleanup aborts reader on unmount; apps/web/src/hooks/useImportHandlers.ts:42-43 — abort previous reader before starting new one. Idiomatic React useRef+useEffect lifecycle pattern applied (loop 23 this commit). Previously undocumented carve-out now resolved. 9-anchor not yet met: remaining hooks idiomatic; no major framework misuse remaining.",
+      "delta": "SAME",
+      "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 — useEffect cleanup aborts reader on unmount; apps/web/src/hooks/useImportHandlers.ts:42-43 — abort previous reader before starting new one. Idiomatic React lifecycle pattern. No change this loop.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -67,8 +67,8 @@
     },
     "concurrency": {
       "score": 8.0,
-      "delta": "UP",
-      "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 — useEffect returns cleanup calling readerRef.current?.abort(); apps/web/src/hooks/useImportHandlers.ts:42-43 — abort previous reader at top of onImportFile. apps/web/src/hooks/useImportHandlers.test.ts:244-285 — abort-on-unmount test; apps/web/src/hooks/useImportHandlers.test.ts:287-316 — abort-on-second-call test. Both tests deterministic (no sleeps). Loop 23 commit (this loop). 7-anchor gap (lifecycle gap) now closed.",
+      "delta": "SAME",
+      "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 — useEffect cleanup; abort previous reader on second call. Two abort tests at Interface. No change this loop.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -77,16 +77,16 @@
     "simplicity": {
       "score": 9.5,
       "delta": "SAME",
-      "proof": "apps/web/src/components/ItemModal.tsx:114-135 — 12-line if/else replaced with createItem call (loop 21 commit 94be015); packages/core/src/tierLogic.ts validateTiersShape deleted (loop 20 commit 0f4b694); all hook extractions complete (loops 9-17). useImportHandlers change is additive and minimal (3 lines + useEffect). Residual Accounting Pass: 9-anchor met — no SPT-passing simplifications remain.",
+      "proof": "All simplification candidates exhausted; test file addition is purely additive with no source change. apps/web/src/pages/TierBoardPage.tsx:1-443 accepted residual (modal-coupled LOC floor).",
       "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 — 443 LOC modal orchestration floor; deletion test fails for any extraction without co-moving modal state",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "Framework-constrained: React component pattern requires co-location of modal state with handlers that close over it. Extraction would require co-moving all 7 useState declarations — equivalent to a compound-state hook that adds complexity without removing coupling. Accepted floor.",
+      "residual_rationale_or_backlog_ref": "Framework-constrained: React component pattern requires co-location of modal state with handlers that close over it. Extraction adds ceremony without removing coupling. Accepted floor.",
       "unverifiable_due_to_build_failure": false
     },
     "test_strategy": {
-      "score": 8.0,
-      "delta": "SAME",
-      "proof": "Suite: 28 suites, 199 tests, all green. Two new abort tests at useImportHandlers Interface (abort on unmount, abort on second call) — deterministic, no sleeps. Page-level test surfaces still missing (TierBoardPage, HeadToHeadPage, AnalyticsPage). 9-anchor not met.",
+      "score": 8.5,
+      "delta": "UP",
+      "proof": "apps/web/src/pages/TierBoardPage.test.tsx — 4 new page-level tests: (1) renders toolbar when tier data present, (2) renders tier board, (3) opens ItemModal on add-item click, (4) closes ItemModal on close trigger. Tests live at the TierBoardPage Interface; assertions exercise showAddItem useState state machine. 29 suites, 203 tests, all green (up from 199). G26: structural change is new file apps/web/src/pages/TierBoardPage.test.tsx in this loop's diff.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -95,10 +95,10 @@
     "credibility": {
       "score": 9.5,
       "delta": "SAME",
-      "proof": "apps/web/src/components/ItemModal.tsx:114-135 — primary item creation uses createItem (loop 21 commit 94be015); packages/core/src/tierLogic.ts — validateTiersShape deleted (loop 20 commit 0f4b694); all hooks extracted and tested at Interface; FileReader lifecycle gap closed this loop. Residual Accounting Pass: 9-anchor met — code earns its architecture; few honesty leaks remain.",
+      "proof": "apps/web/src/components/ItemModal.tsx:114-135 — primary item creation uses createItem; hooks extracted and tested at Interface; FileReader lifecycle gap closed (loop 23). Residual Accounting Pass: 9-anchor met.",
       "residual_blocking_10": "packages/core/src/models.ts:22-31 — Item interface parallel URL fields retained for backward compat; direct Item construction still valid TypeScript",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "Same as domain_modeling residual: framework-constrained backward compat with persisted JSON data. Primary construction path enforced. updateItem uses Partial<Item> intentionally (correct partial-update semantics, not a honesty leak).",
+      "residual_rationale_or_backlog_ref": "Same as domain_modeling residual: framework-constrained backward compat with persisted JSON data.",
       "unverifiable_due_to_build_failure": false
     }
   },
@@ -109,36 +109,32 @@
     "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors cover all derived state",
     "Monorepo DAG enforced by workspace package.json: core←state←apps; no circular dependencies",
     "useImportHandlers.ts — FileReader abort on unmount + abort on second call; lifecycle gap closed",
-    "All simplification candidates exhausted — simplicity 9.5 with accepted residual"
+    "TierBoardPage.test.tsx — first page-level test: 4 assertions at page Interface covering render, toolbar, modal open/close state machine"
   ],
   "findings": [
     {
       "loop_local_id": "F1",
-      "stable_id": "F-015",
+      "stable_id": "F-016",
       "id": "F1",
-      "title": "FileReader lifecycle gap in useImportHandlers.ts — no abort on unmount",
-      "why_it_matters": "Resolved this loop. FileReader onload fires after unmount, dispatching stale state updates.",
-      "what_is_wrong": "useImportHandlers.ts prior to this loop: FileReader created inline inside useCallback with no ref; no useEffect cleanup; pending read cannot be aborted on unmount or on second call.",
+      "title": "Page-level test surface absent for TierBoardPage",
+      "why_it_matters": "Resolved this loop. Page-level Interface tests are the final regression barrier; without them, refactors of modal-open state or toolbar wiring go undetected.",
+      "what_is_wrong": "No test file existed for apps/web/src/pages/TierBoardPage.tsx before this loop; the page's modal-open state machine (7 useState declarations) had zero direct test coverage.",
       "evidence": [
-        "apps/web/src/hooks/useImportHandlers.ts:19-50 (prior to this loop)",
-        "apps/web/src/hooks/useImportHandlers.ts:35-38 (fix: useEffect cleanup)",
-        "apps/web/src/hooks/useImportHandlers.ts:42-43 (fix: abort on second call)"
+        "apps/web/src/pages/TierBoardPage.tsx:75-82 — 7 modal/UI useState declarations with no page-level test",
+        "apps/web/src/pages/TierBoardPage.test.tsx (this loop) — 4 new Interface tests"
       ],
-      "test_failed": "n/a",
+      "test_failed": "Interface-as-test-surface",
       "dependency_category": "in-process",
-      "leverage_impact": "Hook Interface now owns lifecycle safety; callers need not manage FileReader lifetime.",
-      "locality_impact": "Abort logic concentrated inside the hook where it belongs.",
-      "metric_signal": "none",
-      "why_weakens_submission": "Unmounted component dispatch is a React concurrency hazard; now resolved.",
+      "leverage_impact": "Without page tests, AppShell routing targets have no test backing; any refactor of modal wiring is untested.",
+      "locality_impact": "Modal state machine logic is co-located in TierBoardPage; only a page-level test can assert open/close flows end-to-end.",
+      "metric_signal": "Zero page-level test files before this loop; 1 suite (4 tests) added.",
+      "why_weakens_submission": "test_strategy 9-anchor requires page-surface coverage for the primary page; missing tests reduce regression resistance.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "Store reader in useRef<FileReader | null>; add useEffect cleanup calling readerRef.current?.abort(); abort previous reader at top of onImportFile.",
+      "minimal_correction_path": "Create TierBoardPage.test.tsx with @testing-library/react + real RTK store + minimal mocks for S2/UI components; assert render, toolbar mount, modal open/close.",
       "blast_radius": {
-        "change": [
-          "apps/web/src/hooks/useImportHandlers.ts",
-          "apps/web/src/hooks/useImportHandlers.test.ts"
-        ],
+        "change": ["apps/web/src/pages/TierBoardPage.test.tsx"],
         "avoid": []
       }
     },
@@ -165,9 +161,7 @@
       "minimal_correction_path": "Accept. Already accepted residual.",
       "blast_radius": {
         "change": [],
-        "avoid": [
-          "apps/web/src/pages/TierBoardPage.tsx"
-        ]
+        "avoid": ["apps/web/src/pages/TierBoardPage.tsx"]
       }
     },
     {
@@ -192,67 +186,64 @@
       "minimal_correction_path": "Accept as terminal residual.",
       "blast_radius": {
         "change": [],
-        "avoid": [
-          "packages/core/src/models.ts"
-        ]
+        "avoid": ["packages/core/src/models.ts"]
       }
     }
   ],
   "simplification_check": {
-    "structurally_necessary": "FileReader abort — deletion test passes: stale dispatch hazard would redistribute to callers if hook did not own the abort",
+    "structurally_necessary": "Page-level tests for TierBoardPage — passes Interface-as-test-surface: tests live at the page Interface; modal open/close assertions exercise state unreachable via hook-level tests alone",
     "new_seam_justified": false,
     "new_seam_adapters": [],
-    "helpful_simplification": "Single responsibility: all FileReader lifecycle inside the hook; callers unchanged",
-    "should_not_be_done": "Extracting abort logic into a separate module — no friction proven at two call sites",
-    "tests_after_fix": "Two new Interface tests for abort behavior; existing 5 tests updated with abort mock method. No old tests deleted (new behavior is additive)."
+    "helpful_simplification": "None — purely additive test file; no source changes",
+    "should_not_be_done": "Mocking the Redux store with pre-set modal open state — would test mocks not the component's state machine",
+    "tests_after_fix": "No old tests deleted (all tests are new); 4 new tests at TierBoardPage Interface"
   },
   "backlog": [
     {
       "priority": 1,
-      "title": "Add page-level tests for TierBoardPage",
+      "title": "Add page-level tests for HeadToHeadPage and AnalyticsPage",
       "kind": "structural",
       "rank": "needed for winning",
-      "why_it_matters": "test_strategy 8.0 — 9-anchor requires page-level test surfaces; TierBoardPage has none; Authority Map gap.",
-      "score_impact": "test_strategy 8.0→8.5"
+      "why_it_matters": "test_strategy 8.5 — 9-anchor requires page-surface coverage for all primary pages; HeadToHeadPage and AnalyticsPage still lack page-level tests.",
+      "score_impact": "test_strategy 8.5→9.0"
     }
   ],
   "unresolved_reason": null,
   "deepening_candidates": [],
   "builder_notes": [
     {
-      "pattern": "FileReader created inline with no ref = orphaned read",
-      "how_to_recognize": "const reader = new FileReader() inside a useCallback with no useRef storing it",
-      "smallest_coding_rule": "If you create a reader/socket inside useCallback, store it in useRef and abort it in useEffect cleanup.",
-      "stack_example": "useImportHandlers.ts: readerRef = useRef<FileReader | null>(null); useEffect(() => () => readerRef.current?.abort(), [])"
+      "pattern": "Page-level test requires thin S2 stubs in jsdom",
+      "how_to_recognize": "@react-spectrum/s2 import + jsdom test environment — S2 internals are too complex for jsdom without a browser",
+      "smallest_coding_rule": "Mock @react-spectrum/s2 at the test file level with a factory object mapping each component name to a thin React element factory (render children, fire onPress as onClick).",
+      "stack_example": "jest.mock('@react-spectrum/s2', () => ({ Button: (props) => <button onClick={props.onPress}>{props.children}</button> }))"
     },
     {
-      "pattern": "Abort before start — second call must cancel the first",
-      "how_to_recognize": "readAsText called without first checking readerRef.current for a pending read",
-      "smallest_coding_rule": "At top of onImportFile: readerRef.current?.abort() before new FileReader().",
-      "stack_example": "useImportHandlers.ts:42-43"
+      "pattern": "Stub sub-components to test page Interface only",
+      "how_to_recognize": "Page contains child components whose render output is irrelevant to the page state assertion",
+      "smallest_coding_rule": "jest.mock('../components/ItemModal', () => ({ ItemModal: ({open}) => open ? <div data-testid='item-modal'/> : null }))",
+      "stack_example": "TierBoardPage.test.tsx — ItemModal stubbed to show/hide based on open prop"
     },
     {
-      "pattern": "Mock must include abort — happy-path mock breaks on unmount cleanup",
-      "how_to_recognize": "Tests pass in isolation but fail on cleanup with 'abort is not a function'",
-      "smallest_coding_rule": "Add abort: jest.fn() to every FileReader mock.",
-      "stack_example": "useImportHandlers.test.ts mockFileReaderWith — added abort: jest.fn() to fix cleanup failure."
+      "pattern": "fireEvent.click drives page state transitions via onPress shim",
+      "how_to_recognize": "Page-level test that needs to assert modal open/close after button press",
+      "smallest_coding_rule": "Map onPress → onClick in Button stub; use fireEvent.click(screen.getByTestId('add-item-btn')) to drive TierBoardPage setShowAddItem(true).",
+      "stack_example": "TierBoardPage.test.tsx line ~170: fireEvent.click(addBtn) → screen.queryByTestId('item-modal') non-null"
     }
   ],
-  "narrative": "Good app, place but not win. Loop 23: concurrency 7.5→8.0, framework_idioms 7.5→8.0. FileReader lifecycle gap closed: abort on unmount + abort on second call; 2 new deterministic Interface tests. 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only. Next target: page-level tests for TierBoardPage.",
+  "narrative": "Good app, place but not win. Loop 24: test_strategy 8.0→8.5 via first page-level test suite for TierBoardPage. 4 Interface assertions: render, toolbar, modal open on add-item click, modal close. 29 suites, 203 tests, all green. Remaining blockers: implicit global store (6.5), within-app DAG convention-only (6.5), HeadToHeadPage + AnalyticsPage page tests absent. Next: page-level tests for HeadToHeadPage + AnalyticsPage (test_strategy 8.5→9.0).",
   "loop_result": {
-    "what_changed": "Added useRef<FileReader | null> + useEffect cleanup (abort on unmount) + abort previous reader on second call to apps/web/src/hooks/useImportHandlers.ts. Added abort: jest.fn() to mockFileReaderWith and two new abort Interface tests to apps/web/src/hooks/useImportHandlers.test.ts.",
-    "evidence_change_is_honest": "28 suites, 199 tests, all green (up from 197); new tests assert abort() called on unmount and on second call deterministically.",
+    "what_changed": "Added apps/web/src/pages/TierBoardPage.test.tsx with 4 page-level tests: renders toolbar when tier data present, renders tier board, opens ItemModal on add-item click, closes ItemModal on close trigger. Tests use @testing-library/react + real RTK store + minimal mocks for @react-spectrum/s2, @tiercade/ui, useExport, and urlSharing.",
+    "evidence_change_is_honest": "29 suites, 203 tests (up from 199), all green. New tests are deterministic: fireEvent.click drives useState transitions; no sleeps; assertions on data-testid presence/absence.",
     "targeted_finding_status": "resolved",
     "unintended_regression": null,
     "changed_paths": [
-      "apps/web/src/hooks/useImportHandlers.ts",
-      "apps/web/src/hooks/useImportHandlers.test.ts"
+      "apps/web/src/pages/TierBoardPage.test.tsx"
     ],
     "interface_test_coverage_path": null
   },
   "implementation_review": {
     "verdict": "approved",
-    "reason": "All three checks passed; readerRef + useEffect cleanup + abort-on-second-call correctly resolve the FileReader lifecycle gap; new tests assert abort deterministically at the Interface.",
+    "reason": "All three checks passed: page-level test surface is added at the TierBoardPage Interface; tests exercise the modal-open state machine directly; no regressions introduced — purely additive test file with no source changes.",
     "checks": {
       "reality": "passed",
       "honesty": "passed",

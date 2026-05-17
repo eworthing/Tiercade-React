@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 16,
+  "next_serial": 17,
   "entries": [
     {
       "stable_id": "F-001",
@@ -273,6 +273,13 @@
           "status": "accepted_residual",
           "sha": "7e0b68cca4af37f494246837c36e378874a53d6b",
           "idempotency_key": "loop23-F-004-accepted_residual"
+        },
+        {
+          "loop": 24,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "d698781c24cd0ed66b42e26203c5cee2f733e9fb",
+          "idempotency_key": "loop24-F-004-accepted_residual"
         }
       ]
     },
@@ -614,6 +621,13 @@
           "status": "accepted_residual",
           "sha": "7e0b68cca4af37f494246837c36e378874a53d6b",
           "idempotency_key": "loop23-F-014-accepted_residual"
+        },
+        {
+          "loop": 24,
+          "loop_local_id": "F3",
+          "status": "accepted_residual",
+          "sha": "d698781c24cd0ed66b42e26203c5cee2f733e9fb",
+          "idempotency_key": "loop24-F-014-accepted_residual"
         }
       ]
     },
@@ -636,6 +650,28 @@
           "status": "resolved",
           "sha": "cd462ece4b94d05ddb4cb213782f8856ace2472d",
           "idempotency_key": "loop23-F-015-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-016",
+      "title": "Page-level test surface absent for TierBoardPage",
+      "category_hint": "missing-tests-page-level",
+      "primary_file": "apps/web/src/pages/TierBoardPage.tsx",
+      "primary_evidence_lines": [75, 82],
+      "test_failed": "Interface-as-test-surface",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 24,
+      "first_seen_sha": "d698781c24cd0ed66b42e26203c5cee2f733e9fb",
+      "last_seen_loop": 24,
+      "last_seen_sha": null,
+      "occurrences": [
+        {
+          "loop": 24,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": null,
+          "idempotency_key": "loop24-F-016-resolved"
         }
       ]
     }

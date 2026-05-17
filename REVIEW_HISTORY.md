@@ -1909,3 +1909,78 @@ conditions: none
 
 ## Final Judge Narrative
 Good app, place but not win. Loop 23: concurrency 7.5→8.0, framework_idioms 7.5→8.0. FileReader lifecycle gap closed: abort on unmount + abort on second call; 2 new deterministic Interface tests. 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only. Next target: page-level tests for TierBoardPage.
+
+--- Loop 24 (UTC 2026-05-16T00:55:00Z) ---
+
+### Loop Counter
+Loop 24 of 27 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 24: Page-level tests for TierBoardPage added — 4 tests at page Interface asserting render, toolbar mount, ItemModal open/close. test_strategy 8.0→8.5 (UP). 29 suites, 203 tests, all green.
+
+## Scorecard (1-10)
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115`
+- State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343`
+- Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` — accepted residual: parallel URL fields
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced; within-app DAG convention-only
+- Framework / platform best practices: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38`
+- Concurrency and runtime safety: 8.0 | SAME | No change this loop
+- Code simplicity and clarity: 9.5 | SAME | Accepted residual: TierBoardPage 443 LOC floor
+- Test strategy and regression resistance: 8.5 | UP | `apps/web/src/pages/TierBoardPage.test.tsx` — 4 page-level tests at page Interface; modal open/close state machine exercised via fireEvent.click. 29 suites, 203 tests, all green.
+- Overall implementation credibility: 9.5 | SAME | Accepted residual: Item parallel URL fields
+
+## Strengths That Matter
+- `packages/core` domain layer framework-free; 12 suites, 102 tests; createItem smart constructor
+- RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors
+- Monorepo DAG enforced by workspace package.json
+- TierBoardPage.test.tsx — first page-level test: 4 assertions at page Interface
+
+## Findings
+
+### Finding #1: Page-level test surface absent for TierBoardPage (F-016)
+**Severity** — Noticeable weakness  
+**Evidence** — `apps/web/src/pages/TierBoardPage.tsx:75-82` — 7 useState declarations; `apps/web/src/pages/TierBoardPage.test.tsx` (this loop) — 4 new Interface tests  
+**Status** — Resolved this loop
+
+### Finding #2: TierBoardPage.tsx at 443 LOC — god-component at natural modal-coupled floor (F-004)
+**Severity** — Noticeable weakness  
+**Evidence** — `apps/web/src/pages/TierBoardPage.tsx:1-443`  
+**Status** — Accepted residual
+
+### Finding #3: Item interface backward-compat parallel URL fields (F-014)
+**Severity** — Noticeable weakness  
+**Evidence** — `packages/core/src/models.ts:22-31`  
+**Status** — Accepted residual
+
+## Simplification Check
+| field | value |
+|---|---|
+| structurally_necessary | Page-level tests for TierBoardPage — passes Interface-as-test-surface |
+| new_seam_justified | false |
+| helpful_simplification | None — purely additive test file |
+| should_not_be_done | Mocking Redux store with pre-set modal state |
+| tests_after_fix | No old tests deleted; 4 new Interface tests added |
+
+## Improvement Backlog
+1. **Add page-level tests for HeadToHeadPage and AnalyticsPage** — test_strategy 8.5→9.0
+
+## Builder Notes
+→ REVIEW_HISTORY.json `loops[23].builder_notes` for full notes
+
+## Loop 24 Result
+One file added: `apps/web/src/pages/TierBoardPage.test.tsx` — 4 page-level tests using `@testing-library/react` + real RTK store + minimal mocks. Tests assert: toolbar renders, TierBoard mounts, add-item click opens ItemModal, close collapses it. 29 suites, 203 tests (up from 199), all green. Targeted finding F-016 (page-level test surface absent): **resolved**. test_strategy UP: 8.0→8.5. No unintended scorecard regression.
+
+## Loop 24 Implementation Review
+verdict: approved  
+reason: All three checks passed: page-level test surface added at TierBoardPage Interface; modal-open state machine exercised via fireEvent.click; no regressions — purely additive test file with no source changes.  
+checks: reality passed / honesty passed / regression passed  
+regressions: none  
+conditions: none
+
+## Final Judge Narrative
+Good app, place but not win. Loop 24: test_strategy 8.0→8.5 via first page-level test for TierBoardPage. 4 Interface assertions: render, toolbar, modal open on add-item click, modal close. 29 suites, 203 tests, all green. Remaining blockers: implicit global store (6.5), within-app DAG convention-only (6.5), HeadToHeadPage + AnalyticsPage page tests absent. Next: page-level tests for HeadToHeadPage + AnalyticsPage (test_strategy 8.5→9.0).

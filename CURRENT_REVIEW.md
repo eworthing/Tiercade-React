@@ -2,7 +2,7 @@
 see Loop 1 Discovery
 
 ### Loop Counter
-Loop 23 of 27 (cap)
+Loop 24 of 27 (cap)
 
 ### System Flag
 [STATE: CONTINUE]
@@ -12,17 +12,17 @@ Loop 23 of 27 (cap)
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 23: FileReader abort on unmount + second-call abort in `useImportHandlers.ts`. Adds `useRef<FileReader | null>` and `useEffect` cleanup. Two new abort tests at Interface. concurrency 7.5→8.0 (UP), framework_idioms 7.5→8.0 (UP). 28 suites, 199 tests, all green.
+Loop 24: Page-level tests for TierBoardPage added — 4 tests at page Interface asserting render, toolbar mount, ItemModal open/close. test_strategy 8.0→8.5 (UP). 29 suites, 203 tests, all green.
 
 ## Scorecard (1-10)
 - Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration. Package DAG enforced. 9-anchor not met: within-app module DAG enforced only by convention; implicit global store.
 - State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern. 9-anchor not met.
 - Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` + `apps/web/src/components/ItemModal.tsx:114-135` — createItem smart constructor + ItemMedia discriminated union; primary caller migrated. Residual: `packages/core/src/models.ts:22-31` parallel URL fields (backward compat, framework-constrained, accepted).
 - Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json`. Within-app no module-level DAG enforcement. 9-anchor partial.
-- Framework / platform best practices: 8.0 | UP | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup aborts reader on unmount; `useImportHandlers.ts:42-45` — abort previous reader before starting new one. Idiomatic React lifecycle pattern now applied at this hook. 9-anchor not yet met: remaining carve-outs are minor (no RTK async lifecycle issues).
-- Concurrency and runtime safety: 8.0 | UP | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect returns cleanup that calls `readerRef.current?.abort()`; abort fires on unmount. `apps/web/src/hooks/useImportHandlers.ts:42-43` — abort previous reader at top of onImportFile. Two new abort tests at Interface (`useImportHandlers.test.ts` lines 244-316). The 7-anchor gap (lifecycle gap in this hook) is now closed.
+- Framework / platform best practices: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup aborts reader on unmount; abort previous reader before starting new one. Idiomatic React lifecycle pattern applied. 9-anchor not yet met: remaining minor carve-outs.
+- Concurrency and runtime safety: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup; abort previous on second call. Two abort tests at Interface. No new concurrency changes this loop.
 - Code simplicity and clarity: 9.5 | SAME | All simplification candidates exhausted. Accepted residual: `apps/web/src/pages/TierBoardPage.tsx:1-443` — 443 LOC modal orchestration floor (framework-constrained).
-- Test strategy and regression resistance: 8.0 | SAME | 28 suites, 199 tests, all green. Two new tests assert abort on unmount and abort on second call. Page-level test surfaces still missing (TierBoardPage, HeadToHeadPage, AnalyticsPage). 9-anchor not met.
+- Test strategy and regression resistance: 8.5 | UP | `apps/web/src/pages/TierBoardPage.test.tsx` — 4 new page-level tests: renders toolbar with tier data present, renders tier board, opens ItemModal on add-item click, closes ItemModal on close trigger. Tests live at the page Interface; assertions exercise TierBoardPage's modal-open state machine (showAddItem useState). 29 suites, 203 tests, all green. 9-anchor not yet fully met: HeadToHeadPage and AnalyticsPage page-level tests still absent.
 - Overall implementation credibility: 9.5 | SAME | Code earns its architecture; few honesty leaks remain. Accepted residual: `packages/core/src/models.ts:22-31` — Item parallel URL fields backward compat.
 
 ## Strengths That Matter
@@ -33,38 +33,39 @@ Loop 23: FileReader abort on unmount + second-call abort in `useImportHandlers.t
 - `persistenceMiddleware` — fully injectable storage; per-instance timer.
 - `useImportHandlers.ts` — FileReader abort on unmount + abort on second call; lifecycle gap closed.
 - 13 custom hooks in `apps/web/src/hooks/`, all tested at Interface level.
+- `TierBoardPage.test.tsx` — first page-level test: 4 assertions at page Interface covering render, toolbar, modal open/close state machine.
 
 ## Findings
 
-### Finding #1: FileReader lifecycle gap in `useImportHandlers.ts` — no abort on unmount (F-015)
+### Finding #1: Page-level test surface absent for TierBoardPage (F-016)
 
-**Why it matters** — A user can start a file import, navigate away (unmounting the component), and the in-flight FileReader will still fire `onload` after unmount, dispatching state updates to a component that no longer exists. **Resolved this loop.**
+**Why it matters** — Page-level surfaces are the final regression barrier; without tests at the TierBoardPage Interface, a refactor of modal-open state or toolbar wiring would go undetected. **Resolved this loop.**
 
-**What is wrong** — `apps/web/src/hooks/useImportHandlers.ts` (prior to this loop): FileReader created inside `onImportFile` callback but never stored; no `useEffect` cleanup; no way to abort a pending read on unmount or on second call.
+**What is wrong** — No test file existed for `apps/web/src/pages/TierBoardPage.tsx` before this loop. The page's modal-open state machine (7 `useState` declarations) had zero direct test coverage; only hooks inside it were tested in isolation.
 
 **Evidence** —
-- `apps/web/src/hooks/useImportHandlers.ts:19-50` (prior) — reader created inline, no ref, no cleanup
-- `apps/web/src/components/PWAInstallPrompt.tsx:49` — precedent: prior lifecycle gap fixed loop 19
+- `apps/web/src/pages/TierBoardPage.tsx:75-82` — 7 modal/UI useState declarations with no page-level test exercising them
+- `apps/web/src/pages/TierBoardPage.test.tsx` (this loop) — 4 tests now exist
 
-**Architectural test failed** — n/a (concurrency / lifecycle category)
+**Architectural test failed** — Interface-as-test-surface
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Hook callers got no lifecycle safety from the hook Interface; each caller would need to know to handle unmount cleanup externally.
+**Leverage impact** — Without page tests, callers of the page (AppShell routing) have no test backing; any refactor of modal wiring is untested.
 
-**Locality impact** — The abort logic belongs inside the hook; callers should not need to manage FileReader lifecycle.
+**Locality impact** — Modal state machine logic is co-located in TierBoardPage; only a page-level test can assert open/close flows end-to-end.
 
-**Metric signal, if any** — none
+**Metric signal, if any** — Zero page-level test files before this loop.
 
-**Why this weakens submission** — Unmounted component dispatch is a known React concurrency hazard; lifecycle gap in a tested hook is a credibility issue.
+**Why this weakens submission** — test_strategy 9-anchor requires page-surface coverage for the primary page; missing page tests reduce regression resistance.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Store reader in `useRef<FileReader | null>`; add `useEffect` returning cleanup that calls `readerRef.current?.abort()`; at start of each `onImportFile` call, abort previous reader before constructing the new one.
+**Minimal correction path** — Create `TierBoardPage.test.tsx` using `@testing-library/react` + real RTK store + minimal mocks for S2/UI components; assert render, toolbar mount, and modal open/close.
 
-**Blast radius** — change: `apps/web/src/hooks/useImportHandlers.ts`, `apps/web/src/hooks/useImportHandlers.test.ts`. avoid: all other files.
+**Blast radius** — change: `apps/web/src/pages/TierBoardPage.test.tsx` (new file). avoid: all existing source files.
 
 ---
 
@@ -132,28 +133,30 @@ Loop 23: FileReader abort on unmount + second-call abort in `useImportHandlers.t
 ---
 
 ## Simplification Check
-- Structurally necessary: FileReader abort — passes deletion test: complexity (stale dispatch after unmount) would reappear at every call site if the hook did not own the abort. Deletion test passes for the old inline reader pattern (complexity redistributed to callers).
-- New seam justified: false
-- Helpful simplification: Single responsibility: all FileReader lifecycle inside the hook.
-- Should NOT be done: extracting the abort logic into a separate module — no friction proven at two call sites.
-- Tests after fix: Two new tests at the useImportHandlers Interface (abort on unmount, abort on second call). Existing 5 tests updated (mockFileReaderWith now includes abort: jest.fn()). No old tests deleted — the new abort behavior is additive at the Interface.
+| field | value |
+|---|---|
+| structurally_necessary | Page-level tests for TierBoardPage — passes Interface-as-test-surface: tests live at the page Interface; assertions exercise modal-open state machine not reachable via hook-level tests alone |
+| new_seam_justified | false |
+| helpful_simplification | None — pure additive test file; no source changes |
+| should_not_be_done | Mocking the entire Redux store with pre-set modal state — would test mocks not the component |
+| tests_after_fix | No old tests deleted (tests are new); 4 new tests at TierBoardPage Interface |
 
 ## Improvement Backlog
-1. **Add page-level tests for TierBoardPage** — test_strategy still at 8.0 due to missing page-surface tests. `kind: structural`, `rank: needed for winning`. Score impact: test_strategy 8.0→8.5.
+1. **Add page-level tests for HeadToHeadPage and AnalyticsPage** — test_strategy still at 8.5 due to two remaining missing page-surface tests. `kind: structural`, `rank: needed for winning`. Score impact: test_strategy 8.5→9.0.
 
 ## Deepening Candidates
 
-None new. The FileReader abort deepened the existing `useImportHandlers` Interface by adding lifecycle safety behind the same Interface — callers unchanged.
+None. The TierBoardPage test deepens test coverage at the page Interface — the Interface is already the right shape; the test is additive.
 
 ## Builder Notes
-1. **Pattern** — FileReader created inline with no ref = orphaned read. When a React hook creates a stateful external resource (FileReader, WebSocket, EventSource), the resource must be stored in a `useRef` so the `useEffect` cleanup can abort/close it on unmount. **How to recognize** — `const reader = new FileReader()` inside a `useCallback` body with no `useRef`. **Smallest coding rule** — "If you create a reader/socket inside a useCallback, store it in a useRef and abort it in useEffect cleanup."
-2. **Pattern** — Abort before start. When the same hook may be called multiple times in rapid succession (fast user), the previous in-flight resource must be aborted before a new one is created. Otherwise both readers fire and the last one wins non-deterministically. **How to recognize** — `readAsText` called without first checking `readerRef.current`. **Smallest coding rule** — "At top of onImportFile: `readerRef.current?.abort()` before `new FileReader()`."
-3. **Pattern** — Mock must include abort. When mocking a browser API in Jest, the mock must implement ALL methods the production code calls — not just the happy-path ones. The test suite will fail on cleanup if `abort()` is missing from the mock. **How to recognize** — Tests that work in happy-path but fail on `unmount()` with "is not a function." **Smallest coding rule** — "Add `abort: jest.fn()` to every FileReader mock."
+1. **Pattern** — Page-level test requires heavy UI mocks in jsdom. When a React page imports Spectrum S2 components (Button, Dialog, Menu), the S2 internals are too complex to render in jsdom without a full browser. Mock the component library with thin pass-through stubs (render children, fire onPress as onClick) — this lets the page's own state machine (useState modal flags) be tested without S2 internals. **How to recognize** — `@react-spectrum/s2` import + jsdom test environment. **Smallest coding rule** — Mock `@react-spectrum/s2` at the test file level with a thin factory object where each key is a component name and each value is a React element factory.
+2. **Pattern** — Mock the page's own sub-components to test the page Interface only. When a page contains `<ItemModal open={showAddItem} .../>`, stub `ItemModal` to render a `data-testid="item-modal"` div when `open=true` and `null` otherwise. This isolates the page's open/close state logic from ItemModal's own complexity. **How to recognize** — Page uses child components whose render output is irrelevant to the page state assertion. **Smallest coding rule** — `jest.mock('../components/ItemModal', () => ({ ItemModal: ({open}) => open ? <div data-testid="item-modal"/> : null }))`.
+3. **Pattern** — Use `fireEvent.click` to drive page-level state transitions. For Spectrum S2 Button stubs that map `onPress → onClick`, `fireEvent.click` on the stubbed button drives the page's `setShowAddItem(true)` call. **How to recognize** — Page-level test that needs to assert modal open/close state. **Smallest coding rule** — `fireEvent.click(screen.getByTestId('add-item-btn'))` triggers the Button's `onPress` handler via the `onClick` shim.
 
 ## Final Judge Narrative
-Good app, place but not win. Loop 23: concurrency 7.5→8.0, framework_idioms 7.5→8.0. FileReader lifecycle gap closed: abort on unmount + abort on second call; 2 new deterministic Interface tests. 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only. Next loop target: page-level tests for TierBoardPage (test_strategy +0.5).
+Good app, place but not win. Loop 24: test_strategy 8.0→8.5 via first page-level test for TierBoardPage. 4 assertions at page Interface: render, toolbar mount, modal open on add-item click, modal close. 29 suites, 203 tests, all green. Remaining blockers: implicit global store (state_management 6.5), within-app DAG convention-only (data_flow 6.5), HeadToHeadPage + AnalyticsPage still lack page tests. Next loop target: page-level tests for HeadToHeadPage and AnalyticsPage (test_strategy 8.5→9.0).
 
-## Loop 23 Result
-Two files changed: `apps/web/src/hooks/useImportHandlers.ts` — added `useRef<FileReader | null>` and `useEffect` cleanup that calls `readerRef.current?.abort()` on unmount; added abort of previous reader at top of `onImportFile`. `apps/web/src/hooks/useImportHandlers.test.ts` — added `abort: jest.fn()` to `mockFileReaderWith`; added two new Interface tests: "aborts FileReader when hook unmounts" and "aborts previous FileReader when second import starts before first completes."
+## Loop 24 Result
+One file added: `apps/web/src/pages/TierBoardPage.test.tsx` — 4 page-level tests using `@testing-library/react` + real RTK store + minimal mocks for Spectrum S2 and `@tiercade/ui` heavy components. Tests assert: page renders toolbar when tier data present; TierBoard is mounted; pressing add-item button opens ItemModal; closing modal closes it. Tests target `TierBoardPage`'s modal-open state machine (`showAddItem` useState) — the Interface not reachable via hook-level tests alone.
 
-Tests: 28 suites, 199 tests (up from 197), all green. Targeted finding F-015 (FileReader lifecycle gap): **resolved** (abort behavior present in current source; tests prove it deterministically). Concurrency UP: 7.5→8.0. Framework_idioms UP: 7.5→8.0. No unintended scorecard regression observed.
+Tests: 29 suites, 203 tests (up from 199), all green. Targeted finding F-016 (page-level test surface absent for TierBoardPage): **resolved** (4 tests now exercise the page Interface). test_strategy UP: 8.0→8.5. No unintended scorecard regression observed.
