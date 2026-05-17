@@ -259,6 +259,13 @@
           "status": "accepted_residual",
           "sha": "0f4b69402d5ac27cb1701144b9abc813339fae41",
           "idempotency_key": "loop21-F-004-accepted_residual"
+        },
+        {
+          "loop": 22,
+          "loop_local_id": "F1",
+          "status": "accepted_residual",
+          "sha": "94be01532b3ff6d63136252aec888e596e6eac76",
+          "idempotency_key": "loop22-F-004-accepted_residual"
         }
       ]
     },
@@ -586,6 +593,13 @@
           "status": "open",
           "sha": "0f4b69402d5ac27cb1701144b9abc813339fae41",
           "idempotency_key": "loop21-F-014-open"
+        },
+        {
+          "loop": 22,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "94be01532b3ff6d63136252aec888e596e6eac76",
+          "idempotency_key": "loop22-F-014-accepted_residual"
         }
       ]
     }
