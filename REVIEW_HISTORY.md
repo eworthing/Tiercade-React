@@ -1322,3 +1322,86 @@ verdict: **approved**
 - regression: passed
 regressions: none
 conditions: none
+
+--- Loop 16 (UTC 2026-05-16T20:55:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 16 of 18 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 16 extracts `useExportHandlers` hook from ImportExportPage: 5 inline export `useCallback` blocks + `downloadFile` util moved behind a stable Interface. ImportExportPage 401→253 LOC. 5 Interface tests. Suite: 27 suites, 184 tests, all green. simplicity 7.5→8.0.
+
+## Scorecard (1-10)
+- Architecture quality: 7.5 | UP | `apps/web/src/hooks/useExportHandlers.ts:1-182` — 5-selector export dep-cluster behind Interface; ImportExportPage reduced to orchestration-only; package DAG enforced
+- State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343`
+- Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — Item all-optional, no smart constructors
+- Data flow and dependency design: 6.5 | SAME | DAG enforced; 11 focused hooks
+- Framework / platform best practices: 7.5 | UP | `apps/web/src/hooks/` — 11 hooks; ImportExportPage 253 LOC with 3 hook delegations
+- Concurrency and runtime safety: 7.0 | SAME | Single-threaded JS; no floating promises
+- Code simplicity and clarity: 8.0 | UP | ImportExportPage 401→253 LOC; 5 useCallback blocks + 3 useAppSelector calls removed
+- Test strategy and regression resistance: 8.0 | SAME | `useExportHandlers.test.ts` — 5 tests; 27 suites 184 tests
+- Overall implementation credibility: 8.0 | SAME | deletion test passes; Replace-don't-layer satisfied
+
+## Authority Map
+**Export handlers (text serialization + URL generation)**
+- Owner: `apps/web/src/hooks/useExportHandlers.ts`; Readers: ImportExportPage; Verdict: Single and clear — test surface: useExportHandlers.test.ts (5 tests, loop 16)
+
+**Import handlers**: Owner: useImportHandlers.ts; Verdict: Single and clear
+**Batch action handlers**: Owner: useBatchActions.ts; Verdict: Single and clear
+**Tier/Item domain state**: Owner: tierSlice.ts; Verdict: Single and clear
+
+## Strengths That Matter
+- useExportHandlers.ts — 182 LOC; 5-selector cluster; 5 Interface tests (loop 16)
+- ImportExportPage — 438→253 LOC across loops 15-16
+- packages/core — 12 suites, 94 tests, framework-free
+
+## Findings
+### Finding F1 (F-004): TierBoardPage.tsx at 443 LOC — at natural modal-coupled floor
+Severity: Noticeable weakness. Remaining handlers all modal-state coupled. Minimal correction: accept as residual.
+
+### Finding F2 (F-011): Domain model anemic — Item all-optional fields, no smart constructors
+Severity: Noticeable weakness. packages/core/src/models.ts:6-19. Cross-cutting refactor out of scope at cap 18.
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | useExportHandlers extraction — 5 handlers share 5-selector dep cluster; deletion test passes |
+| new_seam_justified | false |
+| helpful_simplification | ImportExportPage 401->253 LOC; 5 useCallback blocks removed; ExportFormatter/urlSharing imports removed |
+| should_not_be_done | Wrapping downloadFile in seam; merging with useExport |
+| tests_after_fix | useExportHandlers.test.ts — 5 tests at new Interface |
+
+## Improvement Backlog
+1. Accept F-004 residual — TierBoardPage at natural modal floor (polish, minor)
+2. Accept F-011 residual — domain model anemic (polish, minor)
+
+## Builder Notes
+1. pattern: 5-selector dep cluster across N callbacks → single hook → REVIEW_HISTORY.json `loops[15].builder_notes`
+2. pattern: jsdom missing URL.createObjectURL — use Object.defineProperty before spyOn
+3. pattern: handleExport dispatcher belongs with its handlers in same hook
+
+## Loop 16 Result
+
+Three files changed: `useExportHandlers.ts` (new, 182 LOC), `useExportHandlers.test.ts` (new, 5 tests), `ImportExportPage.tsx` (401→253 LOC, 5 `useCallback` blocks removed, 3 `useAppSelector` calls removed, `downloadFile` removed, `ExportFormatter` import removed).
+
+`useExportHandlers` extracts `handleCopyLink`, `handleExportJSON`, `handleExportCSV`, `handleExportMarkdown`, `handleExport`. Hook reads 5 selectors internally; accepts `exportAsPNG` as parameter. `downloadFile` moved to hook file. Full suite: 27 suites, 184 tests, all green. Targeted finding F-010 (export handlers inline): **resolved**.
+
+## Loop 16 Implementation Review
+verdict: approved
+reason: All three checks passed: handleCopyLink, handleExportJSON, handleExportCSV, handleExportMarkdown, handleExport are no longer inline in ImportExportPage; deletion test passes; 5 Interface tests at useExportHandlers.test.ts; no new ownership drift, floating promises, or costume layers.
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none
+
+## Final Judge Narrative
+Good app, place but not win. Loop 16 executes useExportHandlers extraction: 5-selector dep cluster + format serialization + downloadFile behind stable Interface; ImportExportPage 401->253 LOC. simplicity 7.5->8.0, arch 7.0->7.5, framework_idioms 7.0->7.5. Two loops remain at cap 18. Remaining backlog is residual acceptance only. Average score ~7.3.

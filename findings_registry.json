@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 11,
+  "next_serial": 12,
   "entries": [
     {
       "stable_id": "F-001",
@@ -138,8 +138,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 15,
-      "last_seen_sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
+      "last_seen_loop": 16,
+      "last_seen_sha": "b7fcbd5",
       "occurrences": [
         {
           "loop": 5,
@@ -217,6 +217,13 @@
           "status": "open",
           "sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
           "idempotency_key": "loop15-F-004-open"
+        },
+        {
+          "loop": 16,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "b7fcbd5",
+          "idempotency_key": "loop16-F-004-open"
         }
       ]
     },
@@ -393,8 +400,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 14,
       "first_seen_sha": "2852fac",
-      "last_seen_loop": 15,
-      "last_seen_sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
+      "last_seen_loop": 16,
+      "last_seen_sha": "b7fcbd5",
       "occurrences": [
         {
           "loop": 14,
@@ -409,6 +416,38 @@
           "status": "open",
           "sha": "c374f91cf3cc87c04fa7aa2b71b0459991d2ab9a",
           "idempotency_key": "loop15-F-010-open"
+        },
+        {
+          "loop": 16,
+          "loop_local_id": "F2-resolved",
+          "status": "resolved",
+          "sha": "b7fcbd5",
+          "idempotency_key": "loop16-F-010-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-011",
+      "title": "Domain model anemic \u2014 Item all-optional fields, no smart constructors",
+      "category_hint": "anemic-domain-model",
+      "primary_file": "packages/core/src/models.ts",
+      "primary_evidence_lines": [
+        6,
+        19
+      ],
+      "test_failed": "Shallow module",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 16,
+      "first_seen_sha": "b7fcbd5",
+      "last_seen_loop": 16,
+      "last_seen_sha": "b7fcbd5",
+      "occurrences": [
+        {
+          "loop": 16,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "b7fcbd5",
+          "idempotency_key": "loop16-F-011-open"
         }
       ]
     }

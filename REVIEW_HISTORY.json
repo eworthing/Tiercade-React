@@ -4654,6 +4654,345 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 16,
+      "loop_cap": 18,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "subagent",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 16 extracts useExportHandlers hook: 5 export handlers + downloadFile behind stable Interface. ImportExportPage 401->253 LOC. 5 Interface tests. Suite: 27 suites, 184 tests, all green. simplicity 7.5->8.0, arch 7.0->7.5.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "UP",
+          "proof": "apps/web/src/hooks/useExportHandlers.ts:1-182 \u2014 5-selector export dep-cluster behind Interface; ImportExportPage reduced to orchestration-only; package DAG enforced; 9-anchor not met: domain model anemic, store implicit global",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 6.0,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts:6 \u2014 Item interface: name?, imageUrl?, description? all optional; Items = Record<string, Item[]> anemic; no smart constructors",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "package.json workspace \u2014 core<-state<-apps DAG enforced; 11 focused hooks; within-app no module-level DAG enforcement",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.5,
+          "delta": "UP",
+          "proof": "apps/web/src/hooks/ \u2014 11 custom hooks idiomatic; RTK correct; useId() for stable IDs; ImportExportPage at 253 LOC with 3 hook delegations (useImportHandlers, useExportHandlers, useExport)",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/ \u2014 single-threaded JS; no floating promises; useEffect cleanup in CelebrationEffect.tsx; no AbortController for fetches",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 8.0,
+          "delta": "UP",
+          "proof": "apps/web/src/hooks/useExportHandlers.ts:1-182 \u2014 5 export handlers + downloadFile extracted; ImportExportPage 401->253 LOC; 5 useCallback blocks + 3 useAppSelector calls removed from page",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useExportHandlers.test.ts \u2014 5 tests: JSON download filename, CSV filename, Markdown filename, onExport routes json, onExport routes png; 27 suites 184 tests; page-level surface still untested",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "useExportHandlers passes deletion test; Replace-don't-layer satisfied (5 new tests at new Interface; no prior tests existed); ExportFormatter + urlSharing imports removed from page",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [
+        {
+          "concern": "Export handlers (text serialization + URL generation)",
+          "owner": "apps/web/src/hooks/useExportHandlers.ts",
+          "allowed_writers": [
+            "n/a \u2014 no mutable state; dispatches downloads + clipboard"
+          ],
+          "readers": [
+            "ImportExportPage via useExportHandlers(exportAsPNG) return value"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [
+            "onCopyLink \u2014 async clipboard write"
+          ],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "TierBoardPage modal state",
+          "owner": "TierBoardPage local state (7 useState, lines 75-82)",
+          "allowed_writers": [
+            "TierBoardPage handlers (inline setters)"
+          ],
+          "readers": [
+            "JSX render tree within TierBoardPage"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [
+            "handleMoveItemWithCelebration (celebration state)"
+          ],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Import handlers (file I/O + format dispatch)",
+          "owner": "apps/web/src/hooks/useImportHandlers.ts",
+          "allowed_writers": [
+            "n/a \u2014 dispatches to RTK store via thunks"
+          ],
+          "readers": [
+            "ImportExportPage via useImportHandlers(dispatch) return value"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [
+            "onImportFile \u2014 FileReader.onload callback"
+          ],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Batch action handlers",
+          "owner": "apps/web/src/hooks/useBatchActions.ts",
+          "allowed_writers": [
+            "n/a \u2014 dispatches to RTK store"
+          ],
+          "readers": [
+            "TierBoardPage via useBatchActions(dispatch)"
+          ],
+          "persistence_seam": null,
+          "async_mutation_entry_points": [],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Tier/Item domain state",
+          "owner": "packages/state/src/tierSlice.ts",
+          "allowed_writers": [
+            "dispatched actions: captureSnapshot, moveItemBetweenTiersWithUndo, addItemToTier, updateItem, deleteItems, moveItemsBetweenTiers"
+          ],
+          "readers": [
+            "all page components via useAppSelector"
+          ],
+          "persistence_seam": "persistenceMiddleware (injectable storage, per-instance timer, loop 8)",
+          "async_mutation_entry_points": [
+            "thunks in packages/state/src/"
+          ],
+          "verdict": "Single and clear"
+        }
+      ],
+      "strengths": [
+        "packages/core domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end",
+        "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts",
+        "Monorepo DAG enforced by workspace package.json: core<-state<-apps; no circular deps",
+        "persistenceMiddleware \u2014 fully injectable storage + per-instance timer (loop 8)",
+        "useExportHandlers.ts \u2014 182 LOC; 5-selector cluster; Interface tested (5 tests, loop 16)",
+        "useImportHandlers.ts \u2014 62 LOC; Interface tested (5 tests, loop 15)",
+        "useBatchActions.ts \u2014 40 LOC; Interface tested (6 tests, loop 14)",
+        "useItemInteraction.ts \u2014 81 LOC; Interface tested (7 tests, loop 12)",
+        "ImportExportPage.tsx \u2014 reduced from 438 to 253 LOC; both import and export handlers extracted (loops 15-16)",
+        "TierBoardPage.tsx \u2014 reduced from 757 to 443 LOC; 7 focused modules/hooks extracted (loops 9-14)"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "id": "F1",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 at natural modal-coupled floor",
+          "why_it_matters": "Remaining handlers all require modal state context; further extraction would add ceremony. Should be accepted as residual.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState declarations + 3 inline handlers all requiring modal state.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443",
+            "apps/web/src/pages/TierBoardPage.tsx:75-82",
+            "apps/web/src/pages/TierBoardPage.tsx:140-183"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell broad; floor is real but needs documented acceptance as residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept 443 LOC as natural orchestration floor. Promote F-004 to accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/components/ItemModal.tsx",
+              "@tiercade/ui"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-011",
+          "id": "F2",
+          "title": "Domain model anemic \u2014 Item all-optional fields, no smart constructors",
+          "why_it_matters": "Item interface allows impossible states (all fields optional); Items type allows invalid tier keys. Convention-only guards in reducers \u2014 not type-system enforced.",
+          "what_is_wrong": "packages/core/src/models.ts:6-17 \u2014 Item.id only non-optional; name, imageUrl, description, seasonString all optional. Items = Record<string, Item[]> \u2014 no key-set enforcement. Domain invariants (all tierOrder tiers must have entries) enforced by CLAUDE.md comments, not types.",
+          "evidence": [
+            "packages/core/src/models.ts:6-17",
+            "packages/core/src/models.ts:19",
+            "packages/core/src/tierLogic.ts:1-50"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Every caller must guard against undefined fields or invalid tier keys independently.",
+          "locality_impact": "Domain invariants scattered across reducers and helpers rather than enforced at construction.",
+          "metric_signal": "?? 'Unknown' patterns in handleExportJSON substitute for type weakness",
+          "why_weakens_submission": "Contest-grade domain modeling requires invariants proved at construction. Primary blocker for domain_modeling score.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Cross-cutting type refactor; out of scope at cap 18. Promote as accepted residual.",
+          "blast_radius": {
+            "change": [
+              "packages/core/src/models.ts"
+            ],
+            "avoid": [
+              "packages/state/src/",
+              "apps/web/src/pages/"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "useExportHandlers extraction \u2014 5 handlers share identical 5-selector dep cluster; extraction concentrates dep cluster + format logic behind stable Interface. Deletion test passes.",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "ImportExportPage 401->253 LOC; 5 useCallback blocks removed; 3 useAppSelector calls removed from page; downloadFile helper moved to hook file; ExportFormatter + urlSharing imports removed from page.",
+        "should_not_be_done": "Wrapping downloadFile in a testability seam \u2014 one-line DOM utility. Merging useExportHandlers with useExport \u2014 different concern (text serialization vs image capture).",
+        "tests_after_fix": "apps/web/src/hooks/useExportHandlers.test.ts \u2014 5 tests at new Interface. No old tests to delete (no prior tests existed for these handlers)."
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "Accept F-004 residual \u2014 TierBoardPage at natural modal floor",
+          "kind": "polish",
+          "rank": "minor",
+          "why_it_matters": "Remaining TierBoardPage handlers are all modal-state coupled; no further clean extraction without co-moving state. Accept 443 LOC as design floor.",
+          "score_impact": "architecture_quality residual documentation; minor narrative clean-up"
+        },
+        {
+          "priority": 2,
+          "title": "Accept F-011 residual \u2014 domain model anemic (Item all-optional, no smart constructors)",
+          "kind": "polish",
+          "rank": "minor",
+          "why_it_matters": "Domain modeling at 6.0 due to convention-only invariants. Full type-system refactor out of scope at cap 18. Documenting as accepted residual is honest.",
+          "score_impact": "domain_modeling accepted residual; no false score promotion"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {
+          "pattern": "5-selector dep cluster shared across N handlers \u2014 identical dep arrays signal extraction",
+          "how_to_recognize": "When 3+ useCallback blocks list the same 4+ state selectors in their dep arrays, they belong in a single hook reading selectors internally",
+          "smallest_coding_rule": "Same 4+ deps in 3+ callbacks = one hook.",
+          "stack_example": "handleExportJSON, handleExportCSV, handleExportMarkdown all had [projectName, tierOrder, tierLabels, tierColors, tiers] \u2014 identical dep arrays exposed the cluster."
+        },
+        {
+          "pattern": "jsdom missing URL.createObjectURL \u2014 spyOn fails with 'Property does not exist'",
+          "how_to_recognize": "jest.spyOn(URL, 'createObjectURL') fails in jsdom because the property isn't defined on the URL constructor",
+          "smallest_coding_rule": "Install via Object.defineProperty(URL, 'createObjectURL', { writable: true, configurable: true, value: jest.fn() }) before spy.",
+          "stack_example": "useExportHandlers.test.ts:72-84: installURLStubs() defines the properties before mocking."
+        },
+        {
+          "pattern": "handleExport dispatcher pattern \u2014 switch delegating to per-format handlers belongs with its routes",
+          "how_to_recognize": "A useCallback whose body is a switch calling other useCallbacks is a routing artifact; it follows its handlers",
+          "smallest_coding_rule": "A router belongs with its routes.",
+          "stack_example": "handleExport moved into useExportHandlers alongside onExportJSON, onExportCSV, onExportMarkdown."
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 16 executes useExportHandlers extraction: 5-selector dep cluster + format serialization + downloadFile behind stable Interface; ImportExportPage 401->253 LOC. simplicity 7.5->8.0, arch 7.0->7.5, framework_idioms 7.0->7.5: structural proof is the hook + removed useCallback blocks + 5 Interface tests. Two loops remain at cap 18. Remaining backlog is residual acceptance only \u2014 no further extraction candidates pass deletion test at current scope. Average score ~7.3.",
+      "loop_result": {
+        "what_changed": "Extracted handleCopyLink, handleExportJSON, handleExportCSV, handleExportMarkdown, handleExport from ImportExportPage.tsx into useExportHandlers hook. Moved downloadFile utility to hook file. Created useExportHandlers.test.ts (5 Interface-level tests).",
+        "evidence_change_is_honest": "27 suites 184 tests all green; useExportHandlers.test.ts passes 5 tests including JSON/CSV/Markdown download filename assertions, onExport routing for json and png formats",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "apps/web/src/hooks/useExportHandlers.ts",
+          "apps/web/src/hooks/useExportHandlers.test.ts",
+          "apps/web/src/pages/ImportExportPage.tsx"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: handleCopyLink, handleExportJSON, handleExportCSV, handleExportMarkdown, handleExport are no longer inline in ImportExportPage; deletion test passes (complexity moved to useExportHandlers); 5 Interface-level tests at useExportHandlers.test.ts; no new ownership drift, floating promises, or costume layers introduced.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": 3100
+          }
+        ]
+      }
     }
   ]
 }
