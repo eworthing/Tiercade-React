@@ -1,3 +1,23 @@
+--- Loop 30 (UTC 2026-05-17T04:02:00Z) ---
+
+## Loop 30 Scorecard
+architecture_quality: 8.5 UP | state_management: 8.5 UP | domain_modeling: 9.5 SAME (residual accepted) | data_flow: 8.0 SAME | framework_idioms: 8.5 SAME | concurrency: 8.0 SAME | simplicity: 9.5 SAME (residual accepted) | test_strategy: 9.5 SAME (residual accepted) | credibility: 9.5 SAME (residual accepted)
+
+## Loop 30 Findings
+F1 (F-021): useHeadToHeadHandlers.test.ts still used raw configureStore after factory export [resolved]
+F2 (F-004): TierBoardPage.tsx at 443 LOC — god-component at natural modal-coupled floor [accepted_residual]
+F3 (F-014): Item interface backward-compat parallel URL fields [accepted_residual]
+
+## Loop 30 Implementation Review
+verdict: approved — makeStore now uses createAppStore factory; 5 tests pass; no regression.
+
+## Loop 30 State
+[STATE: HALT_LOOP_CAP]
+
+## Final Judge Narrative
+Good app, place but not win. Loop 30 (cap): test migration completes createAppStore adoption. architecture_quality 8.0→8.5 UP, state_management 8.0→8.5 UP. 34 suites, 233 tests, all green. avg ~8.89.
+
+
 --- Loop 29 (UTC 2026-05-17T03:58:00Z) ---
 
 ## Loop 29 Scorecard

@@ -15,7 +15,7 @@
       "severity": "Serious deduction",
       "first_seen_loop": 29,
       "first_seen_sha": "b604e8d",
-      "last_seen_loop": 29,
+      "last_seen_loop": 30,
       "last_seen_sha": "b604e8d",
       "occurrences": [
         {
@@ -24,6 +24,13 @@
           "status": "resolved",
           "sha": "b604e8d",
           "idempotency_key": "loop29-F-021-resolved"
+        },
+        {
+          "loop": 30,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": "pending",
+          "idempotency_key": "loop30-F-021-resolved"
         }
       ]
     },
@@ -188,7 +195,7 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 29,
+      "last_seen_loop": 30,
       "last_seen_sha": "39f5e67",
       "occurrences": [
         {
@@ -364,6 +371,13 @@
           "status": "accepted_residual",
           "sha": "b604e8d",
           "idempotency_key": "loop29-F-004-accepted_residual"
+        },
+        {
+          "loop": 30,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "pending",
+          "idempotency_key": "loop30-F-004-accepted_residual"
         }
       ]
     },
@@ -675,7 +689,7 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 20,
       "first_seen_sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
-      "last_seen_loop": 29,
+      "last_seen_loop": 30,
       "last_seen_sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
       "occurrences": [
         {
@@ -746,6 +760,13 @@
           "status": "accepted_residual",
           "sha": "b604e8d",
           "idempotency_key": "loop29-F-014-accepted_residual"
+        },
+        {
+          "loop": 30,
+          "loop_local_id": "F3",
+          "status": "accepted_residual",
+          "sha": "pending",
+          "idempotency_key": "loop30-F-014-accepted_residual"
         }
       ]
     },

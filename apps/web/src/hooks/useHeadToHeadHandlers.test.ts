@@ -14,14 +14,8 @@ import React from "react";
 import { describe, expect, it, jest, beforeEach } from "@jest/globals";
 import { act, renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
 import {
-  tierReducer,
-  headToHeadReducer,
-  themeReducer,
-  undoRedoReducer,
-  onboardingReducer,
-  presentationReducer,
+  createAppStore,
   addItemToTier,
 } from "@tiercade/state";
 import { useHeadToHeadHandlers } from "./useHeadToHeadHandlers";
@@ -36,15 +30,7 @@ jest.mock("react-router-dom", () => ({
 // ─── Store factory ────────────────────────────────────────────────────────────
 
 function makeStore(withItems = false) {
-  const store = configureStore({
-    reducer: {
-      tier: tierReducer,
-      headToHead: headToHeadReducer,
-      theme: themeReducer,
-      undoRedo: undoRedoReducer,
-      onboarding: onboardingReducer,
-      presentation: presentationReducer,
-    },
+  const store = createAppStore({
     preloadedState: {
       tier: {
         tiers: { S: [], A: [], B: [], unranked: [] },
