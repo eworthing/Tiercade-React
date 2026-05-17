@@ -2,28 +2,28 @@
 see Loop 1 Discovery
 
 ### Loop Counter
-Loop 22 of 22 (cap)
+Loop 23 of 27 (cap)
 
 ### System Flag
-[STATE: HALT_LOOP_CAP]
+[STATE: CONTINUE]
 
 ---
 
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 22: Terminal Residual Accounting Pass. domain_modeling 7.5→9.5, simplicity 9.0→9.5, credibility 8.5→9.5 — all promoted via Residual Accounting (9-anchors met; accepted residuals documented). No new code changes this loop. Build green; 28 suites, 197 tests, all green. Average score ~8.0. Cap reached at loop 22.
+Loop 23: FileReader abort on unmount + second-call abort in `useImportHandlers.ts`. Adds `useRef<FileReader | null>` and `useEffect` cleanup. Two new abort tests at Interface. concurrency 7.5→8.0 (UP), framework_idioms 7.5→8.0 (UP). 28 suites, 199 tests, all green.
 
 ## Scorecard (1-10)
 - Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration. Package DAG enforced. 9-anchor not met: within-app module DAG enforced only by convention; implicit global store.
 - State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern. 9-anchor not met.
-- Domain modeling: 9.5 | UP | `packages/core/src/models.ts` + `apps/web/src/components/ItemModal.tsx:114-135` — Residual Accounting Pass: 9-anchor met (createItem smart constructor enforces media invariant at construction; primary caller migrated; one parallel-fields case remains but is documented). Accepted residual: `packages/core/src/models.ts:22-31` — `Item.imageUrl/videoUrl/audioUrl/mediaType` remain independently optional for backward compat with persisted JSON data (framework constraint: changing would break deserialization of existing state).
+- Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` + `apps/web/src/components/ItemModal.tsx:114-135` — createItem smart constructor + ItemMedia discriminated union; primary caller migrated. Residual: `packages/core/src/models.ts:22-31` parallel URL fields (backward compat, framework-constrained, accepted).
 - Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json`. Within-app no module-level DAG enforcement. 9-anchor partial.
-- Framework / platform best practices: 7.5 | SAME | `apps/web/src/hooks/` — 12 focused hooks; RTK patterns correct; `useId()` for stable IDs. Undocumented carve-out: `useImportHandlers.ts` FileReader no abort (low-risk: synchronous dispatch). 9-anchor not met.
-- Concurrency and runtime safety: 7.5 | SAME | `apps/web/src/components/PWAInstallPrompt.tsx:49` — unguarded timer fixed loop 19. `useImportHandlers.ts` FileReader no abort (synchronous; lower-risk). 9-anchor not met.
-- Code simplicity and clarity: 9.5 | UP | Residual Accounting Pass: 9-anchor met — all simplifications exhausted; no SPT-passing candidates remain. Accepted residual: `apps/web/src/pages/TierBoardPage.tsx:1-443` — 443 LOC modal orchestration floor (framework-constrained: React component pattern requires modal state co-location; deletion test fails for any extraction without co-moving state).
-- Test strategy and regression resistance: 8.0 | SAME | 28 suites, 197 tests, all green. `createItem` tested at Interface (8 tests). Page-level surfaces still untested (multiple gaps). 9-anchor not met.
-- Overall implementation credibility: 9.5 | UP | Residual Accounting Pass: 9-anchor met — code earns its architecture; primary creation path uses `createItem`; `validateTiersShape` honesty-leak deleted; all hooks extracted and tested at Interface; few honesty leaks remain. Accepted residual: `packages/core/src/models.ts:22-31` — `Item` interface parallel URL fields (backward compat with persisted data; documented in Builder Notes).
+- Framework / platform best practices: 8.0 | UP | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup aborts reader on unmount; `useImportHandlers.ts:42-45` — abort previous reader before starting new one. Idiomatic React lifecycle pattern now applied at this hook. 9-anchor not yet met: remaining carve-outs are minor (no RTK async lifecycle issues).
+- Concurrency and runtime safety: 8.0 | UP | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect returns cleanup that calls `readerRef.current?.abort()`; abort fires on unmount. `apps/web/src/hooks/useImportHandlers.ts:42-43` — abort previous reader at top of onImportFile. Two new abort tests at Interface (`useImportHandlers.test.ts` lines 244-316). The 7-anchor gap (lifecycle gap in this hook) is now closed.
+- Code simplicity and clarity: 9.5 | SAME | All simplification candidates exhausted. Accepted residual: `apps/web/src/pages/TierBoardPage.tsx:1-443` — 443 LOC modal orchestration floor (framework-constrained).
+- Test strategy and regression resistance: 8.0 | SAME | 28 suites, 199 tests, all green. Two new tests assert abort on unmount and abort on second call. Page-level test surfaces still missing (TierBoardPage, HeadToHeadPage, AnalyticsPage). 9-anchor not met.
+- Overall implementation credibility: 9.5 | SAME | Code earns its architecture; few honesty leaks remain. Accepted residual: `packages/core/src/models.ts:22-31` — Item parallel URL fields backward compat.
 
 ## Strengths That Matter
 - `packages/core` domain layer framework-free; 12 suites, 102 tests; `createItem` smart constructor with `ItemMedia` discriminated union enforces media invariant at construction.
@@ -31,20 +31,46 @@ Loop 22: Terminal Residual Accounting Pass. domain_modeling 7.5→9.5, simplicit
 - RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in `selectors.ts` cover all derived state.
 - Monorepo DAG enforced by workspace `package.json`: `core←state←apps`; no circular dependencies.
 - `persistenceMiddleware` — fully injectable storage; per-instance timer.
-- `undoRedoThunks` — direct test suite covering cross-slice behavior.
-- `TierBoardPage.tsx` — reduced from 757 to 443 LOC; 7 focused modules/hooks extracted.
-- `ImportExportPage.tsx` — reduced from 438 to 253 LOC; both handler hooks extracted.
-- `HeadToHeadPage.tsx` — reduced from 378 to 312 LOC; action handlers + keyboard effect extracted.
-- 12 custom hooks in `apps/web/src/hooks/`, all tested at Interface level (6 hook test files, 35 tests).
-- `PWAInstallPrompt.tsx` — `showTimer` lifecycle gap closed.
-- `validateTiersShape` honesty-leak stub deleted.
-- All simplification candidates exhausted — code simplicity 9.5 with accepted residual.
+- `useImportHandlers.ts` — FileReader abort on unmount + abort on second call; lifecycle gap closed.
+- 13 custom hooks in `apps/web/src/hooks/`, all tested at Interface level.
 
 ## Findings
 
-### Finding #1: `TierBoardPage.tsx` at 443 LOC — god-component at natural modal-coupled floor (F-004)
+### Finding #1: FileReader lifecycle gap in `useImportHandlers.ts` — no abort on unmount (F-015)
 
-**Why it matters** — Accepted residual. Remaining handlers all require modal state context — no extraction passes deletion test.
+**Why it matters** — A user can start a file import, navigate away (unmounting the component), and the in-flight FileReader will still fire `onload` after unmount, dispatching state updates to a component that no longer exists. **Resolved this loop.**
+
+**What is wrong** — `apps/web/src/hooks/useImportHandlers.ts` (prior to this loop): FileReader created inside `onImportFile` callback but never stored; no `useEffect` cleanup; no way to abort a pending read on unmount or on second call.
+
+**Evidence** —
+- `apps/web/src/hooks/useImportHandlers.ts:19-50` (prior) — reader created inline, no ref, no cleanup
+- `apps/web/src/components/PWAInstallPrompt.tsx:49` — precedent: prior lifecycle gap fixed loop 19
+
+**Architectural test failed** — n/a (concurrency / lifecycle category)
+
+**Dependency category** — `in-process`
+
+**Leverage impact** — Hook callers got no lifecycle safety from the hook Interface; each caller would need to know to handle unmount cleanup externally.
+
+**Locality impact** — The abort logic belongs inside the hook; callers should not need to manage FileReader lifecycle.
+
+**Metric signal, if any** — none
+
+**Why this weakens submission** — Unmounted component dispatch is a known React concurrency hazard; lifecycle gap in a tested hook is a credibility issue.
+
+**Severity** — Noticeable weakness
+
+**ADR conflicts** — none
+
+**Minimal correction path** — Store reader in `useRef<FileReader | null>`; add `useEffect` returning cleanup that calls `readerRef.current?.abort()`; at start of each `onImportFile` call, abort previous reader before constructing the new one.
+
+**Blast radius** — change: `apps/web/src/hooks/useImportHandlers.ts`, `apps/web/src/hooks/useImportHandlers.test.ts`. avoid: all other files.
+
+---
+
+### Finding #2: `TierBoardPage.tsx` at 443 LOC — god-component at natural modal-coupled floor (F-004)
+
+**Why it matters** — Accepted residual. Framework-constrained floor.
 
 **What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` bundles 7 `useState` modal/UI state declarations (lines 75-82) + 3 inline handlers all closing over modal setters.
 
@@ -74,7 +100,7 @@ Loop 22: Terminal Residual Accounting Pass. domain_modeling 7.5→9.5, simplicit
 
 ---
 
-### Finding #2: `Item` interface backward-compat parallel URL fields (F-014)
+### Finding #3: `Item` interface backward-compat parallel URL fields (F-014)
 
 **Why it matters** — Terminal accepted residual. `Item` interface retains parallel URL fields for backward compat with persisted data. `createItem` enforces invariant at construction; direct construction still possible.
 
@@ -106,25 +132,28 @@ Loop 22: Terminal Residual Accounting Pass. domain_modeling 7.5→9.5, simplicit
 ---
 
 ## Simplification Check
-- Structurally necessary: n/a (no code changes this loop — terminal Residual Accounting)
-- New seam justified: n/a
-- Helpful simplification: n/a
-- Should NOT be done: any further changes at cap
-- Tests after fix: n/a
+- Structurally necessary: FileReader abort — passes deletion test: complexity (stale dispatch after unmount) would reappear at every call site if the hook did not own the abort. Deletion test passes for the old inline reader pattern (complexity redistributed to callers).
+- New seam justified: false
+- Helpful simplification: Single responsibility: all FileReader lifecycle inside the hook.
+- Should NOT be done: extracting the abort logic into a separate module — no friction proven at two call sites.
+- Tests after fix: Two new tests at the useImportHandlers Interface (abort on unmount, abort on second call). Existing 5 tests updated (mockFileReaderWith now includes abort: jest.fn()). No old tests deleted — the new abort behavior is additive at the Interface.
 
 ## Improvement Backlog
-(Carried forward for user's reference if cap is bumped.)
-
-1. **Accept F-004 and F-014 as terminal residuals** — Both are framework-constrained floors with no SPT-passing fixes. `kind: polish`, `rank: minor`.
+1. **Add page-level tests for TierBoardPage** — test_strategy still at 8.0 due to missing page-surface tests. `kind: structural`, `rank: needed for winning`. Score impact: test_strategy 8.0→8.5.
 
 ## Deepening Candidates
 
-None. All structural work complete.
+None new. The FileReader abort deepened the existing `useImportHandlers` Interface by adding lifecycle safety behind the same Interface — callers unchanged.
 
 ## Builder Notes
-1. **Pattern** — Residual Accounting is not a way to inflate scores. A score can only be promoted when the 9-anchor is genuinely met in current source. The promotion from 7.5→9.5 for domain_modeling represents two loops of real structural work (loops 20-21: createItem + ItemModal migration) that made the 9-anchor true. **How to recognize** — Re-read the 9-anchor text before promoting. If you can't cite source evidence that meets each clause of the anchor, don't promote. **Smallest coding rule** — "Residual Accounting: 9-anchor met → find residual → accept if framework-constrained. Otherwise backlog or keep below 9."
-2. **Pattern** — Framework-constrained residuals. `Item` parallel URL fields for backward compat is a legitimate accepted residual: changing the interface would break all existing persisted JSON data deserialization. This is different from "we didn't get around to it." **How to recognize** — A residual is framework-constrained when fixing it would break a documented system property (persisted data format, runtime protocol, public API contract). **Smallest coding rule** — "If the residual fix breaks serialization, document it as framework-constrained and accept it."
-3. **Pattern** — Smart constructor + migration = two-loop domain model improvement. Loop 20 added `createItem`; loop 21 migrated the primary caller. Both are required for the improvement to be real. **How to recognize** — Adding a smart constructor without migrating callers is cosmetic. The caller migration is the structural proof. **Smallest coding rule** — "Add constructor in loop N; migrate primary caller in loop N+1."
+1. **Pattern** — FileReader created inline with no ref = orphaned read. When a React hook creates a stateful external resource (FileReader, WebSocket, EventSource), the resource must be stored in a `useRef` so the `useEffect` cleanup can abort/close it on unmount. **How to recognize** — `const reader = new FileReader()` inside a `useCallback` body with no `useRef`. **Smallest coding rule** — "If you create a reader/socket inside a useCallback, store it in a useRef and abort it in useEffect cleanup."
+2. **Pattern** — Abort before start. When the same hook may be called multiple times in rapid succession (fast user), the previous in-flight resource must be aborted before a new one is created. Otherwise both readers fire and the last one wins non-deterministically. **How to recognize** — `readAsText` called without first checking `readerRef.current`. **Smallest coding rule** — "At top of onImportFile: `readerRef.current?.abort()` before `new FileReader()`."
+3. **Pattern** — Mock must include abort. When mocking a browser API in Jest, the mock must implement ALL methods the production code calls — not just the happy-path ones. The test suite will fail on cleanup if `abort()` is missing from the mock. **How to recognize** — Tests that work in happy-path but fail on `unmount()` with "is not a function." **Smallest coding rule** — "Add `abort: jest.fn()` to every FileReader mock."
 
 ## Final Judge Narrative
-Good app, place but not win. Loop 22 (cap): terminal Residual Accounting — domain_modeling 7.5→9.5, simplicity 9.0→9.5, credibility 8.5→9.5, all with accepted residuals. Average score ~8.0. Blocked from top-tier by architectural dimensions (architecture quality, state management, data flow, concurrency, test strategy) that require cross-cutting changes beyond this run scope: implicit global store, no page-level tests, within-app DAG convention-only. The codebase is honest, focused, and structurally improved across 22 loops. The remaining blockers are architectural decisions, not code quality gaps.
+Good app, place but not win. Loop 23: concurrency 7.5→8.0, framework_idioms 7.5→8.0. FileReader lifecycle gap closed: abort on unmount + abort on second call; 2 new deterministic Interface tests. 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only. Next loop target: page-level tests for TierBoardPage (test_strategy +0.5).
+
+## Loop 23 Result
+Two files changed: `apps/web/src/hooks/useImportHandlers.ts` — added `useRef<FileReader | null>` and `useEffect` cleanup that calls `readerRef.current?.abort()` on unmount; added abort of previous reader at top of `onImportFile`. `apps/web/src/hooks/useImportHandlers.test.ts` — added `abort: jest.fn()` to `mockFileReaderWith`; added two new Interface tests: "aborts FileReader when hook unmounts" and "aborts previous FileReader when second import starts before first completes."
+
+Tests: 28 suites, 199 tests (up from 197), all green. Targeted finding F-015 (FileReader lifecycle gap): **resolved** (abort behavior present in current source; tests prove it deterministically). Concurrency UP: 7.5→8.0. Framework_idioms UP: 7.5→8.0. No unintended scorecard regression observed.

@@ -6125,6 +6125,493 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 22,
+      "loop_cap": 27,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "inline",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 22 terminal Residual Accounting: domain_modeling 7.5\u21929.5, simplicity 9.0\u21929.5, credibility 8.5\u21929.5 \u2014 all promoted with accepted residuals (9-anchors met). Average score ~8.0. Remaining blockers (implicit global store, page-level tests, within-app DAG) require architectural decisions beyond run scope.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration; package DAG enforced; within-app module DAG enforced only by convention; implicit global store pattern; 9-anchor not met",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern; 9-anchor not met",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 9.5,
+          "delta": "UP",
+          "proof": "packages/core/src/models.ts \u2014 createItem smart constructor + ItemMedia discriminated union (loop 20 commit 0f4b694); apps/web/src/components/ItemModal.tsx:114-135 \u2014 primary add-item path migrated to createItem (loop 21 commit 94be015). Residual Accounting Pass: 9-anchor met (one parallel-fields case documented).",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl/videoUrl/audioUrl/mediaType remain independently optional for backward compat with persisted JSON data",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: changing Item interface would break deserialization of existing persisted state; migration is cross-cutting and out of scope. Primary construction path enforced via createItem.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "Package-level DAG enforced by workspace package.json. Within-app no module-level DAG enforcement; Redux ambient global; 9-anchor partial.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/ \u2014 12 focused hooks; RTK patterns correct; useId() for stable IDs. Undocumented carve-out: useImportHandlers.ts FileReader no abort (synchronous FileReader, lower-risk). 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/components/PWAInstallPrompt.tsx:49 \u2014 unguarded setTimeout fixed loop 19. useImportHandlers.ts FileReader no abort remains (synchronous; low-risk). 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 9.5,
+          "delta": "UP",
+          "proof": "apps/web/src/components/ItemModal.tsx:114-135 \u2014 12-line if/else replaced with createItem call (loop 21 commit 94be015); packages/core/src/tierLogic.ts validateTiersShape deleted (loop 20 commit 0f4b694); all hook extractions complete (loops 9-17). Residual Accounting Pass: 9-anchor met \u2014 no SPT-passing simplifications remain.",
+          "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 \u2014 443 LOC modal orchestration floor; deletion test fails for any extraction without co-moving modal state",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: React component pattern requires co-location of modal state with handlers that close over it. Extraction would require co-moving all 7 useState declarations \u2014 equivalent to a compound-state hook that adds complexity without removing coupling. Accepted floor.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "Suite: 28 suites, 197 tests, all green. createItem tested at Interface (8 tests in models.test.ts). Multiple page-level test surfaces still missing (TierBoardPage, HeadToHeadPage, AnalyticsPage). 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 9.5,
+          "delta": "UP",
+          "proof": "apps/web/src/components/ItemModal.tsx:114-135 \u2014 primary item creation uses createItem (loop 21 commit 94be015); packages/core/src/tierLogic.ts \u2014 validateTiersShape deleted (loop 20 commit 0f4b694); all hooks extracted and tested at Interface. Residual Accounting Pass: 9-anchor met \u2014 code earns its architecture; few honesty leaks remain.",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item interface parallel URL fields retained for backward compat; direct Item construction still valid TypeScript",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Same as domain_modeling residual: framework-constrained backward compat with persisted JSON data. Primary construction path enforced. updateItem uses Partial<Item> intentionally (correct partial-update semantics, not a honesty leak).",
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [],
+      "strengths": [
+        "packages/core domain layer framework-free; 12 suites, 102 tests; createItem smart constructor is primary item creation path",
+        "ItemModal.tsx add-item path uses createItem \u2014 media invariant enforced at primary caller",
+        "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors cover all derived state",
+        "Monorepo DAG enforced by workspace package.json: core\u2190state\u2190apps; no circular dependencies",
+        "All simplification candidates exhausted \u2014 simplicity 9.5 with accepted residual",
+        "validateTiersShape honesty-leak stub deleted; createItem + ItemMedia enforced at primary path"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "id": "F1",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 god-component at natural modal-coupled floor",
+          "why_it_matters": "Accepted residual. Framework-constrained floor.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState modal/UI state declarations + 3 inline handlers.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443",
+            "apps/web/src/pages/TierBoardPage.tsx:75-82"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell still broad; accepted residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept. Already accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/pages/TierBoardPage.tsx"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-014",
+          "id": "F2",
+          "title": "Item interface backward-compat parallel URL fields",
+          "why_it_matters": "Terminal accepted residual. Item interface parallel fields for backward compat with persisted data.",
+          "what_is_wrong": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl, videoUrl, audioUrl, mediaType remain independently optional.",
+          "evidence": [
+            "packages/core/src/models.ts:22-31"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "No new leverage lost. Primary path enforced via createItem.",
+          "locality_impact": "Terminal: Item interface can't change without breaking persisted data deserialization.",
+          "metric_signal": "none",
+          "why_weakens_submission": "domain_modeling can't reach 10 without Item using ItemMedia natively; requires persisted state migration.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept as terminal residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "packages/core/src/models.ts"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "n/a \u2014 terminal Residual Accounting pass; no code changes this loop",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "n/a",
+        "should_not_be_done": "any further changes at cap",
+        "tests_after_fix": "n/a"
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "Accept F-004 and F-014 as terminal residuals",
+          "kind": "polish",
+          "rank": "minor",
+          "why_it_matters": "Both framework-constrained floors. No SPT-passing fixes remain.",
+          "score_impact": "No further scorecard movement expected at cap"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {
+          "pattern": "Residual Accounting is not score inflation \u2014 9-anchor must be genuinely met",
+          "how_to_recognize": "Re-read the 9-anchor text before promoting. If you can't cite source evidence meeting each clause, don't promote.",
+          "smallest_coding_rule": "Residual Accounting: 9-anchor met \u2192 find residual \u2192 accept if framework-constrained; else backlog or keep below 9.",
+          "stack_example": "domain_modeling 7.5\u21929.5: two loops of real structural work (createItem + ItemModal migration) made the 9-anchor true."
+        },
+        {
+          "pattern": "Framework-constrained residuals \u2014 changing Item interface would break all persisted JSON data deserialization",
+          "how_to_recognize": "A residual is framework-constrained when fixing it would break a documented system property (persisted format, public API contract).",
+          "smallest_coding_rule": "If the residual fix breaks serialization, document it as framework-constrained and accept it.",
+          "stack_example": "packages/core/src/models.ts:22-31 \u2014 Item interface backward compat with persisted JSON state."
+        },
+        {
+          "pattern": "Smart constructor + migration = two-loop domain model improvement",
+          "how_to_recognize": "Adding a smart constructor without migrating callers is cosmetic. The caller migration is the structural proof.",
+          "smallest_coding_rule": "Add constructor in loop N; migrate primary caller in loop N+1.",
+          "stack_example": "Loop 20: createItem added. Loop 21: ItemModal.tsx migrated. Together = domain_modeling 6.0\u21929.5."
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 22 (cap): terminal Residual Accounting \u2014 domain_modeling 7.5\u21929.5, simplicity 9.0\u21929.5, credibility 8.5\u21929.5, all with accepted residuals. Average score ~8.0. Blocked from top-tier by architectural dimensions requiring cross-cutting decisions beyond run scope: implicit global store, page-level tests absent, within-app DAG convention-only. The codebase is honest, focused, and structurally improved across 22 loops."
+    },
+    {
+      "schema_version": 3,
+      "loop": 23,
+      "loop_cap": 27,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "inline",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 23: FileReader abort on unmount + second-call abort in useImportHandlers.ts. concurrency 7.5\u21928.0 (UP), framework_idioms 7.5\u21928.0 (UP). 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration; package DAG enforced; within-app module DAG enforced only by convention; implicit global store pattern; 9-anchor not met",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern; 9-anchor not met",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts \u2014 createItem smart constructor + ItemMedia discriminated union (loop 20 commit 0f4b694); apps/web/src/components/ItemModal.tsx:114-135 \u2014 primary add-item path migrated to createItem (loop 21 commit 94be015). Residual Accounting Pass: 9-anchor met (one parallel-fields case documented).",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl/videoUrl/audioUrl/mediaType remain independently optional for backward compat with persisted JSON data",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: changing Item interface would break deserialization of existing persisted state; migration is cross-cutting and out of scope. Primary construction path enforced via createItem.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "Package-level DAG enforced by workspace package.json. Within-app no module-level DAG enforcement; Redux ambient global; 9-anchor partial.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 8.0,
+          "delta": "UP",
+          "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 \u2014 useEffect cleanup aborts reader on unmount; apps/web/src/hooks/useImportHandlers.ts:42-43 \u2014 abort previous reader before starting new one. Idiomatic React useRef+useEffect lifecycle pattern applied (loop 23 this commit). Previously undocumented carve-out now resolved. 9-anchor not yet met: remaining hooks idiomatic; no major framework misuse remaining.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 8.0,
+          "delta": "UP",
+          "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 \u2014 useEffect returns cleanup calling readerRef.current?.abort(); apps/web/src/hooks/useImportHandlers.ts:42-43 \u2014 abort previous reader at top of onImportFile. apps/web/src/hooks/useImportHandlers.test.ts:244-285 \u2014 abort-on-unmount test; apps/web/src/hooks/useImportHandlers.test.ts:287-316 \u2014 abort-on-second-call test. Both tests deterministic (no sleeps). Loop 23 commit (this loop). 7-anchor gap (lifecycle gap) now closed.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/components/ItemModal.tsx:114-135 \u2014 12-line if/else replaced with createItem call (loop 21 commit 94be015); packages/core/src/tierLogic.ts validateTiersShape deleted (loop 20 commit 0f4b694); all hook extractions complete (loops 9-17). useImportHandlers change is additive and minimal (3 lines + useEffect). Residual Accounting Pass: 9-anchor met \u2014 no SPT-passing simplifications remain.",
+          "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 \u2014 443 LOC modal orchestration floor; deletion test fails for any extraction without co-moving modal state",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: React component pattern requires co-location of modal state with handlers that close over it. Extraction would require co-moving all 7 useState declarations \u2014 equivalent to a compound-state hook that adds complexity without removing coupling. Accepted floor.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "Suite: 28 suites, 199 tests, all green. Two new abort tests at useImportHandlers Interface (abort on unmount, abort on second call) \u2014 deterministic, no sleeps. Page-level test surfaces still missing (TierBoardPage, HeadToHeadPage, AnalyticsPage). 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/components/ItemModal.tsx:114-135 \u2014 primary item creation uses createItem (loop 21 commit 94be015); packages/core/src/tierLogic.ts \u2014 validateTiersShape deleted (loop 20 commit 0f4b694); all hooks extracted and tested at Interface; FileReader lifecycle gap closed this loop. Residual Accounting Pass: 9-anchor met \u2014 code earns its architecture; few honesty leaks remain.",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item interface parallel URL fields retained for backward compat; direct Item construction still valid TypeScript",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Same as domain_modeling residual: framework-constrained backward compat with persisted JSON data. Primary construction path enforced. updateItem uses Partial<Item> intentionally (correct partial-update semantics, not a honesty leak).",
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [],
+      "strengths": [
+        "packages/core domain layer framework-free; 12 suites, 102 tests; createItem smart constructor is primary item creation path",
+        "ItemModal.tsx add-item path uses createItem \u2014 media invariant enforced at primary caller",
+        "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors cover all derived state",
+        "Monorepo DAG enforced by workspace package.json: core\u2190state\u2190apps; no circular dependencies",
+        "useImportHandlers.ts \u2014 FileReader abort on unmount + abort on second call; lifecycle gap closed",
+        "All simplification candidates exhausted \u2014 simplicity 9.5 with accepted residual"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-015",
+          "id": "F1",
+          "title": "FileReader lifecycle gap in useImportHandlers.ts \u2014 no abort on unmount",
+          "why_it_matters": "Resolved this loop. FileReader onload fires after unmount, dispatching stale state updates.",
+          "what_is_wrong": "useImportHandlers.ts prior to this loop: FileReader created inline inside useCallback with no ref; no useEffect cleanup; pending read cannot be aborted on unmount or on second call.",
+          "evidence": [
+            "apps/web/src/hooks/useImportHandlers.ts:19-50 (prior to this loop)",
+            "apps/web/src/hooks/useImportHandlers.ts:35-38 (fix: useEffect cleanup)",
+            "apps/web/src/hooks/useImportHandlers.ts:42-43 (fix: abort on second call)"
+          ],
+          "test_failed": "n/a",
+          "dependency_category": "in-process",
+          "leverage_impact": "Hook Interface now owns lifecycle safety; callers need not manage FileReader lifetime.",
+          "locality_impact": "Abort logic concentrated inside the hook where it belongs.",
+          "metric_signal": "none",
+          "why_weakens_submission": "Unmounted component dispatch is a React concurrency hazard; now resolved.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Store reader in useRef<FileReader | null>; add useEffect cleanup calling readerRef.current?.abort(); abort previous reader at top of onImportFile.",
+          "blast_radius": {
+            "change": [
+              "apps/web/src/hooks/useImportHandlers.ts",
+              "apps/web/src/hooks/useImportHandlers.test.ts"
+            ],
+            "avoid": []
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-004",
+          "id": "F2",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 god-component at natural modal-coupled floor",
+          "why_it_matters": "Accepted residual. Framework-constrained floor.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState modal/UI state declarations + 3 inline handlers.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443",
+            "apps/web/src/pages/TierBoardPage.tsx:75-82"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell still broad; accepted residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept. Already accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/pages/TierBoardPage.tsx"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F3",
+          "stable_id": "F-014",
+          "id": "F3",
+          "title": "Item interface backward-compat parallel URL fields",
+          "why_it_matters": "Terminal accepted residual. Item interface parallel fields for backward compat with persisted data.",
+          "what_is_wrong": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl, videoUrl, audioUrl, mediaType remain independently optional.",
+          "evidence": [
+            "packages/core/src/models.ts:22-31"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "No new leverage lost. Primary path enforced via createItem.",
+          "locality_impact": "Terminal: Item interface can't change without breaking persisted data deserialization.",
+          "metric_signal": "none",
+          "why_weakens_submission": "domain_modeling can't reach 10 without Item using ItemMedia natively; requires persisted state migration.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept as terminal residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "packages/core/src/models.ts"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "FileReader abort \u2014 deletion test passes: stale dispatch hazard would redistribute to callers if hook did not own the abort",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "Single responsibility: all FileReader lifecycle inside the hook; callers unchanged",
+        "should_not_be_done": "Extracting abort logic into a separate module \u2014 no friction proven at two call sites",
+        "tests_after_fix": "Two new Interface tests for abort behavior; existing 5 tests updated with abort mock method. No old tests deleted (new behavior is additive)."
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "Add page-level tests for TierBoardPage",
+          "kind": "structural",
+          "rank": "needed for winning",
+          "why_it_matters": "test_strategy 8.0 \u2014 9-anchor requires page-level test surfaces; TierBoardPage has none; Authority Map gap.",
+          "score_impact": "test_strategy 8.0\u21928.5"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {
+          "pattern": "FileReader created inline with no ref = orphaned read",
+          "how_to_recognize": "const reader = new FileReader() inside a useCallback with no useRef storing it",
+          "smallest_coding_rule": "If you create a reader/socket inside useCallback, store it in useRef and abort it in useEffect cleanup.",
+          "stack_example": "useImportHandlers.ts: readerRef = useRef<FileReader | null>(null); useEffect(() => () => readerRef.current?.abort(), [])"
+        },
+        {
+          "pattern": "Abort before start \u2014 second call must cancel the first",
+          "how_to_recognize": "readAsText called without first checking readerRef.current for a pending read",
+          "smallest_coding_rule": "At top of onImportFile: readerRef.current?.abort() before new FileReader().",
+          "stack_example": "useImportHandlers.ts:42-43"
+        },
+        {
+          "pattern": "Mock must include abort \u2014 happy-path mock breaks on unmount cleanup",
+          "how_to_recognize": "Tests pass in isolation but fail on cleanup with 'abort is not a function'",
+          "smallest_coding_rule": "Add abort: jest.fn() to every FileReader mock.",
+          "stack_example": "useImportHandlers.test.ts mockFileReaderWith \u2014 added abort: jest.fn() to fix cleanup failure."
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 23: concurrency 7.5\u21928.0, framework_idioms 7.5\u21928.0. FileReader lifecycle gap closed: abort on unmount + abort on second call; 2 new deterministic Interface tests. 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only. Next target: page-level tests for TierBoardPage.",
+      "loop_result": {
+        "what_changed": "Added useRef<FileReader | null> + useEffect cleanup (abort on unmount) + abort previous reader on second call to apps/web/src/hooks/useImportHandlers.ts. Added abort: jest.fn() to mockFileReaderWith and two new abort Interface tests to apps/web/src/hooks/useImportHandlers.test.ts.",
+        "evidence_change_is_honest": "28 suites, 199 tests, all green (up from 197); new tests assert abort() called on unmount and on second call deterministically.",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "apps/web/src/hooks/useImportHandlers.ts",
+          "apps/web/src/hooks/useImportHandlers.test.ts"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed; readerRef + useEffect cleanup + abort-on-second-call correctly resolve the FileReader lifecycle gap; new tests assert abort deterministically at the Interface.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": null
+          }
+        ]
+      }
     }
   ]
 }

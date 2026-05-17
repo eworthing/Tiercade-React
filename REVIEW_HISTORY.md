@@ -1810,3 +1810,102 @@ Good app, place but not win. Loop 22 (cap): terminal Residual Accounting — dom
 
 ## HALT_LOOP_CAP
 Loop 22 ended at HALT_LOOP_CAP — 22 loops made, configured maximum reached. Next step options: (a) bump cap "/contest-refactor --cap 27"; (b) accept current state; (c) reset.
+
+--- Loop 23 (UTC 2026-05-17T02:55:00Z) ---
+
+### Discovery (first loop only)
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 23 of 27 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+---
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 23: FileReader abort on unmount + second-call abort in `useImportHandlers.ts`. Adds `useRef<FileReader | null>` and `useEffect` cleanup. Two new abort tests at Interface. concurrency 7.5→8.0 (UP), framework_idioms 7.5→8.0 (UP). 28 suites, 199 tests, all green.
+
+## Scorecard (1-10)
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — within-app module DAG convention-only; implicit global store.
+- State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — implicit global store; no process-lifetime pattern.
+- Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` — createItem+ItemMedia (loop 20-21); accepted residual: Item parallel URL fields.
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced; within-app convention-only.
+- Framework / platform best practices: 8.0 | UP | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup + abort-on-second-call. Idiomatic React useRef+useEffect lifecycle applied.
+- Concurrency and runtime safety: 8.0 | UP | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect returns cleanup calling readerRef.current?.abort(); abort fires on unmount. `apps/web/src/hooks/useImportHandlers.test.ts:244-316` — two deterministic abort tests.
+- Code simplicity and clarity: 9.5 | SAME | All simplifications exhausted; accepted residual: TierBoardPage 443 LOC modal floor.
+- Test strategy and regression resistance: 8.0 | SAME | 28 suites, 199 tests; two new abort Interface tests; page-level surfaces still missing.
+- Overall implementation credibility: 9.5 | SAME | Code earns its architecture; accepted residual: Item parallel URL fields.
+
+## Strengths That Matter
+- useImportHandlers.ts — FileReader abort on unmount + abort on second call; lifecycle gap closed.
+- 13 custom hooks, all tested at Interface level.
+- createItem smart constructor; monorepo DAG enforced.
+
+## Findings
+
+### Finding #1: FileReader lifecycle gap in `useImportHandlers.ts` — no abort on unmount (F-015)
+
+**Why it matters** — Resolved this loop. FileReader onload fires after unmount, dispatching stale state updates.
+
+**What is wrong** — useImportHandlers.ts prior to this loop: FileReader created inline inside useCallback with no ref; no useEffect cleanup; pending read cannot be aborted on unmount or on second call.
+
+**Evidence** —
+- `apps/web/src/hooks/useImportHandlers.ts:19-50` (prior to this loop)
+- `apps/web/src/hooks/useImportHandlers.ts:35-38` (fix: useEffect cleanup)
+- `apps/web/src/hooks/useImportHandlers.ts:42-43` (fix: abort on second call)
+
+**Architectural test failed** — n/a
+
+**Dependency category** — `in-process`
+
+**Leverage impact** — Hook Interface now owns lifecycle safety; callers need not manage FileReader lifetime.
+
+**Locality impact** — Abort logic concentrated inside the hook where it belongs.
+
+**Severity** — Noticeable weakness
+
+**Minimal correction path** — Store reader in useRef<FileReader | null>; add useEffect cleanup calling readerRef.current?.abort(); abort previous reader at top of onImportFile.
+
+**Blast radius** — change: useImportHandlers.ts, useImportHandlers.test.ts. avoid: all others.
+
+---
+
+### Finding #2: TierBoardPage.tsx at 443 LOC — modal-coupled floor (F-004) — ACCEPTED RESIDUAL
+### Finding #3: Item interface backward-compat parallel URL fields (F-014) — ACCEPTED RESIDUAL
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | FileReader abort — deletion test passes: stale dispatch hazard redistributes to callers if hook does not own abort |
+| new_seam_justified | false |
+| helpful_simplification | Single responsibility: all FileReader lifecycle inside the hook; callers unchanged |
+| should_not_be_done | Extracting abort logic into separate module — no friction at two call sites |
+| tests_after_fix | Two new Interface tests for abort behavior; existing 5 tests updated with abort mock method. No old tests deleted (behavior additive). |
+
+## Improvement Backlog
+1. Add page-level tests for TierBoardPage (structural, needed for winning, test_strategy 8.0→8.5)
+
+## Builder Notes
+→ REVIEW_HISTORY.json `loops[22].builder_notes` for full notes
+
+## Loop 23 Result
+
+Two files changed: `apps/web/src/hooks/useImportHandlers.ts` — added `useRef<FileReader | null>` + `useEffect` cleanup (abort on unmount) + abort previous reader on second call. `apps/web/src/hooks/useImportHandlers.test.ts` — added `abort: jest.fn()` to `mockFileReaderWith`; added two new Interface tests: "aborts FileReader when hook unmounts" and "aborts previous FileReader when second import starts before first completes."
+
+Tests: 28 suites, 199 tests (up from 197), all green. Targeted finding F-015 (FileReader lifecycle gap): **resolved** (abort behavior present in current source; tests prove it deterministically). Concurrency UP: 7.5→8.0. Framework_idioms UP: 7.5→8.0. No unintended scorecard regression observed.
+
+## Loop 23 Implementation Review
+verdict: approved
+reason: All three checks passed; readerRef + useEffect cleanup + abort-on-second-call correctly resolve the FileReader lifecycle gap; new tests assert abort deterministically at the Interface.
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none
+
+## Final Judge Narrative
+Good app, place but not win. Loop 23: concurrency 7.5→8.0, framework_idioms 7.5→8.0. FileReader lifecycle gap closed: abort on unmount + abort on second call; 2 new deterministic Interface tests. 28 suites, 199 tests, all green. Remaining blockers: implicit global store, page-level tests absent, within-app DAG convention-only. Next target: page-level tests for TierBoardPage.

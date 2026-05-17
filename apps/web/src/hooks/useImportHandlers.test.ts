@@ -67,6 +67,7 @@ function wrapper(store: ReturnType<typeof makeStore>) {
 function mockFileReaderWith(content: string | null) {
   const mockReader = {
     onload: null as ((e: ProgressEvent<FileReader>) => void) | null,
+    abort: jest.fn(),
     readAsText(_file: File) {
       const event = {
         target: { result: content },
@@ -239,5 +240,102 @@ describe("useImportHandlers", () => {
     expect(store.getState().undoRedo.past.length).toBeGreaterThan(0);
     // Input value reset
     expect(mockEvent.currentTarget.value).toBe("");
+  });
+
+  it("aborts the in-progress FileReader when the hook unmounts", () => {
+    const store = makeStore();
+
+    // Build a mock reader that does NOT call onload synchronously —
+    // simulates a read that is still in progress when the component unmounts.
+    const abortSpy = jest.fn();
+    const pendingReader = {
+      onload: null as ((e: ProgressEvent<FileReader>) => void) | null,
+      abort: abortSpy,
+      readAsText(_file: File) {
+        // intentionally does nothing — keeps the "read" pending
+      },
+    };
+    jest
+      .spyOn(globalThis, "FileReader" as keyof typeof globalThis)
+      .mockImplementation(() => pendingReader as unknown as FileReader);
+
+    const { result, unmount } = renderHook(
+      () => {
+        const dispatch = useAppDispatch();
+        return useImportHandlers(dispatch);
+      },
+      { wrapper: wrapper(store) }
+    );
+
+    // Start a read — the mock reader stays "pending"
+    act(() => {
+      result.current.onImportFile(makeFile("large.json", "{}"));
+    });
+
+    // Reader is in-progress; abort has not been called yet
+    expect(abortSpy).not.toHaveBeenCalled();
+
+    // Unmount the hook — cleanup must abort the pending reader
+    unmount();
+
+    expect(abortSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("aborts the previous FileReader when a second import is started before the first completes", () => {
+    const store = makeStore();
+
+    const abortSpyFirst = jest.fn();
+    let callCount = 0;
+
+    jest
+      .spyOn(globalThis, "FileReader" as keyof typeof globalThis)
+      .mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          // First reader — stays pending, tracks abort
+          return {
+            onload: null,
+            abort: abortSpyFirst,
+            readAsText(_file: File) {
+              // stays pending
+            },
+          } as unknown as FileReader;
+        }
+        // Second reader — completes synchronously
+        return {
+          onload: null as ((e: ProgressEvent<FileReader>) => void) | null,
+          abort: jest.fn(),
+          readAsText(_file: File) {
+            const event = {
+              target: { result: "Name,Season,Tier\nHero,,S" },
+            } as unknown as ProgressEvent<FileReader>;
+            if ((this as unknown as { onload: ((e: ProgressEvent<FileReader>) => void) | null }).onload) {
+              (this as unknown as { onload: ((e: ProgressEvent<FileReader>) => void) | null }).onload!(event);
+            }
+          },
+        } as unknown as FileReader;
+      });
+
+    const { result } = renderHook(
+      () => {
+        const dispatch = useAppDispatch();
+        return useImportHandlers(dispatch);
+      },
+      { wrapper: wrapper(store) }
+    );
+
+    // First call — reader stays pending
+    act(() => {
+      result.current.onImportFile(makeFile("first.json", "{}"));
+    });
+
+    expect(abortSpyFirst).not.toHaveBeenCalled();
+
+    // Second call — must abort the first reader before starting the second
+    act(() => {
+      result.current.onImportFile(makeFile("second.csv", "Name,Season,Tier\nHero,,S"));
+    });
+
+    expect(abortSpyFirst).toHaveBeenCalledTimes(1);
   });
 });

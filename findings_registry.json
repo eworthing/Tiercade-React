@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 15,
+  "next_serial": 16,
   "entries": [
     {
       "stable_id": "F-001",
@@ -266,6 +266,13 @@
           "status": "accepted_residual",
           "sha": "94be01532b3ff6d63136252aec888e596e6eac76",
           "idempotency_key": "loop22-F-004-accepted_residual"
+        },
+        {
+          "loop": 23,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "7e0b68cca4af37f494246837c36e378874a53d6b",
+          "idempotency_key": "loop23-F-004-accepted_residual"
         }
       ]
     },
@@ -600,6 +607,35 @@
           "status": "accepted_residual",
           "sha": "94be01532b3ff6d63136252aec888e596e6eac76",
           "idempotency_key": "loop22-F-014-accepted_residual"
+        },
+        {
+          "loop": 23,
+          "loop_local_id": "F3",
+          "status": "accepted_residual",
+          "sha": "7e0b68cca4af37f494246837c36e378874a53d6b",
+          "idempotency_key": "loop23-F-014-accepted_residual"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-015",
+      "title": "FileReader lifecycle gap in useImportHandlers.ts — no abort on unmount",
+      "category_hint": "filereader-lifecycle",
+      "primary_file": "apps/web/src/hooks/useImportHandlers.ts",
+      "primary_evidence_lines": [19, 50],
+      "test_failed": "n/a",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 23,
+      "first_seen_sha": "7e0b68cca4af37f494246837c36e378874a53d6b",
+      "last_seen_loop": 23,
+      "last_seen_sha": "<pending>",
+      "occurrences": [
+        {
+          "loop": 23,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": "<pending>",
+          "idempotency_key": "loop23-F-015-resolved"
         }
       ]
     }
