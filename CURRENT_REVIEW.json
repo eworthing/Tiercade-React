@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "loop": 24,
+  "loop": 25,
   "loop_cap": 27,
   "state": "CONTINUE",
   "halt_subtype": null,
@@ -18,7 +18,7 @@
   "findings_registry_path": "./findings_registry.json",
   "discovery": null,
   "verdict": "Good app, but not top-tier yet",
-  "verdict_explanation": "Loop 24: Page-level tests for TierBoardPage added — 4 tests at page Interface asserting render, toolbar mount, ItemModal open/close. test_strategy 8.0→8.5 (UP). 29 suites, 203 tests, all green. Remaining blockers: implicit global store, two remaining missing page-surface tests, within-app DAG convention-only.",
+  "verdict_explanation": "Loop 25: Page-level tests for HeadToHeadPage and AnalyticsPage added — 11 new tests at page Interface. test_strategy 8.5→9.0 (UP). 31 suites, 215 tests, all green. Remaining blockers: implicit global store, within-app DAG convention-only, secondary pages still lack page tests.",
   "scorecard": {
     "architecture_quality": {
       "score": 7.5,
@@ -77,16 +77,16 @@
     "simplicity": {
       "score": 9.5,
       "delta": "SAME",
-      "proof": "All simplification candidates exhausted; test file addition is purely additive with no source change. apps/web/src/pages/TierBoardPage.tsx:1-443 accepted residual (modal-coupled LOC floor).",
+      "proof": "All simplification candidates exhausted; test file additions are purely additive with no source change. apps/web/src/pages/TierBoardPage.tsx:1-443 accepted residual (modal-coupled LOC floor).",
       "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 — 443 LOC modal orchestration floor; deletion test fails for any extraction without co-moving modal state",
       "residual_disposition": "accepted",
       "residual_rationale_or_backlog_ref": "Framework-constrained: React component pattern requires co-location of modal state with handlers that close over it. Extraction adds ceremony without removing coupling. Accepted floor.",
       "unverifiable_due_to_build_failure": false
     },
     "test_strategy": {
-      "score": 8.5,
+      "score": 9.0,
       "delta": "UP",
-      "proof": "apps/web/src/pages/TierBoardPage.test.tsx — 4 new page-level tests: (1) renders toolbar when tier data present, (2) renders tier board, (3) opens ItemModal on add-item click, (4) closes ItemModal on close trigger. Tests live at the TierBoardPage Interface; assertions exercise showAddItem useState state machine. 29 suites, 203 tests, all green (up from 199). G26: structural change is new file apps/web/src/pages/TierBoardPage.test.tsx in this loop's diff.",
+      "proof": "apps/web/src/pages/HeadToHeadPage.test.tsx — 7 page-level tests: empty state (totalItems<2), idle state (start button present + onStart called), active state (comparison cards for both sides), showEndConfirm opens on End&Apply click, showEndConfirm closes on Cancel click, completed state (apply button present). apps/web/src/pages/AnalyticsPage.test.tsx — 4 page-level tests: empty tierOrder shows 'No tier list loaded', loaded state renders Analytics heading, balance score section with ProgressBar, tier distribution bars (4+ progressbars), total items stat card. 31 suites, 215 tests, all green (up from 29/203). G24: TierBoardPage + HeadToHeadPage + AnalyticsPage all have direct page-level test files covering mutation paths. G26: structural change is two new test files in this loop's diff. Residual: ThemesPage, TemplatesPage, ImportExportPage still lack page-level tests (secondary pages; import/export tested at hook level).",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -109,32 +109,37 @@
     "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors cover all derived state",
     "Monorepo DAG enforced by workspace package.json: core←state←apps; no circular dependencies",
     "useImportHandlers.ts — FileReader abort on unmount + abort on second call; lifecycle gap closed",
-    "TierBoardPage.test.tsx — first page-level test: 4 assertions at page Interface covering render, toolbar, modal open/close state machine"
+    "Three primary page-level test suites: TierBoardPage.test.tsx (loop 24), HeadToHeadPage.test.tsx (loop 25, 7 tests), AnalyticsPage.test.tsx (loop 25, 4 tests)"
   ],
   "findings": [
     {
       "loop_local_id": "F1",
-      "stable_id": "F-016",
+      "stable_id": "F-017",
       "id": "F1",
-      "title": "Page-level test surface absent for TierBoardPage",
-      "why_it_matters": "Resolved this loop. Page-level Interface tests are the final regression barrier; without them, refactors of modal-open state or toolbar wiring go undetected.",
-      "what_is_wrong": "No test file existed for apps/web/src/pages/TierBoardPage.tsx before this loop; the page's modal-open state machine (7 useState declarations) had zero direct test coverage.",
+      "title": "Page-level tests absent for HeadToHeadPage and AnalyticsPage",
+      "why_it_matters": "Resolved this loop. HeadToHeadPage's 4-branch render + showEndConfirm state machine had zero page-level test coverage; AnalyticsPage's data-driven render was untested at page level.",
+      "what_is_wrong": "No test file existed for apps/web/src/pages/HeadToHeadPage.tsx or apps/web/src/pages/AnalyticsPage.tsx before this loop.",
       "evidence": [
-        "apps/web/src/pages/TierBoardPage.tsx:75-82 — 7 modal/UI useState declarations with no page-level test",
-        "apps/web/src/pages/TierBoardPage.test.tsx (this loop) — 4 new Interface tests"
+        "apps/web/src/pages/HeadToHeadPage.tsx:143 — showEndConfirm useState with no page-level test before this loop",
+        "apps/web/src/pages/HeadToHeadPage.tsx:155-311 — 4 render branches with no page-level test",
+        "apps/web/src/pages/HeadToHeadPage.test.tsx (this loop) — 7 new Interface tests",
+        "apps/web/src/pages/AnalyticsPage.test.tsx (this loop) — 4 new Interface tests"
       ],
       "test_failed": "Interface-as-test-surface",
       "dependency_category": "in-process",
-      "leverage_impact": "Without page tests, AppShell routing targets have no test backing; any refactor of modal wiring is untested.",
-      "locality_impact": "Modal state machine logic is co-located in TierBoardPage; only a page-level test can assert open/close flows end-to-end.",
-      "metric_signal": "Zero page-level test files before this loop; 1 suite (4 tests) added.",
-      "why_weakens_submission": "test_strategy 9-anchor requires page-surface coverage for the primary page; missing tests reduce regression resistance.",
+      "leverage_impact": "Without page tests, HeadToHeadPage showEndConfirm state machine and AnalyticsPage data-driven render had no regression barrier.",
+      "locality_impact": "showEndConfirm useState co-located in HeadToHeadPage; only page-level test can assert open/close flow.",
+      "metric_signal": "Zero page-level tests for both pages before this loop; 11 new tests added (7 + 4).",
+      "why_weakens_submission": "test_strategy 9-anchor requires page-surface coverage for primary contest-relevant pages; missing page tests reduce regression resistance.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "Create TierBoardPage.test.tsx with @testing-library/react + real RTK store + minimal mocks for S2/UI components; assert render, toolbar mount, modal open/close.",
+      "minimal_correction_path": "Create HeadToHeadPage.test.tsx and AnalyticsPage.test.tsx with @testing-library/react + real RTK store + minimal mocks for S2, react-aria-components, and useHeadToHeadHandlers.",
       "blast_radius": {
-        "change": ["apps/web/src/pages/TierBoardPage.test.tsx"],
+        "change": [
+          "apps/web/src/pages/HeadToHeadPage.test.tsx",
+          "apps/web/src/pages/AnalyticsPage.test.tsx"
+        ],
         "avoid": []
       }
     },
@@ -191,59 +196,60 @@
     }
   ],
   "simplification_check": {
-    "structurally_necessary": "Page-level tests for TierBoardPage — passes Interface-as-test-surface: tests live at the page Interface; modal open/close assertions exercise state unreachable via hook-level tests alone",
+    "structurally_necessary": "Page-level tests for HeadToHeadPage and AnalyticsPage — passes Interface-as-test-surface: tests live at the page Interface; showEndConfirm and 4-branch render assertions not reachable via hook-level tests alone",
     "new_seam_justified": false,
     "new_seam_adapters": [],
-    "helpful_simplification": "None — purely additive test file; no source changes",
-    "should_not_be_done": "Mocking the Redux store with pre-set modal open state — would test mocks not the component's state machine",
-    "tests_after_fix": "No old tests deleted (all tests are new); 4 new tests at TierBoardPage Interface"
+    "helpful_simplification": "None — purely additive test files; no source changes",
+    "should_not_be_done": "Mocking the Redux store with pre-set dialog state — would test mocks not the component state machine",
+    "tests_after_fix": "No old tests deleted (all tests are new); 11 new tests at HeadToHeadPage and AnalyticsPage Interfaces"
   },
   "backlog": [
     {
       "priority": 1,
-      "title": "Add page-level tests for HeadToHeadPage and AnalyticsPage",
+      "title": "Add page-level tests for ThemesPage, TemplatesPage, and ImportExportPage",
       "kind": "structural",
-      "rank": "needed for winning",
-      "why_it_matters": "test_strategy 8.5 — 9-anchor requires page-surface coverage for all primary pages; HeadToHeadPage and AnalyticsPage still lack page-level tests.",
-      "score_impact": "test_strategy 8.5→9.0"
+      "rank": "helpful",
+      "why_it_matters": "test_strategy at 9.0; secondary pages still lack page-level tests. Completing secondary page coverage would lift test_strategy to 9.5 with accepted residual.",
+      "score_impact": "test_strategy 9.0→9.5 (residual accepted)"
     }
   ],
   "unresolved_reason": null,
   "deepening_candidates": [],
   "builder_notes": [
     {
-      "pattern": "Page-level test requires thin S2 stubs in jsdom",
-      "how_to_recognize": "@react-spectrum/s2 import + jsdom test environment — S2 internals are too complex for jsdom without a browser",
-      "smallest_coding_rule": "Mock @react-spectrum/s2 at the test file level with a factory object mapping each component name to a thin React element factory (render children, fire onPress as onClick).",
-      "stack_example": "jest.mock('@react-spectrum/s2', () => ({ Button: (props) => <button onClick={props.onPress}>{props.children}</button> }))"
+      "pattern": "DialogTrigger controlled open/close requires isOpen-aware stub in jsdom",
+      "how_to_recognize": "DialogTrigger with isOpen={showEndConfirm} — simple children pass-through stub always renders AlertDialog, causing 'dialog initially absent' assertions to fail",
+      "smallest_coding_rule": "Stub DialogTrigger to render childArray.slice(0, 1) when !isOpen; render all children when isOpen. Treats children[0] as the trigger element and children[1] as the dialog.",
+      "stack_example": "HeadToHeadPage.test.tsx DialogTrigger stub: const childArray = React.Children.toArray(children); return isOpen ? childArray : childArray.slice(0, 1)"
     },
     {
-      "pattern": "Stub sub-components to test page Interface only",
-      "how_to_recognize": "Page contains child components whose render output is irrelevant to the page state assertion",
-      "smallest_coding_rule": "jest.mock('../components/ItemModal', () => ({ ItemModal: ({open}) => open ? <div data-testid='item-modal'/> : null }))",
-      "stack_example": "TierBoardPage.test.tsx — ItemModal stubbed to show/hide based on open prop"
+      "pattern": "react-aria-components Button needs its own stub separate from @react-spectrum/s2 Button",
+      "how_to_recognize": "import { Button as AriaButton } from 'react-aria-components' alongside S2 components — two distinct Button implementations in the same page",
+      "smallest_coding_rule": "jest.mock('react-aria-components', () => ({ Button: (props) => <button onClick={props.onPress} data-testid={props['data-testid']}>{props.children}</button> }))",
+      "stack_example": "HeadToHeadPage uses AriaButton for ComparisonCard (keyboard-accessible clickable card) and S2 Button for action buttons — both need onPress-to-onClick mapping"
     },
     {
-      "pattern": "fireEvent.click drives page state transitions via onPress shim",
-      "how_to_recognize": "Page-level test that needs to assert modal open/close after button press",
-      "smallest_coding_rule": "Map onPress → onClick in Button stub; use fireEvent.click(screen.getByTestId('add-item-btn')) to drive TierBoardPage setShowAddItem(true).",
-      "stack_example": "TierBoardPage.test.tsx line ~170: fireEvent.click(addBtn) → screen.queryByTestId('item-modal') non-null"
+      "pattern": "Multi-value stat cards cause getByText ambiguity — use getAllByText or target-adjacent label",
+      "how_to_recognize": "AnalyticsPage (and similar) renders multiple stat cards where numeric values can collide (3 Total Items, 3 Total Tiers)",
+      "smallest_coding_rule": "Use getAllByText('3') to get all matches; assert count >= 1. Or target the adjacent label directly: screen.getByText('Total Items').",
+      "stack_example": "AnalyticsPage.test.tsx: screen.getAllByText('3').length >= 1 avoids the 'multiple elements found' error from getByText"
     }
   ],
-  "narrative": "Good app, place but not win. Loop 24: test_strategy 8.0→8.5 via first page-level test suite for TierBoardPage. 4 Interface assertions: render, toolbar, modal open on add-item click, modal close. 29 suites, 203 tests, all green. Remaining blockers: implicit global store (6.5), within-app DAG convention-only (6.5), HeadToHeadPage + AnalyticsPage page tests absent. Next: page-level tests for HeadToHeadPage + AnalyticsPage (test_strategy 8.5→9.0).",
+  "narrative": "Good app, place but not win. Loop 25: test_strategy 8.5→9.0 via page-level tests for HeadToHeadPage (7 tests: all 4 render branches + showEndConfirm state machine) and AnalyticsPage (4 tests: empty state + loaded state analytics). 31 suites, 215 tests, all green. Three primary contest-relevant pages now have page-level test suites. Remaining blockers: implicit global store (6.5), within-app DAG convention-only (6.5), secondary pages lack page tests. Next: test_strategy 9.0→9.5 via secondary page coverage (ThemesPage, TemplatesPage, ImportExportPage).",
   "loop_result": {
-    "what_changed": "Added apps/web/src/pages/TierBoardPage.test.tsx with 4 page-level tests: renders toolbar when tier data present, renders tier board, opens ItemModal on add-item click, closes ItemModal on close trigger. Tests use @testing-library/react + real RTK store + minimal mocks for @react-spectrum/s2, @tiercade/ui, useExport, and urlSharing.",
-    "evidence_change_is_honest": "29 suites, 203 tests (up from 199), all green. New tests are deterministic: fireEvent.click drives useState transitions; no sleeps; assertions on data-testid presence/absence.",
+    "what_changed": "Added apps/web/src/pages/HeadToHeadPage.test.tsx (7 tests: all 4 render branches, showEndConfirm state machine open/close) and apps/web/src/pages/AnalyticsPage.test.tsx (4 tests: empty state, analytics heading, balance score, tier distribution). Tests use @testing-library/react + real RTK store + minimal mocks for @react-spectrum/s2, react-aria-components, react-router-dom, and useHeadToHeadHandlers.",
+    "evidence_change_is_honest": "31 suites, 215 tests (up from 203), all green. New tests are deterministic: fireEvent.click drives useState transitions; no sleeps; assertions on testid presence/absence and text content.",
     "targeted_finding_status": "resolved",
     "unintended_regression": null,
     "changed_paths": [
-      "apps/web/src/pages/TierBoardPage.test.tsx"
+      "apps/web/src/pages/HeadToHeadPage.test.tsx",
+      "apps/web/src/pages/AnalyticsPage.test.tsx"
     ],
     "interface_test_coverage_path": null
   },
   "implementation_review": {
     "verdict": "approved",
-    "reason": "All three checks passed: page-level test surface is added at the TierBoardPage Interface; tests exercise the modal-open state machine directly; no regressions introduced — purely additive test file with no source changes.",
+    "reason": "All three checks passed: page-level test surface added at HeadToHeadPage and AnalyticsPage Interfaces; tests exercise real state machines (showEndConfirm useState, 4 render branches, analytics data path); no regressions introduced — purely additive test files with no production source changes.",
     "checks": {
       "reality": "passed",
       "honesty": "passed",
