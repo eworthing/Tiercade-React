@@ -7,43 +7,12 @@ export interface OnboardingState {
   skipped: boolean;
 }
 
-const STORAGE_KEY = "tiercade-onboarding";
-
-// Load initial state from localStorage
-function loadInitialState(): OnboardingState {
-  if (typeof window === "undefined") {
-    return {
-      hasCompletedOnboarding: false,
-      currentStep: 0,
-      totalSteps: 5,
-      skipped: false,
-    };
-  }
-
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return {
-        hasCompletedOnboarding: parsed.hasCompletedOnboarding ?? false,
-        currentStep: 0,
-        totalSteps: 5,
-        skipped: parsed.skipped ?? false,
-      };
-    }
-  } catch {
-    // Ignore parse errors
-  }
-
-  return {
-    hasCompletedOnboarding: false,
-    currentStep: 0,
-    totalSteps: 5,
-    skipped: false,
-  };
-}
-
-const initialState: OnboardingState = loadInitialState();
+const initialState: OnboardingState = {
+  hasCompletedOnboarding: false,
+  currentStep: 0,
+  totalSteps: 5,
+  skipped: false,
+};
 
 export const onboardingSlice = createSlice({
   name: "onboarding",
@@ -91,27 +60,3 @@ export const {
 } = onboardingSlice.actions;
 
 export const onboardingReducer = onboardingSlice.reducer;
-
-/**
- * Persist onboarding state to localStorage.
- * Separated from reducers to keep them pure (no side effects).
- */
-export function persistOnboardingState(state: OnboardingState): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    if (state.hasCompletedOnboarding) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          hasCompletedOnboarding: true,
-          skipped: state.skipped,
-        })
-      );
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  } catch {
-    // Ignore storage errors (e.g., quota exceeded, private browsing)
-  }
-}

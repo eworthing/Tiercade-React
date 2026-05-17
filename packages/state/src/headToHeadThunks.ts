@@ -14,7 +14,6 @@ import {
   advanceAfterVote,
   skipCurrentPair as skipCurrentPairAction,
   recycleDeferredPairs,
-  clearDeferredPairs
 } from "./headToHeadSlice";
 import { setTiers } from "./tierSlice";
 import { captureSnapshot } from "./undoRedoThunks";

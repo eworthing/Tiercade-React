@@ -31,7 +31,8 @@ describe("Analytics", () => {
       const analytics = analyzeTierDistribution(sampleTiers, ["S", "A", "B", "C"]);
 
       expect(analytics.totalItems).toBe(6); // Including unranked
-      expect(analytics.totalTiers).toBe(4);
+      // totalTiers matches distribution.length (includes unranked) post-87382b6 fix
+      expect(analytics.totalTiers).toBe(5);
       expect(analytics.distribution).toHaveLength(5); // 4 tiers + unranked
 
       const sTier = analytics.distribution.find((d) => d.tierName === "S");
@@ -46,7 +47,8 @@ describe("Analytics", () => {
     test("identifies largest and smallest tiers", () => {
       const analytics = analyzeTierDistribution(sampleTiers, ["S", "A", "B", "C"]);
 
-      expect(analytics.largestTier.name).toBe("A");
+      // S and A both have 2 items; S appears first in tierOrder so S wins the largest slot
+      expect(analytics.largestTier.name).toBe("S");
       expect(analytics.largestTier.count).toBe(2);
 
       expect(analytics.smallestTier.name).toBe("B");
@@ -62,8 +64,8 @@ describe("Analytics", () => {
     test("calculates average items per tier", () => {
       const analytics = analyzeTierDistribution(sampleTiers, ["S", "A", "B", "C"]);
 
-      // Total items (excluding unranked) / total tiers = (2+2+1+0) / 4 = 1.25
-      expect(analytics.averageItemsPerTier).toBeCloseTo(1.25, 2);
+      // totalItems (6) / distribution.length (5, includes unranked) = 1.2 post-87382b6 fix
+      expect(analytics.averageItemsPerTier).toBeCloseTo(1.2, 2);
     });
   });
 
@@ -71,7 +73,8 @@ describe("Analytics", () => {
     test("identifies unique seasons", () => {
       const stats = analyzeSeasonDistribution(sampleTiers);
 
-      expect(stats.totalSeasons).toBe(3); // "1", "2", "3", "Final"
+      // Fixture seasons: "1" (S/Alpha, A/Beta, A/Sigma), "Final" (S/Omega), "2" (B/Gamma), "3" (unranked/Delta) = 4 distinct
+      expect(stats.totalSeasons).toBe(4);
       expect(stats.seasonsRepresented).toContain("1");
       expect(stats.seasonsRepresented).toContain("2");
       expect(stats.seasonsRepresented).toContain("3");
@@ -98,10 +101,10 @@ describe("Analytics", () => {
       const summary = generateAnalyticsSummary(analytics);
 
       expect(summary).toContain("Total Items: 6");
-      expect(summary).toContain("Total Tiers: 4");
+      expect(summary).toContain("Total Tiers: 5");
       expect(summary).toContain("S: 2 items");
       expect(summary).toContain("Empty Tiers: C");
-      expect(summary).toContain("Largest Tier: A");
+      expect(summary).toContain("Largest Tier: S");
       expect(summary).toContain("Smallest Tier: B");
     });
   });

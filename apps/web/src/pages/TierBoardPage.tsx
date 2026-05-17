@@ -17,71 +17,50 @@ import {
   Content,
   IllustratedMessage,
   Link,
-  Menu,
-  MenuItem,
-  MenuTrigger,
   Text,
   Badge,
   ToastQueue,
 } from "@react-spectrum/s2";
-import Add from "@react-spectrum/s2/icons/Add";
-import Settings from "@react-spectrum/s2/icons/Settings";
-import Share from "@react-spectrum/s2/icons/Share";
-import Download from "@react-spectrum/s2/icons/Download";
-import Copy from "@react-spectrum/s2/icons/Copy";
-import LinkIcon from "@react-spectrum/s2/icons/Link";
-import MovieCamera from "@react-spectrum/s2/icons/MovieCamera";
 import Addproject from "@react-spectrum/s2/illustrations/linear/Addproject";
 import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
-  selectTheme,
-  toggleSelection,
   clearSelection,
-  loadProject,
-  captureSnapshot,
-  addItemToTier,
-  updateItem,
-  setSortMode,
-  setSearchFilter,
-  toggleMediaTypeFilter,
-  clearFilters,
-  moveItemsBetweenTiers,
-  deleteItems,
+  selectTheme,
   // Memoized selectors
   selectTiers,
   selectTierOrder,
   selectSelection,
-  selectTierLabels,
-  selectTierColors,
+  selectTotalItemCount,
+  selectSelectedThemeId,
   selectProjectName,
   selectSortMode,
   selectFilters,
-  selectSelectedThemeId,
-  selectTotalItemCount,
 } from "@tiercade/state";
 import {
   DEFAULT_THEME_ID,
-  findThemeById,
-  getTierColorHex,
-  EFFECTS,
 } from "@tiercade/theme";
-import type { Item, GlobalSortMode, MediaType, Items } from "@tiercade/core";
-import { sortItems, filterAllTiers, isCelebrationTier, UNRANKED_TIER_ID } from "@tiercade/core";
+import type { Item } from "@tiercade/core";
+import { isCelebrationTier, UNRANKED_TIER_ID } from "@tiercade/core";
 import { ItemModal } from "../components/ItemModal";
 import { TierSettingsModal } from "../components/TierSettingsModal";
 import { BatchActionBar } from "../components/BatchActionBar";
+import { TierBoardToolbar } from "../components/TierBoardToolbar";
+import { CelebrationEffect } from "../components/CelebrationEffect";
 import {
   generateShareUrl,
-  getShareDataFromUrl,
-  clearShareDataFromUrl,
   copyToClipboard,
 } from "../utils/urlSharing";
 
-// Import new hooks
+// Custom hooks
 import { useTierBoardKeyboard } from "../hooks/useTierBoardKeyboard";
 import { useExport } from "../hooks/useExport";
 import { usePresentationHandlers } from "../hooks/usePresentationHandlers";
+import { useShareImport } from "../hooks/useShareImport";
+import { useTierDisplay } from "../hooks/useTierDisplay";
+import { useTierFilter } from "../hooks/useTierFilter";
+import { useItemInteraction } from "../hooks/useItemInteraction";
+import { useBatchActions } from "../hooks/useBatchActions";
 
 export const TierBoardPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -91,14 +70,10 @@ export const TierBoardPage: React.FC = () => {
   const tierOrder = useAppSelector(selectTierOrder);
   const selection = useAppSelector(selectSelection);
   const selectedThemeId = useAppSelector(selectSelectedThemeId);
-  const stateTierLabels = useAppSelector(selectTierLabels);
-  const stateTierColors = useAppSelector(selectTierColors);
   const projectName = useAppSelector(selectProjectName);
-  const sortMode = useAppSelector(selectSortMode);
-  const filters = useAppSelector(selectFilters);
   const totalItems = useAppSelector(selectTotalItemCount);
 
-  // Modal states
+  // Modal/UI state
   const [showAddItem, setShowAddItem] = useState(false);
   const [showTierSettings, setShowTierSettings] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
@@ -107,7 +82,7 @@ export const TierBoardPage: React.FC = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationTier, setCelebrationTier] = useState<string | null>(null);
 
-  // Use custom hooks
+  // Custom hooks — each owns one concern
   useTierBoardKeyboard({
     onAddItem: () => setShowAddItem(true),
     onShowHelp: () => setShowKeyboardHelp(true),
@@ -118,6 +93,33 @@ export const TierBoardPage: React.FC = () => {
   });
 
   const presentation = usePresentationHandlers();
+  useShareImport();
+
+  const { tierColors, tierLabels } = useTierDisplay();
+
+  const {
+    processedTiers,
+    filteredItems,
+    handleSortModeChange,
+    handleSearchChange,
+    handleMediaTypeToggle,
+    handleClearFilters,
+  } = useTierFilter();
+
+  const {
+    onItemClick: handleItemClick,
+    onFileDrop: handleFileDrop,
+    onItemMediaDrop: handleItemMediaDrop,
+  } = useItemInteraction(dispatch);
+
+  const {
+    onBatchMoveToTier: handleBatchMoveToTier,
+    onBatchDelete: handleBatchDelete,
+  } = useBatchActions(dispatch);
+
+  // Also read sortMode and filters for SortFilterBar props
+  const sortMode = useAppSelector(selectSortMode);
+  const filters = useAppSelector(selectFilters);
 
   // Initialize default theme on first load
   useEffect(() => {
@@ -126,7 +128,7 @@ export const TierBoardPage: React.FC = () => {
     }
   }, [dispatch, selectedThemeId]);
 
-  // Load default project on mount if no tier data exists.
+  // Load default project on mount if no tier data exists
   useEffect(() => {
     const hasTierData = tierOrder.length > 0;
     const hasTierItems = Object.keys(tiers).length > 0;
@@ -136,204 +138,26 @@ export const TierBoardPage: React.FC = () => {
     }
   }, [dispatch, tierOrder.length, tiers]);
 
-  // Check for shared tier list in URL on mount
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const hasShareParam = url.searchParams.has("share");
-    if (!hasShareParam) return;
-
-    const sharedData = getShareDataFromUrl();
-    if (sharedData) {
-      dispatch(captureSnapshot("Load Shared"));
-      dispatch(
-        loadProject({
-          tiers: sharedData.tiers,
-          tierOrder: sharedData.tierOrder,
-          tierLabels: sharedData.tierLabels,
-          tierColors: sharedData.tierColors,
-          projectName: sharedData.projectName,
-        })
-      );
-      clearShareDataFromUrl();
-      ToastQueue.positive("Shared tier list loaded!");
-    } else {
-      clearShareDataFromUrl();
-      ToastQueue.negative("Could not load shared tier list — the link may be corrupted.");
-    }
-  }, [dispatch]); // dispatch is stable
-
-  // Compute tier colors and labels from theme + custom overrides
-  const { tierColors, tierLabels } = useMemo(() => {
-    const themeId = selectedThemeId ?? DEFAULT_THEME_ID;
-    const theme = findThemeById(themeId);
-
-    const colors: Record<string, string> = {};
-    const labels: Record<string, string> = {};
-
-    tierOrder.forEach((tierId, index) => {
-      colors[tierId] =
-        stateTierColors[tierId] ??
-        (theme ? getTierColorHex(theme, tierId, index) : "#1e293b");
-
-      if (stateTierLabels[tierId]) {
-        labels[tierId] = stateTierLabels[tierId];
-      } else if (theme) {
-        const themeTier = theme.tiers.find(
-          (t) =>
-            !t.isUnranked &&
-            (t.name.toLowerCase() === tierId.toLowerCase() || t.index === index)
-        );
-        labels[tierId] = themeTier?.name ?? tierId;
-      } else {
-        labels[tierId] = tierId;
-      }
-    });
-
-    colors[UNRANKED_TIER_ID] =
-      stateTierColors[UNRANKED_TIER_ID] ??
-      (theme ? getTierColorHex(theme, UNRANKED_TIER_ID) : "#374151");
-    labels[UNRANKED_TIER_ID] = stateTierLabels[UNRANKED_TIER_ID] ?? "Unranked";
-
-    return { tierColors: colors, tierLabels: labels };
-  }, [selectedThemeId, tierOrder, stateTierLabels, stateTierColors]);
-
-  const handleItemClick = useCallback(
-    (item: Item) => {
-      dispatch(toggleSelection(item.id));
-    },
-    [dispatch]
-  );
-
   const handleItemDoubleClick = useCallback((item: Item) => {
     setEditingItem(item);
   }, []);
-
-  const handleFileDrop = useCallback(
-    (tierId: string, file: FileDropResult) => {
-      dispatch(captureSnapshot("Add Item from File"));
-
-      const id = `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-      const item: Item = {
-        id,
-        name: file.fileName,
-        mediaType: file.mediaType,
-      };
-
-      if (file.mediaType === "video") {
-        item.videoUrl = file.dataUrl;
-      } else if (file.mediaType === "audio") {
-        item.audioUrl = file.dataUrl;
-      } else {
-        item.imageUrl = file.dataUrl;
-      }
-
-      dispatch(addItemToTier({ item, tierName: tierId }));
-    },
-    [dispatch]
-  );
-
-  const handleItemMediaDrop = useCallback(
-    (itemId: string, file: FileDropResult) => {
-      dispatch(captureSnapshot("Update Item Media"));
-
-      const updates: Partial<Item> = {
-        mediaType: file.mediaType,
-        imageUrl: undefined,
-        videoUrl: undefined,
-        audioUrl: undefined,
-      };
-
-      if (file.mediaType === "video") {
-        updates.videoUrl = file.dataUrl;
-      } else if (file.mediaType === "audio") {
-        updates.audioUrl = file.dataUrl;
-      } else {
-        updates.imageUrl = file.dataUrl;
-      }
-
-      dispatch(updateItem({ itemId, updates }));
-    },
-    [dispatch]
-  );
 
   const handleCopyLink = useCallback(async () => {
     const url = generateShareUrl(
       projectName,
       tierOrder,
-      stateTierLabels,
-      stateTierColors as Record<string, string>,
+      tierLabels,
+      tierColors as Record<string, string>,
       tiers
     );
     await copyToClipboard(url);
-  }, [projectName, tierOrder, stateTierLabels, stateTierColors, tiers]);
-
-  // Apply filtering and sorting
-  const processedTiers = useMemo((): Items => {
-    const filtered = filterAllTiers(tiers, filters);
-
-    if (sortMode.type === "custom") {
-      return filtered;
-    }
-
-    const sorted: Items = {};
-    for (const [tierName, items] of Object.entries(filtered)) {
-      sorted[tierName] = sortItems(items, sortMode);
-    }
-    return sorted;
-  }, [tiers, filters, sortMode]);
-
-  const filteredItems = useMemo(() => {
-    return Object.values(processedTiers).flat().length;
-  }, [processedTiers]);
-
-  // Sort/filter handlers
-  const handleSortModeChange = useCallback(
-    (mode: GlobalSortMode) => {
-      dispatch(setSortMode(mode));
-    },
-    [dispatch]
-  );
-
-  const handleSearchChange = useCallback(
-    (search: string) => {
-      dispatch(setSearchFilter(search));
-    },
-    [dispatch]
-  );
-
-  const handleMediaTypeToggle = useCallback(
-    (mediaType: MediaType) => {
-      dispatch(toggleMediaTypeFilter(mediaType));
-    },
-    [dispatch]
-  );
-
-  const handleClearFilters = useCallback(() => {
-    dispatch(clearFilters());
-  }, [dispatch]);
-
-  // Batch operation handlers
-  const handleBatchMoveToTier = useCallback(
-    (targetTierName: string) => {
-      if (selection.length === 0) return;
-      dispatch(captureSnapshot("Batch Move"));
-      dispatch(moveItemsBetweenTiers({ itemIds: selection, targetTierName }));
-    },
-    [dispatch, selection]
-  );
-
-  const handleBatchDelete = useCallback(() => {
-    if (selection.length === 0) return;
-    dispatch(captureSnapshot("Batch Delete"));
-    dispatch(deleteItems(selection));
-  }, [dispatch, selection]);
+  }, [projectName, tierOrder, tierLabels, tierColors, tiers]);
 
   // Enhanced move handler for celebrations
   const handleMoveItemWithCelebration = useCallback(
     (itemId: string, targetTierName: string) => {
       dispatch(moveItemBetweenTiersWithUndo(itemId, targetTierName));
 
-      // Trigger celebration using constant instead of magic string
       if (
         presentation.isPresenting &&
         presentation.celebrateSTier &&
@@ -456,17 +280,50 @@ export const TierBoardPage: React.FC = () => {
 
       {/* Empty state hint */}
       {totalItems === 0 && (
-        <div style={{ display: "flex", justifyContent: "center", padding: "32px 0" }}>
-          <IllustratedMessage>
-            <Addproject />
-            <Heading>Your tier list is empty</Heading>
-            <Content>
-              <Text>Add items to start ranking.</Text>
-            </Content>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "56px 24px",
+          borderRadius: 16,
+          border: "1px dashed var(--spectrum-gray-700, #24263a)",
+          background: "radial-gradient(ellipse at center, var(--spectrum-blue-100, rgba(56,189,248,0.03)), transparent 60%)",
+        }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            border: "1.5px dashed var(--spectrum-blue-600, #38bdf8)",
+            background: "var(--spectrum-blue-100, rgba(56,189,248,0.06))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 20,
+          }}>
+            <svg width={24} height={24} fill="none" viewBox="0 0 24 24" stroke="var(--spectrum-blue-600, #38bdf8)" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <span style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 24,
+            fontWeight: 600,
+            color: "var(--spectrum-gray-100, #e2e4e8)",
+            marginBottom: 8,
+          }}>
+            Ready to rank?
+          </span>
+          <span style={{
+            fontSize: 15,
+            color: "var(--spectrum-gray-400, #8b90a0)",
+            marginBottom: 20,
+          }}>
+            Drop images, add items, or browse templates.
+          </span>
           <Button variant="accent" onPress={() => setShowAddItem(true)}>
             Add your first item
           </Button>
-          </IllustratedMessage>
         </div>
       )}
 
@@ -479,7 +336,7 @@ export const TierBoardPage: React.FC = () => {
         </Text>
       )}
 
-      {/* Modals - using unified ItemModal */}
+      {/* Modals */}
       <ItemModal open={showAddItem} onClose={() => setShowAddItem(false)} mode="add" />
       <ItemModal open={!!editingItem} onClose={() => setEditingItem(null)} item={editingItem} mode="edit" />
       <TierSettingsModal open={showTierSettings} onClose={() => setShowTierSettings(false)} />
@@ -528,7 +385,7 @@ export const TierBoardPage: React.FC = () => {
         </Dialog>
       </DialogTrigger>
 
-      {/* Batch Action Bar - appears when items are selected */}
+      {/* Batch Action Bar */}
       <BatchActionBar
         selectedCount={selection.length}
         tierOrder={tierOrder}
@@ -543,94 +400,8 @@ export const TierBoardPage: React.FC = () => {
 };
 
 // ============================================================================
-// Extracted Sub-components
+// Keyboard Shortcuts Content (local to page — no export needed)
 // ============================================================================
-
-interface TierBoardToolbarProps {
-  totalItems: number;
-  isExporting: boolean;
-  isPresenting: boolean;
-  onAddItem: () => void;
-  onTierSettings: () => void;
-  onExportPNG: () => void;
-  onCopyImage: () => void;
-  onCopyLink: () => void;
-  onStreamMode: () => void;
-}
-
-const TierBoardToolbar: React.FC<TierBoardToolbarProps> = ({
-  totalItems,
-  isExporting,
-  isPresenting,
-  onAddItem,
-  onTierSettings,
-  onExportPNG,
-  onCopyImage,
-  onCopyLink,
-  onStreamMode,
-}) => {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 16,
-        flexWrap: "wrap",
-      }}
-    >
-      <ButtonGroup>
-        <Button variant="accent" size="S" onPress={onAddItem}>
-          <Add /> Add item
-        </Button>
-        <Button variant="secondary" size="S" onPress={onTierSettings}>
-          <Settings /> Tiers
-        </Button>
-
-        {totalItems > 0 && (
-          <MenuTrigger>
-            <Button variant="secondary" size="S" isDisabled={isExporting}>
-              <Share /> Share
-            </Button>
-            <Menu
-              aria-label="Share"
-              onAction={(key) => {
-                const action = String(key);
-                if (action === "download") onExportPNG();
-                if (action === "copy-image") onCopyImage();
-                if (action === "copy-link") onCopyLink();
-              }}
-            >
-              <MenuItem id="download">
-                <Download /> Download PNG
-              </MenuItem>
-              <MenuItem id="copy-image">
-                <Copy /> Copy image
-              </MenuItem>
-              <MenuItem id="copy-link">
-                <LinkIcon /> Copy link
-              </MenuItem>
-            </Menu>
-          </MenuTrigger>
-        )}
-
-        <Button
-          variant={isPresenting ? "accent" : "secondary"}
-          size="S"
-          onPress={onStreamMode}
-        >
-          <MovieCamera /> {isPresenting ? "Live" : "Stream"}
-        </Button>
-      </ButtonGroup>
-
-      <Badge variant="neutral" fillStyle="subtle">
-        {totalItems} items
-      </Badge>
-    </div>
-  );
-};
-
-TierBoardToolbar.displayName = "TierBoardToolbar";
 
 const KeyboardShortcutsContent: React.FC = () => (
   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -671,63 +442,3 @@ const ShortcutRow: React.FC<{ keys: string[]; description: string }> = ({ keys, 
     </div>
   </div>
 );
-
-// ============================================================================
-// Celebration Effect
-// ============================================================================
-
-const CELEBRATION_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
-  id: i,
-  left: `${(i * 5) % 100}%`,
-  top: `${((i * 7) + 10) % 100}%`,
-  duration: 1 + (i % 3) * 0.3,
-  delay: (i % 5) * 0.1,
-  emoji: ["⭐", "✨", "🌟"][i % 3],
-}));
-
-const CelebrationEffect: React.FC<{ onComplete: () => void }> = React.memo(({ onComplete }) => {
-  React.useEffect(() => {
-    const timer = setTimeout(onComplete, EFFECTS.CELEBRATION_DURATION);
-    return () => clearTimeout(timer);
-  }, [onComplete]);
-
-  return (
-    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 100 }}>
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center"
-      }}>
-        <div style={{ position: "relative" }}>
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            filter: "blur(48px)",
-            backgroundColor: "rgba(234, 179, 8, 0.3)",
-            borderRadius: "50%"
-          }} />
-          <div style={{ fontSize: 48, animation: "bounce 1s infinite" }}>⭐</div>
-        </div>
-      </div>
-      {CELEBRATION_PARTICLES.map((particle) => (
-        <div
-          key={particle.id}
-          style={{
-            position: "absolute",
-            fontSize: 24,
-            left: particle.left,
-            top: particle.top,
-            animation: `confetti ${particle.duration}s ease-out forwards`,
-            animationDelay: `${particle.delay}s`,
-          }}
-        >
-          {particle.emoji}
-        </div>
-      ))}
-    </div>
-  );
-});
-
-CelebrationEffect.displayName = "CelebrationEffect";

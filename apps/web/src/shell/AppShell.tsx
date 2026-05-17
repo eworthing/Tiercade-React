@@ -48,17 +48,15 @@ export const AppShell: React.FC = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(projectName);
 
-  // Page transition state
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  // Page transition via CSS animation key
+  const [pageKey, setPageKey] = useState(0);
   const prevPathRef = useRef(location.pathname);
 
-  // Trigger page transition animation
+  // Trigger page transition animation via key bump
   useEffect(() => {
     if (prevPathRef.current !== location.pathname) {
-      setIsTransitioning(true);
-      const timer = setTimeout(() => setIsTransitioning(false), 200);
+      setPageKey(k => k + 1);
       prevPathRef.current = location.pathname;
-      return () => clearTimeout(timer);
     }
   }, [location.pathname]);
 
@@ -154,9 +152,9 @@ export const AppShell: React.FC = () => {
           position: "sticky",
           top: 0,
           zIndex: 40,
-          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
-          backdropFilter: "blur(8px)",
+          borderBottom: "1px solid var(--spectrum-gray-800, #1a1b2a)",
+          backgroundColor: "var(--spectrum-gray-900, rgba(10, 11, 20, 0.88))",
+          backdropFilter: "blur(12px) saturate(120%)",
         }}>
           <div style={{
             maxWidth: 1400,
@@ -178,27 +176,34 @@ export const AppShell: React.FC = () => {
                 cursor: "pointer",
                 padding: "4px 8px",
                 borderRadius: 8,
+                minHeight: 44,
+                minWidth: 44,
               }}
             >
               <div style={{
                 width: 36,
                 height: 36,
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                borderRadius: 8,
+                background: "linear-gradient(135deg, var(--spectrum-blue-600, #00f0ff), var(--spectrum-purple-600, #8b5cf6))",
+                borderRadius: 10,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                boxShadow: "0 0 12px var(--spectrum-blue-100, rgba(0, 240, 255, 0.2))",
               }}>
                 <span style={{
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: 700,
-                  color: "white",
+                  fontFamily: "var(--font-display)",
+                  color: "var(--spectrum-white, #0a0a12)",
                 }}>T</span>
               </div>
               <span style={{
-                fontSize: 20,
-                fontWeight: 600,
+                fontSize: 18,
+                fontWeight: 700,
+                fontFamily: "var(--font-display)",
                 color: "var(--spectrum-gray-100)",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
               }}>
                 Tiercade
               </span>
@@ -211,7 +216,7 @@ export const AppShell: React.FC = () => {
                 alignItems: "center",
                 gap: 8,
               }}>
-                <span style={{ color: "var(--spectrum-gray-500)", fontSize: 18 }}>/</span>
+                <span style={{ color: "#4a4f65", fontSize: 18 }}>/</span>
                 {isEditingName ? (
                   <TextField
                     aria-label="Project name"
@@ -233,7 +238,7 @@ export const AppShell: React.FC = () => {
                       cursor: "pointer",
                       fontSize: 14,
                       fontWeight: 500,
-                      color: "var(--spectrum-gray-300)",
+                      color: "#8b90a0",
                     }}
                   >
                     {projectName}
@@ -245,12 +250,17 @@ export const AppShell: React.FC = () => {
             {/* Spacer */}
             <div style={{ flex: 1 }} />
 
-            {/* Actions */}
+            {/* Actions — subdued at rest */}
             <div style={{
               display: "flex",
               alignItems: "center",
               gap: 4,
-            }}>
+              opacity: 0.6,
+              transition: "opacity 200ms ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.6"; }}
+            >
               <ActionButton
                 isQuiet
                 size="S"
@@ -301,14 +311,14 @@ export const AppShell: React.FC = () => {
 
         {/* Main Content */}
         <main
+          key={pageKey}
+          className="page-enter"
           style={{
             flex: 1,
             maxWidth: 1400,
             width: "100%",
             margin: "0 auto",
             padding: 24,
-            opacity: isTransitioning ? 0.5 : 1,
-            transition: "opacity 200ms ease",
           }}
         >
           <PageErrorBoundary>
@@ -327,13 +337,17 @@ export const AppShell: React.FC = () => {
 
         {/* Footer */}
         <footer style={{
-          borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-          padding: "16px 24px",
+          borderTop: "1px solid var(--spectrum-gray-800, #1a1b2a)",
+          padding: "14px 24px",
           textAlign: "center",
         }}>
-          <Text>
-            Tiercade · Your data is stored locally in this browser
-          </Text>
+          <span style={{
+            fontSize: 12,
+            fontWeight: 400,
+            color: "var(--spectrum-gray-500, #4a4f65)",
+          }}>
+            Data stored locally in this browser
+          </span>
         </footer>
       </div>
 
@@ -353,7 +367,7 @@ const PageSkeleton: React.FC = () => (
       height: 32,
       width: 200,
       borderRadius: 8,
-      background: "rgba(255, 255, 255, 0.05)",
+      background: "var(--spectrum-gray-800, #15161f)",
     }} />
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {[0, 1, 2].map((i) => (
@@ -362,7 +376,7 @@ const PageSkeleton: React.FC = () => (
           style={{
             height: 80,
             borderRadius: 12,
-            background: "rgba(255, 255, 255, 0.03)",
+            background: "var(--spectrum-gray-900, #0f1019)",
           }}
         />
       ))}

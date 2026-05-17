@@ -68,11 +68,4 @@ export function reorderWithin(
   };
 }
 
-/**
- * Shape validator preserved for API compatibility.
- * TypeScript typing enforces most invariants at compile time.
- */
-export function validateTiersShape(_tiers: Items): boolean {
-  return true;
-}
 

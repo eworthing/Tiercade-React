@@ -3,6 +3,7 @@
 
 import type { Item, Items, GlobalSortMode } from "./models";
 import { AttributeType } from "./models";
+export { AttributeType };
 import { compareStrings, compareWithNulls } from "./utils/comparison";
 
 /**

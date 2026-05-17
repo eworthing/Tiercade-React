@@ -1,12 +1,7 @@
-import React, { useEffect, useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../hooks/useAppDispatch";
+import React, { useState } from "react";
 import { useAppSelector } from "../hooks/useAppSelector";
+import { useHeadToHeadHandlers } from "../hooks/useHeadToHeadHandlers";
 import {
-  startHeadToHead,
-  voteCurrentPair,
-  skipPair,
-  finishHeadToHead,
   selectHeadToHeadCurrentPair,
   selectHeadToHeadDeferredPairs,
   selectHeadToHeadIsActive,
@@ -70,8 +65,9 @@ const comparisonCard = style({
 });
 
 const mediaBox = style({
-  width: 128,
-  height: 128,
+  width: "full",
+  maxWidth: 240,
+  aspectRatio: "square",
   borderRadius: "default",
   overflow: "hidden",
   backgroundColor: "gray-200",
@@ -100,20 +96,36 @@ interface ComparisonCardProps {
 }
 
 const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, onClick }) => {
+  const [isFlashing, setIsFlashing] = useState(false);
   const fallbackLabel = shortcut === 1 ? "A" : "B";
   const itemName = item.name ?? item.id;
 
+  const handleClick = () => {
+    if (isFlashing) return;
+    setIsFlashing(true);
+    setTimeout(() => {
+      setIsFlashing(false);
+      onClick();
+    }, 150);
+  };
+
   return (
     <AriaButton
-      onPress={onClick}
+      onPress={handleClick}
       data-testid={`h2h-card-${side}`}
       aria-label={`Select ${itemName} as winner (press ${shortcut} or ${side === "left" ? "left arrow" : "right arrow"})`}
       className={comparisonCard}
+      style={{
+        transform: isFlashing ? "scale(0.96)" : "scale(1)",
+        transition: "transform 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms ease, background-color 150ms ease",
+        borderColor: isFlashing ? "var(--spectrum-blue-600, #2563eb)" : undefined,
+        backgroundColor: isFlashing ? "var(--spectrum-blue-100, rgba(37, 99, 235, 0.1))" : undefined,
+      }}
     >
-      {item.imageUrl ? (
+      {item.media?.type === "image" || item.media?.type === "gif" ? (
         <div className={mediaBox}>
           <img
-            src={item.imageUrl}
+            src={item.media.url}
             alt={itemName}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
@@ -137,8 +149,6 @@ const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, o
 };
 
 export const HeadToHeadPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const isActive = useAppSelector(selectHeadToHeadIsActive);
   const currentPair = useAppSelector(selectHeadToHeadCurrentPair);
   const pairsQueue = useAppSelector(selectHeadToHeadPairsQueue);
@@ -149,73 +159,14 @@ export const HeadToHeadPage: React.FC = () => {
   const skippedCount = useAppSelector(selectHeadToHeadSkippedCount);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
 
-  const handleStart = useCallback(() => {
-    dispatch(startHeadToHead());
-  }, [dispatch]);
-
-  const handleVoteLeft = useCallback(() => {
-    if (!currentPair) return;
-    dispatch(voteCurrentPair(currentPair[0].id));
-  }, [dispatch, currentPair]);
-
-  const handleVoteRight = useCallback(() => {
-    if (!currentPair) return;
-    dispatch(voteCurrentPair(currentPair[1].id));
-  }, [dispatch, currentPair]);
-
-  const handleSkip = useCallback(() => {
-    // Properly defer the pair for later instead of fake voting
-    if (!currentPair) return;
-    dispatch(skipPair());
-  }, [dispatch, currentPair]);
-
-  const handleFinish = useCallback(() => {
-    dispatch(finishHeadToHead());
-    navigate("/");
-  }, [dispatch, navigate]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    if (!isActive || !currentPair) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-
-      // Ignore keyboard shortcuts when a modal/dialog is open
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
-        return;
-      }
-
-      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable) {
-        return;
-      }
-
-      switch (e.key) {
-        case "ArrowLeft":
-        case "1":
-          e.preventDefault();
-          handleVoteLeft();
-          break;
-        case "ArrowRight":
-        case "2":
-          e.preventDefault();
-          handleVoteRight();
-          break;
-        case " ":
-          e.preventDefault();
-          handleSkip();
-          break;
-        case "Escape":
-          e.preventDefault();
-          setShowEndConfirm(true);
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isActive, currentPair, handleVoteLeft, handleVoteRight, handleSkip]);
+  const {
+    onStart: handleStart,
+    onVoteLeft: handleVoteLeft,
+    onVoteRight: handleVoteRight,
+    onSkip: handleSkip,
+    onFinish: handleFinish,
+    onGoHome,
+  } = useHeadToHeadHandlers(() => setShowEndConfirm(true));
 
   // Empty state - not enough items
   if (totalItems < 2) {
@@ -225,7 +176,7 @@ export const HeadToHeadPage: React.FC = () => {
         <Text>
           Head-to-Head comparison requires at least 2 items in your tier list.
         </Text>
-        <Button variant="secondary" onPress={() => navigate("/")}>
+        <Button variant="secondary" onPress={onGoHome}>
           Go to Board
         </Button>
       </div>
@@ -236,7 +187,23 @@ export const HeadToHeadPage: React.FC = () => {
   if (!isActive) {
     return (
       <div className={pageStack} data-testid="h2h-page">
-        <div className={centered}>
+        <div className={centered} style={{
+          background: "radial-gradient(ellipse at center, var(--spectrum-purple-100, rgba(255,45,120,0.03)), transparent 60%)",
+          padding: "48px 24px",
+          borderRadius: 16,
+        }}>
+          <span style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 48,
+            fontWeight: 700,
+            background: "linear-gradient(135deg, var(--spectrum-purple-600, #ff2d78), var(--spectrum-blue-600, #00f0ff))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            lineHeight: 1.1,
+          }}>
+            VS
+          </span>
           <Heading level={1} data-testid="h2h-heading">
             Head-to-Head
           </Heading>

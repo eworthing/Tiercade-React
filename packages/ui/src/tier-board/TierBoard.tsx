@@ -228,6 +228,7 @@ export const TierBoard: React.FC<TierBoardProps> = ({
               revealMode={revealMode}
               revealedItems={revealedItems}
               onItemReveal={onItemReveal}
+              animationIndex={orderedIds.indexOf(tierId)}
             />
           </SortableContext>
         ))}
@@ -266,23 +267,25 @@ interface DragPreviewProps {
 }
 
 const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
-  const hasImage = !!item.imageUrl;
-  const hasVideo = !!item.videoUrl;
-  const hasAudio = !!item.audioUrl;
-  const hasMedia = hasImage || hasVideo || hasAudio;
+  const media = item.media;
+  const hasImage = media?.type === "image" || media?.type === "gif";
+  const hasVideo = media?.type === "video";
+  const hasAudio = media?.type === "audio";
+  const hasMedia = media !== undefined;
 
   const containerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
-    backgroundColor: "var(--spectrum-gray-100)",
-    border: "1px solid var(--spectrum-blue-700)",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
+    borderRadius: 10,
+    backgroundColor: "var(--spectrum-gray-900, #15161f)",
+    border: "1px solid var(--spectrum-gray-700, rgba(255,255,255,0.2))",
+    boxShadow: "0 16px 32px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--spectrum-blue-600, rgba(56, 189, 248, 0.5))",
     cursor: "grabbing",
+    transform: "scale(1.05)",
     ...(hasMedia
-      ? { width: 80, height: 80 }
+      ? { width: 88, height: 88 }
       : { padding: "8px 12px" }
     ),
   };
@@ -292,7 +295,7 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
       {hasVideo ? (
         <>
           <video
-            src={item.videoUrl}
+            src={media!.url}
             style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
             loop
             muted
@@ -324,7 +327,7 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
       ) : hasImage ? (
         <>
           <Image
-            src={item.imageUrl}
+            src={media!.url}
             alt={item.name ?? item.id}
             UNSAFE_style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           />

@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppSelector } from "../hooks/useAppSelector";
 import { useAppDispatch } from "../hooks/useAppDispatch";
-import { selectTheme } from "@tiercade/state";
+import { selectTheme, selectSelectedThemeId } from "@tiercade/state";
 import { Card, CardView, Heading, Text } from "@react-spectrum/s2";
 import {
   BUNDLED_THEMES,
@@ -38,7 +38,7 @@ const cardViewHeight = style({ height: 640 });
 
 export function ThemesPage() {
   const dispatch = useAppDispatch();
-  const selectedThemeId = useAppSelector((state) => state.theme.selectedThemeId);
+  const selectedThemeId = useAppSelector(selectSelectedThemeId);
   const currentThemeId = selectedThemeId ?? DEFAULT_THEME_ID;
 
   const handleSelectTheme = (themeId: string) => {
@@ -48,7 +48,7 @@ export function ThemesPage() {
   return (
     <div className={page}>
       <div className={header}>
-        <Heading level={1}>Themes</Heading>
+        <Heading level={1} UNSAFE_style={{ fontFamily: "var(--font-display)" }}>Themes</Heading>
         <Text>Choose a color theme for your tier list</Text>
       </div>
 

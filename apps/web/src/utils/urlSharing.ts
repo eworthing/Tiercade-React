@@ -40,7 +40,7 @@ export function encodeShareUrl(
           const compact: CompactItem = { i: item.id };
           if (item.name) compact.n = item.name;
           if (item.seasonString) compact.s = item.seasonString;
-          if (item.imageUrl) compact.u = item.imageUrl;
+          if (item.media?.type === "image" || item.media?.type === "gif") compact.u = item.media.url;
           return compact;
         }),
       ])
@@ -81,7 +81,7 @@ export function decodeShareUrl(encoded: string): {
           id: c.i,
           name: c.n,
           seasonString: c.s,
-          imageUrl: c.u,
+          media: c.u ? { type: "image", url: c.u } : undefined,
         };
         return item;
       });

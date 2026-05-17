@@ -22,7 +22,8 @@
   "scripts": {
     "test:core": "jest --config packages/core/jest.config.ts",
     "test:state": "jest --config packages/state/jest.config.ts",
-    "test:ui": "jest --config packages/ui/jest.config.ts"
+    "test:ui": "jest --config packages/ui/jest.config.ts",
+    "test:hooks": "jest --config apps/web/jest.config.ts"
   },
   "workspaces": {
     "packages": [

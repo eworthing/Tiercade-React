@@ -99,6 +99,9 @@ export const selectHasActiveFilters = createSelector(
 /** Select the currently selected theme ID */
 export const selectSelectedThemeId = (state: RootState) => state.theme.selectedThemeId;
 
+/** Select the current theme ID (alias kept for backward compat) */
+export const selectCurrentThemeId = selectSelectedThemeId;
+
 /** Select available themes from the theme slice */
 export const selectAvailableThemes = (state: RootState) => state.theme.availableThemes;
 

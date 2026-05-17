@@ -108,9 +108,9 @@ export const StreamingOverlay: React.FC<StreamingOverlayProps> = ({
       {showCurrentItem && currentItem && (
         <div style={currentItemOverlayStyle}>
           <div style={currentItemCardStyle}>
-            {currentItem.imageUrl && (
+            {(currentItem.media?.type === "image" || currentItem.media?.type === "gif") && (
               <img
-                src={currentItem.imageUrl}
+                src={currentItem.media.url}
                 alt=""
                 style={{
                   width: 40,
@@ -303,9 +303,10 @@ export const MysteryCard: React.FC<MysteryCardProps> = ({
   }
 
   // Revealed card - show the actual item
-  const hasImage = !!item.imageUrl;
-  const hasVideo = !!item.videoUrl;
-  const hasAudio = !!item.audioUrl;
+  const media = item.media;
+  const hasImage = media?.type === "image" || media?.type === "gif";
+  const hasVideo = media?.type === "video";
+  const hasAudio = media?.type === "audio";
 
   const selectedRingStyle: React.CSSProperties = isSelected
     ? {
@@ -326,7 +327,7 @@ export const MysteryCard: React.FC<MysteryCardProps> = ({
     >
       {hasVideo ? (
         <video
-          src={item.videoUrl}
+          src={media!.url}
           style={{
             width: "100%",
             height: "100%",
@@ -381,7 +382,7 @@ export const MysteryCard: React.FC<MysteryCardProps> = ({
       ) : hasImage ? (
         <>
           <img
-            src={item.imageUrl}
+            src={media!.url}
             alt={item.name ?? item.id}
             style={{
               width: "100%",

@@ -22,6 +22,7 @@ import {
   deleteItem,
   captureSnapshot,
 } from "@tiercade/state";
+import { createItem } from "@tiercade/core";
 import type { Item, MediaType } from "@tiercade/core";
 
 interface ItemModalProps {
@@ -66,7 +67,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   } = useItemForm({ initialItem: item });
 
   const handleSubmit = useCallback(
-    (e?: React.FormEvent) => {
+    (e?: React.FormEvent, keepOpen: boolean = false) => {
       e?.preventDefault();
 
       if (!validate()) return;
@@ -84,61 +85,37 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
         dispatch(captureSnapshot("Edit Item"));
 
-        // Build updates based on media type
+        // Build updates using the discriminated media union
         const updates: Partial<Item> = {
           name: trimmedName,
           seasonString: trimmedSeasonString || undefined,
           description: trimmedDescription || undefined,
-          mediaType: values.mediaUrl ? values.mediaType : undefined,
-          // Clear other media types when changing
-          imageUrl: undefined,
-          videoUrl: undefined,
-          audioUrl: undefined,
+          media: values.mediaUrl
+            ? { type: values.mediaType as "image" | "gif" | "video" | "audio", url: values.mediaUrl }
+            : undefined,
         };
-
-        if (values.mediaUrl) {
-          if (values.mediaType === "video") {
-            updates.videoUrl = values.mediaUrl;
-          } else if (values.mediaType === "audio") {
-            updates.audioUrl = values.mediaUrl;
-          } else {
-            updates.imageUrl = values.mediaUrl;
-          }
-        }
 
         dispatch(updateItem({ itemId: item.id, updates }));
       } else {
         // Add mode - create new item
         dispatch(captureSnapshot("Add Item"));
 
-        const newItem: Item = {
-          id: generateId("item"),
+        const newItem = createItem(generateId("item"), {
           name: trimmedName,
-        };
-
-        if (trimmedSeasonString) {
-          newItem.seasonString = trimmedSeasonString;
-        }
-        if (trimmedDescription) {
-          newItem.description = trimmedDescription;
-        }
-
-        if (values.mediaUrl) {
-          newItem.mediaType = values.mediaType;
-          if (values.mediaType === "video") {
-            newItem.videoUrl = values.mediaUrl;
-          } else if (values.mediaType === "audio") {
-            newItem.audioUrl = values.mediaUrl;
-          } else {
-            newItem.imageUrl = values.mediaUrl;
-          }
-        }
+          seasonString: trimmedSeasonString || undefined,
+          description: trimmedDescription || undefined,
+          media: values.mediaUrl
+            ? { type: values.mediaType as "image" | "gif" | "video" | "audio", url: values.mediaUrl }
+            : undefined,
+        });
 
         dispatch(addItemToUnranked(newItem));
       }
 
       reset();
-      onClose();
+      if (!keepOpen) {
+        onClose();
+      }
     },
     [dispatch, item, isEditMode, values, validate, hasChanges, reset, onClose]
   );
@@ -223,6 +200,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             <Button variant="secondary" onPress={handleClose}>
               Cancel
             </Button>
+            {!isEditMode && (
+              <Button variant="secondary" onPress={() => handleSubmit(undefined, true)}>
+                Save & Add Another
+              </Button>
+            )}
             <Button variant="accent" onPress={() => handleSubmit()}>
               {submitLabel}
             </Button>

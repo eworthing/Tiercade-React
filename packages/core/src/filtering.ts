@@ -106,32 +106,17 @@ export function filterAllTiers(tiers: Items, filters: ItemFilters): Items {
 }
 
 /**
- * Get the media type of an item based on its URLs.
+ * Get the media type of an item from its discriminated media union.
  */
 function getItemMediaType(item: Item): MediaType | null {
-  if (item.mediaType) {
-    return item.mediaType;
-  }
-
-  if (item.videoUrl) return "video";
-  if (item.audioUrl) return "audio";
-  if (item.imageUrl) {
-    // Check if it's a GIF
-    if (item.imageUrl.toLowerCase().includes(".gif") ||
-        item.imageUrl.startsWith("data:image/gif")) {
-      return "gif";
-    }
-    return "image";
-  }
-
-  return null;
+  return item.media?.type ?? null;
 }
 
 /**
  * Check if an item has any media.
  */
 function itemHasMedia(item: Item): boolean {
-  return !!(item.imageUrl || item.videoUrl || item.audioUrl);
+  return item.media !== undefined;
 }
 
 /**

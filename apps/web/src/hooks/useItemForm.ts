@@ -58,16 +58,10 @@ export function useItemForm({
       setName(initialItem.name ?? "");
       setSeasonString(initialItem.seasonString ?? "");
       setDescription(initialItem.description ?? "");
-      // Determine media type and URL from item
-      if (initialItem.videoUrl) {
-        setMediaUrl(initialItem.videoUrl);
-        setMediaType("video");
-      } else if (initialItem.audioUrl) {
-        setMediaUrl(initialItem.audioUrl);
-        setMediaType("audio");
-      } else if (initialItem.imageUrl) {
-        setMediaUrl(initialItem.imageUrl);
-        setMediaType(initialItem.mediaType === "gif" ? "gif" : "image");
+      // Determine media type and URL from item's discriminated media union
+      if (initialItem.media) {
+        setMediaUrl(initialItem.media.url);
+        setMediaType(initialItem.media.type);
       } else {
         setMediaUrl(null);
         setMediaType("image");
@@ -121,8 +115,8 @@ export function useItemForm({
     const trimmedName = name.trim();
     const trimmedSeasonString = seasonString.trim();
     const trimmedDescription = description.trim();
-    const oldMediaUrl = initialItem.videoUrl ?? initialItem.audioUrl ?? initialItem.imageUrl ?? null;
-    const oldMediaType = initialItem.mediaType ?? "image";
+    const oldMediaUrl = initialItem.media?.url ?? null;
+    const oldMediaType = initialItem.media?.type ?? "image";
 
     return (
       trimmedName !== (initialItem.name ?? "") ||
