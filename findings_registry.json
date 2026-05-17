@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 9,
+  "next_serial": 10,
   "entries": [
     {
       "stable_id": "F-001",
@@ -138,8 +138,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 12,
-      "last_seen_sha": "583f3d4",
+      "last_seen_loop": 13,
+      "last_seen_sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
       "occurrences": [
         {
           "loop": 5,
@@ -196,6 +196,13 @@
           "status": "open",
           "sha": "583f3d4",
           "idempotency_key": "loop12-F-004-open"
+        },
+        {
+          "loop": 13,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
+          "idempotency_key": "loop13-F-004-open"
         }
       ]
     },
@@ -331,6 +338,31 @@
           "status": "resolved",
           "sha": "d1e6728",
           "idempotency_key": "loop11-F-008-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-009",
+      "title": "presentationSlice has zero Interface tests \u2014 Authority Map gap from F-003 scope",
+      "category_hint": "missing-tests-presentation-slice",
+      "primary_file": "packages/state/src/presentationSlice.ts",
+      "primary_evidence_lines": [
+        1,
+        177
+      ],
+      "test_failed": "Interface-as-test-surface",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 13,
+      "first_seen_sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
+      "last_seen_loop": 13,
+      "last_seen_sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
+      "occurrences": [
+        {
+          "loop": 13,
+          "loop_local_id": "F2",
+          "status": "resolved",
+          "sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
+          "idempotency_key": "loop13-F-009-resolved"
         }
       ]
     }

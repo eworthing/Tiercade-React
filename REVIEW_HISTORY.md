@@ -1087,3 +1087,70 @@ Tests: 23 suites, 153 tests, all green. `npm run build` → Vite clean. Targeted
 ## Loop 12 Implementation Review
 
 Verdict: **approved**. Reality: passed (3 targeted handlers removed from page). Honesty: passed (deletion test passes; Unified Seam Policy not triggered; Replace-don't-layer satisfied; no costume layer). Regression: passed (no new ownership ambiguity, no framework leakage, no new findings at same/higher severity). Rounds: 1.
+
+--- Loop 13 (UTC 2026-05-16T18:30:00Z) ---
+
+### Discovery
+see Loop 1 Discovery
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+State package test surface continues to deepen: 18 new Interface-level tests for presentationSlice close an Authority Map gap loop 7 (F-003) had missed. test_strategy 7.5→8.0 with structural proof (file:line citation, behavior assertions). No production source modified this loop.
+
+## Scorecard (1-10)
+- Architecture quality: 7.0 | SAME | TierBoardPage.tsx:1-456 still god-component
+- State management and runtime ownership: 6.5 | SAME | persistence injection landed loop 8
+- Domain modeling: 6.5 | SAME
+- Data flow and dependency design: 6.5 | SAME
+- Framework / platform best practices: 7.0 | SAME
+- Concurrency and runtime safety: 7.0 | SAME
+- Code simplicity and clarity: 7.0 | SAME
+- Test strategy and regression resistance: 8.0 | UP | packages/state/test/presentationSlice.test.ts (183 LOC, 18 Interface tests)
+- Overall implementation credibility: 8.0 | SAME
+
+## Findings
+
+### Finding #1: TierBoardPage.tsx at 456 LOC — further-split deletion-test diminishing
+**Severity** — Noticeable weakness
+**Evidence** — apps/web/src/pages/TierBoardPage.tsx:1-456
+**Minimal correction path** — Identify ONE next natural cleavage (URL-share-import or batch-action) and apply deletion test strictly. If no cleavage passes, accept residual at 9.5.
+
+### Finding #2: presentationSlice has zero Interface tests (F-003 scope gap, resolved this loop)
+**Severity** — Noticeable weakness
+**Evidence** — packages/state/src/presentationSlice.ts:1-177
+**Minimal correction path** — Add packages/state/test/presentationSlice.test.ts (resolved this loop, 18 tests).
+
+## Simplification Check
+
+| field | value |
+|---|---|
+| structurally_necessary | Closed an Authority Map test gap on presentationSlice |
+| new_seam_justified | false |
+| should_not_be_done | Do not add trivial setter tests purely for coverage count |
+| tests_after_fix | packages/state/test/presentationSlice.test.ts (18 tests, 183 LOC) |
+
+## Improvement Backlog
+### Priority 1: Evaluate next TierBoardPage cleavage under deletion test
+
+## Builder Notes (compressed)
+- Pattern: Authority Map gap surfaced retroactively → REVIEW_HISTORY.json loops[12].builder_notes
+- Pattern: Behavior assertions vs setter mirroring → REVIEW_HISTORY.json loops[12].builder_notes
+- Pattern: Interface-level reducer testing → REVIEW_HISTORY.json loops[12].builder_notes
+
+## Final Judge Narrative
+Loop 13 closed an Authority Map gap loop 7 (F-003) had missed: presentationSlice's 7 non-trivial reducer behaviors were entirely untested. 18 Interface-level tests added; state package test count 37→55. Reviewer approved 3/3. F-004 carries forward; loop 14 evaluates next cleavage.
+
+## Loop 13 Result
+Added packages/state/test/presentationSlice.test.ts (183 LOC, 18 tests). npm run test:state green: 8 suites, 55 tests. No production source modified. F-009 (this loop's new finding) status: resolved.
+
+## Loop 13 Implementation Review
+verdict: **approved**
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none
