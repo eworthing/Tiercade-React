@@ -644,7 +644,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
           ? { width: 80, height: 80 }
           : { padding: "8px 12px" }
         ),
-        opacity: isDragging ? 0.3 : 1,
+        opacity: isDragging ? 0.1 : 1,
       }}
       {...attributes}
       {...listeners}

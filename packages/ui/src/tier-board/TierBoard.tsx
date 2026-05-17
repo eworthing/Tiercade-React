@@ -277,11 +277,12 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
-    backgroundColor: "var(--spectrum-gray-100)",
-    border: "1px solid var(--spectrum-blue-700)",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1)",
+    borderRadius: 10,
+    backgroundColor: "var(--spectrum-gray-900, #15161f)",
+    border: "1px solid var(--spectrum-gray-700, rgba(255,255,255,0.2))",
+    boxShadow: "0 16px 32px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--spectrum-blue-600, rgba(56, 189, 248, 0.5))",
     cursor: "grabbing",
+    transform: "scale(1.05)",
     ...(hasMedia
       ? { width: 88, height: 88 }
       : { padding: "8px 12px" }

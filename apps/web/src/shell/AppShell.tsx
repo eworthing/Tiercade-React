@@ -152,8 +152,8 @@ export const AppShell: React.FC = () => {
           position: "sticky",
           top: 0,
           zIndex: 40,
-          borderBottom: "1px solid #1a1b2a",
-          backgroundColor: "rgba(10, 11, 20, 0.88)",
+          borderBottom: "1px solid var(--spectrum-gray-800, #1a1b2a)",
+          backgroundColor: "var(--spectrum-gray-900, rgba(10, 11, 20, 0.88))",
           backdropFilter: "blur(12px) saturate(120%)",
         }}>
           <div style={{
@@ -176,23 +176,25 @@ export const AppShell: React.FC = () => {
                 cursor: "pointer",
                 padding: "4px 8px",
                 borderRadius: 8,
+                minHeight: 44,
+                minWidth: 44,
               }}
             >
               <div style={{
                 width: 36,
                 height: 36,
-                background: "linear-gradient(135deg, #00f0ff, #8b5cf6)",
+                background: "linear-gradient(135deg, var(--spectrum-blue-600, #00f0ff), var(--spectrum-purple-600, #8b5cf6))",
                 borderRadius: 10,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 0 12px rgba(0, 240, 255, 0.2)",
+                boxShadow: "0 0 12px var(--spectrum-blue-100, rgba(0, 240, 255, 0.2))",
               }}>
                 <span style={{
                   fontSize: 20,
                   fontWeight: 700,
                   fontFamily: "var(--font-display)",
-                  color: "#0a0a12",
+                  color: "var(--spectrum-white, #0a0a12)",
                 }}>T</span>
               </div>
               <span style={{
@@ -335,14 +337,14 @@ export const AppShell: React.FC = () => {
 
         {/* Footer */}
         <footer style={{
-          borderTop: "1px solid #1a1b2a",
+          borderTop: "1px solid var(--spectrum-gray-800, #1a1b2a)",
           padding: "14px 24px",
           textAlign: "center",
         }}>
           <span style={{
             fontSize: 12,
             fontWeight: 400,
-            color: "#4a4f65",
+            color: "var(--spectrum-gray-500, #4a4f65)",
           }}>
             Data stored locally in this browser
           </span>
@@ -365,7 +367,7 @@ const PageSkeleton: React.FC = () => (
       height: 32,
       width: 200,
       borderRadius: 8,
-      background: "#15161f",
+      background: "var(--spectrum-gray-800, #15161f)",
     }} />
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {[0, 1, 2].map((i) => (
@@ -374,7 +376,7 @@ const PageSkeleton: React.FC = () => (
           style={{
             height: 80,
             borderRadius: 12,
-            background: "#0f1019",
+            background: "var(--spectrum-gray-900, #0f1019)",
           }}
         />
       ))}

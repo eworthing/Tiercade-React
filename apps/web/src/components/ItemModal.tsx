@@ -67,7 +67,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   } = useItemForm({ initialItem: item });
 
   const handleSubmit = useCallback(
-    (e?: React.FormEvent) => {
+    (e?: React.FormEvent, keepOpen: boolean = false) => {
       e?.preventDefault();
 
       if (!validate()) return;
@@ -125,7 +125,9 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       }
 
       reset();
-      onClose();
+      if (!keepOpen) {
+        onClose();
+      }
     },
     [dispatch, item, isEditMode, values, validate, hasChanges, reset, onClose]
   );
@@ -210,6 +212,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             <Button variant="secondary" onPress={handleClose}>
               Cancel
             </Button>
+            {!isEditMode && (
+              <Button variant="secondary" onPress={() => handleSubmit(undefined, true)}>
+                Save & Add Another
+              </Button>
+            )}
             <Button variant="accent" onPress={() => handleSubmit()}>
               {submitLabel}
             </Button>

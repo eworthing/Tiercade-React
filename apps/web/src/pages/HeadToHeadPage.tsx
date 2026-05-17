@@ -65,8 +65,9 @@ const comparisonCard = style({
 });
 
 const mediaBox = style({
-  width: 128,
-  height: 128,
+  width: "full",
+  maxWidth: 240,
+  aspectRatio: "square",
   borderRadius: "default",
   overflow: "hidden",
   backgroundColor: "gray-200",
@@ -95,15 +96,31 @@ interface ComparisonCardProps {
 }
 
 const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, onClick }) => {
+  const [isFlashing, setIsFlashing] = useState(false);
   const fallbackLabel = shortcut === 1 ? "A" : "B";
   const itemName = item.name ?? item.id;
 
+  const handleClick = () => {
+    if (isFlashing) return;
+    setIsFlashing(true);
+    setTimeout(() => {
+      setIsFlashing(false);
+      onClick();
+    }, 150);
+  };
+
   return (
     <AriaButton
-      onPress={onClick}
+      onPress={handleClick}
       data-testid={`h2h-card-${side}`}
       aria-label={`Select ${itemName} as winner (press ${shortcut} or ${side === "left" ? "left arrow" : "right arrow"})`}
       className={comparisonCard}
+      style={{
+        transform: isFlashing ? "scale(0.96)" : "scale(1)",
+        transition: "transform 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms ease, background-color 150ms ease",
+        borderColor: isFlashing ? "var(--spectrum-blue-600, #2563eb)" : undefined,
+        backgroundColor: isFlashing ? "var(--spectrum-blue-100, rgba(37, 99, 235, 0.1))" : undefined,
+      }}
     >
       {item.imageUrl ? (
         <div className={mediaBox}>
@@ -171,7 +188,7 @@ export const HeadToHeadPage: React.FC = () => {
     return (
       <div className={pageStack} data-testid="h2h-page">
         <div className={centered} style={{
-          background: "radial-gradient(ellipse at center, rgba(255,45,120,0.03), transparent 60%)",
+          background: "radial-gradient(ellipse at center, var(--spectrum-purple-100, rgba(255,45,120,0.03)), transparent 60%)",
           padding: "48px 24px",
           borderRadius: 16,
         }}>
@@ -179,7 +196,7 @@ export const HeadToHeadPage: React.FC = () => {
             fontFamily: "var(--font-display)",
             fontSize: 48,
             fontWeight: 700,
-            background: "linear-gradient(135deg, #ff2d78, #00f0ff)",
+            background: "linear-gradient(135deg, var(--spectrum-purple-600, #ff2d78), var(--spectrum-blue-600, #00f0ff))",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

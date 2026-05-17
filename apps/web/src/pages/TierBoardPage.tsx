@@ -286,21 +286,21 @@ export const TierBoardPage: React.FC = () => {
           justifyContent: "center",
           padding: "56px 24px",
           borderRadius: 16,
-          border: "1px dashed #24263a",
-          background: "radial-gradient(ellipse at center, rgba(56,189,248,0.03), transparent 60%)",
+          border: "1px dashed var(--spectrum-gray-700, #24263a)",
+          background: "radial-gradient(ellipse at center, var(--spectrum-blue-100, rgba(56,189,248,0.03)), transparent 60%)",
         }}>
           <div style={{
             width: 48,
             height: 48,
             borderRadius: 12,
-            border: "1.5px dashed #38bdf8",
-            background: "rgba(56,189,248,0.06)",
+            border: "1.5px dashed var(--spectrum-blue-600, #38bdf8)",
+            background: "var(--spectrum-blue-100, rgba(56,189,248,0.06))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             marginBottom: 20,
           }}>
-            <svg width={24} height={24} fill="none" viewBox="0 0 24 24" stroke="#38bdf8" strokeWidth={2}>
+            <svg width={24} height={24} fill="none" viewBox="0 0 24 24" stroke="var(--spectrum-blue-600, #38bdf8)" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
           </div>
@@ -308,14 +308,14 @@ export const TierBoardPage: React.FC = () => {
             fontFamily: "var(--font-display)",
             fontSize: 24,
             fontWeight: 600,
-            color: "#e2e4e8",
+            color: "var(--spectrum-gray-100, #e2e4e8)",
             marginBottom: 8,
           }}>
             Ready to rank?
           </span>
           <span style={{
             fontSize: 15,
-            color: "#8b90a0",
+            color: "var(--spectrum-gray-400, #8b90a0)",
             marginBottom: 20,
           }}>
             Drop images, add items, or browse templates.
