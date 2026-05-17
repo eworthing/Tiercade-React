@@ -42,11 +42,13 @@ export const PWAInstallPrompt: React.FC = () => {
       }
     }
 
+    let showTimer: ReturnType<typeof setTimeout> | null = null;
+
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show prompt after a brief delay
-      setTimeout(() => setShowPrompt(true), 2000);
+      // Show prompt after a brief delay; timer stored for cleanup on unmount
+      showTimer = setTimeout(() => setShowPrompt(true), 2000);
     };
 
     const handleAppInstalled = () => {
@@ -59,6 +61,7 @@ export const PWAInstallPrompt: React.FC = () => {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
+      if (showTimer !== null) clearTimeout(showTimer);
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
       window.removeEventListener("appinstalled", handleAppInstalled);
     };

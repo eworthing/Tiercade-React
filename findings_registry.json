@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 13,
+  "next_serial": 14,
   "entries": [
     {
       "stable_id": "F-001",
@@ -138,8 +138,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 16,
-      "last_seen_sha": "0de487e",
+      "last_seen_loop": 19,
+      "last_seen_sha": "39f5e67",
       "occurrences": [
         {
           "loop": 5,
@@ -238,6 +238,13 @@
           "status": "accepted_residual",
           "sha": "fa7707d",
           "idempotency_key": "loop18-F-004-accepted_residual"
+        },
+        {
+          "loop": 19,
+          "loop_local_id": "F1",
+          "status": "accepted_residual",
+          "sha": "39f5e67a03da688bd76832e7d5873789cbf3647b",
+          "idempotency_key": "loop19-F-004-accepted_residual"
         }
       ]
     },
@@ -453,8 +460,8 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 16,
       "first_seen_sha": "0de487e",
-      "last_seen_loop": 16,
-      "last_seen_sha": "0de487e",
+      "last_seen_loop": 19,
+      "last_seen_sha": "39f5e67",
       "occurrences": [
         {
           "loop": 16,
@@ -476,12 +483,19 @@
           "status": "accepted_residual",
           "sha": "fa7707d",
           "idempotency_key": "loop18-F-011-accepted_residual"
+        },
+        {
+          "loop": 19,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "39f5e67a03da688bd76832e7d5873789cbf3647b",
+          "idempotency_key": "loop19-F-011-accepted_residual"
         }
       ]
     },
     {
       "stable_id": "F-012",
-      "title": "HeadToHeadPage.tsx — action handlers + keyboard effect inline",
+      "title": "HeadToHeadPage.tsx \u2014 action handlers + keyboard effect inline",
       "category_hint": "god-component-h2h-handlers",
       "primary_file": "apps/web/src/pages/HeadToHeadPage.tsx",
       "primary_evidence_lines": [
@@ -501,6 +515,31 @@
           "status": "resolved",
           "sha": "fa7707d",
           "idempotency_key": "loop17-F-012-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-013",
+      "title": "PWAInstallPrompt unguarded setTimeout \u2014 lifecycle gap",
+      "category_hint": "unguarded-timer",
+      "primary_file": "apps/web/src/components/PWAInstallPrompt.tsx",
+      "primary_evidence_lines": [
+        49,
+        65
+      ],
+      "test_failed": "n/a",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 19,
+      "first_seen_sha": "39f5e67a03da688bd76832e7d5873789cbf3647b",
+      "last_seen_loop": 19,
+      "last_seen_sha": "39f5e67",
+      "occurrences": [
+        {
+          "loop": 19,
+          "loop_local_id": "F3",
+          "status": "resolved",
+          "sha": "39f5e67a03da688bd76832e7d5873789cbf3647b",
+          "idempotency_key": "loop19-F-013-resolved"
         }
       ]
     }

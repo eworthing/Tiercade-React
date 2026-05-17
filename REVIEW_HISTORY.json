@@ -5016,35 +5016,107 @@
       "verdict": "Good app, but not top-tier yet",
       "verdict_explanation": "Loop 17 extracts useHeadToHeadHandlers hook: 5 action handlers + keyboard useEffect behind stable Interface. HeadToHeadPage 378->312 LOC. 5 Interface tests. Suite: 28 suites, 189 tests, all green. simplicity 8.0->8.5.",
       "scorecard": {
-        "architecture_quality":   {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration; package DAG enforced", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "state_management":       {"score": 6.5, "delta": "SAME", "proof": "packages/state/src/tierSlice.ts:1-343 — one writer per concern across 6 slices; store implicit global", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "domain_modeling":        {"score": 6.0, "delta": "SAME", "proof": "packages/core/src/models.ts:6 — Item interface all-optional; Items = Record<string, Item[]> anemic; no smart constructors", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "data_flow":              {"score": 6.5, "delta": "SAME", "proof": "package.json workspace — core<-state<-apps DAG enforced; 12 focused hooks; no within-app module-level DAG", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "framework_idioms":       {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/ — 12 custom hooks idiomatic; RTK correct; keyboard shortcut effect co-located with action handlers in useHeadToHeadHandlers", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "apps/web/src/ — single-threaded JS; no floating promises; useEffect cleanup in useHeadToHeadHandlers removes keydown listener", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "simplicity":             {"score": 8.5, "delta": "UP",   "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — 5 H2H handlers + keyboard useEffect extracted; HeadToHeadPage 378->312 LOC (-66 lines); 5 useCallback blocks + keyboard useEffect + 2 internal selectors removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "test_strategy":          {"score": 8.0, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.test.ts — 5 tests: onStart activates, onVoteLeft advances pair, onSkip moves pair, onFinish dispatches+navigates, onGoHome navigates without finishing; 28 suites 189 tests", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "credibility":            {"score": 8.0, "delta": "SAME", "proof": "useHeadToHeadHandlers passes deletion test; Replace-don't-layer satisfied (5 new tests; no prior tests existed); action creators + useNavigate imports removed from page", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration; package DAG enforced",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store implicit global",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 6.0,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts:6 \u2014 Item interface all-optional; Items = Record<string, Item[]> anemic; no smart constructors",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "package.json workspace \u2014 core<-state<-apps DAG enforced; 12 focused hooks; no within-app module-level DAG",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/ \u2014 12 custom hooks idiomatic; RTK correct; keyboard shortcut effect co-located with action handlers in useHeadToHeadHandlers",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/ \u2014 single-threaded JS; no floating promises; useEffect cleanup in useHeadToHeadHandlers removes keydown listener",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 8.5,
+          "delta": "UP",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 5 H2H handlers + keyboard useEffect extracted; HeadToHeadPage 378->312 LOC (-66 lines); 5 useCallback blocks + keyboard useEffect + 2 internal selectors removed from page",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.test.ts \u2014 5 tests: onStart activates, onVoteLeft advances pair, onSkip moves pair, onFinish dispatches+navigates, onGoHome navigates without finishing; 28 suites 189 tests",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "useHeadToHeadHandlers passes deletion test; Replace-don't-layer satisfied (5 new tests; no prior tests existed); action creators + useNavigate imports removed from page",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        }
       },
       "findings": [
         {
           "loop_local_id": "F1",
           "stable_id": "F-004",
-          "title": "TierBoardPage.tsx at 443 LOC — at natural modal-coupled floor",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 at natural modal-coupled floor",
           "status": "open",
           "severity": "Noticeable weakness"
         },
         {
           "loop_local_id": "F2",
           "stable_id": "F-011",
-          "title": "Domain model anemic — Item all-optional fields, no smart constructors",
+          "title": "Domain model anemic \u2014 Item all-optional fields, no smart constructors",
           "status": "open",
           "severity": "Noticeable weakness"
         },
         {
           "loop_local_id": "F3",
           "stable_id": "F-012",
-          "title": "HeadToHeadPage action handlers inline — resolved this loop",
+          "title": "HeadToHeadPage action handlers inline \u2014 resolved this loop",
           "status": "resolved",
           "severity": "Noticeable weakness"
         }
@@ -5106,28 +5178,100 @@
       "verdict": "Good app, but not top-tier yet",
       "verdict_explanation": "Loop 18 (final, cap reached): residual acceptance only. F-004 (TierBoardPage 443 LOC floor) and F-011 (domain model anemic) accepted as residuals. No code changes. 28 suites, 189 tests, all green. HALT_LOOP_CAP.",
       "scorecard": {
-        "architecture_quality":   {"score": 7.5, "delta": "SAME", "proof": "F-004 accepted residual; no extraction passes deletion test at current scope", "residual_blocking_10": "TierBoardPage modal-coupled floor; domain model anemic; store implicit global", "residual_disposition": "accepted_residual", "residual_rationale_or_backlog_ref": "F-004, F-011", "unverifiable_due_to_build_failure": false},
-        "state_management":       {"score": 6.5, "delta": "SAME", "proof": "store implicit global; no process-lifetime pattern; not addressable at cap", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "domain_modeling":        {"score": 6.0, "delta": "SAME", "proof": "F-011 accepted residual; Item all-optional; cross-cutting type refactor out of scope", "residual_blocking_10": "Item all-optional fields; Items = Record<string, Item[]> anemic; no smart constructors", "residual_disposition": "accepted_residual", "residual_rationale_or_backlog_ref": "F-011", "unverifiable_due_to_build_failure": false},
-        "data_flow":              {"score": 6.5, "delta": "SAME", "proof": "package DAG enforced; 12 hooks; no within-app module-level DAG", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "framework_idioms":       {"score": 7.5, "delta": "SAME", "proof": "12 custom hooks; RTK correct; keyboard effect co-located with action handlers", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "single-threaded JS; no floating promises; useEffect cleanup present", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "simplicity":             {"score": 8.5, "delta": "SAME", "proof": "no code changes this loop; last structural UP was loop 17", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "test_strategy":          {"score": 8.0, "delta": "SAME", "proof": "28 suites 189 tests; 6 hook test files; page-level surfaces still untested", "residual_blocking_10": "page-level test surfaces absent", "residual_disposition": "accepted_residual", "residual_rationale_or_backlog_ref": "beyond cap scope", "unverifiable_due_to_build_failure": false},
-        "credibility":            {"score": 8.0, "delta": "SAME", "proof": "all extracted hooks pass deletion test; Replace-don't-layer satisfied; both residuals honestly accepted", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "F-004 accepted residual; no extraction passes deletion test at current scope",
+          "residual_blocking_10": "TierBoardPage modal-coupled floor; domain model anemic; store implicit global",
+          "residual_disposition": "accepted_residual",
+          "residual_rationale_or_backlog_ref": "F-004, F-011",
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "store implicit global; no process-lifetime pattern; not addressable at cap",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 6.0,
+          "delta": "SAME",
+          "proof": "F-011 accepted residual; Item all-optional; cross-cutting type refactor out of scope",
+          "residual_blocking_10": "Item all-optional fields; Items = Record<string, Item[]> anemic; no smart constructors",
+          "residual_disposition": "accepted_residual",
+          "residual_rationale_or_backlog_ref": "F-011",
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "package DAG enforced; 12 hooks; no within-app module-level DAG",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "12 custom hooks; RTK correct; keyboard effect co-located with action handlers",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.0,
+          "delta": "SAME",
+          "proof": "single-threaded JS; no floating promises; useEffect cleanup present",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 8.5,
+          "delta": "SAME",
+          "proof": "no code changes this loop; last structural UP was loop 17",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "28 suites 189 tests; 6 hook test files; page-level surfaces still untested",
+          "residual_blocking_10": "page-level test surfaces absent",
+          "residual_disposition": "accepted_residual",
+          "residual_rationale_or_backlog_ref": "beyond cap scope",
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "all extracted hooks pass deletion test; Replace-don't-layer satisfied; both residuals honestly accepted",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        }
       },
       "findings": [
         {
           "loop_local_id": "F1",
           "stable_id": "F-004",
-          "title": "TierBoardPage.tsx at 443 LOC — accepted as residual this loop",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 accepted as residual this loop",
           "status": "accepted_residual",
           "severity": "Noticeable weakness"
         },
         {
           "loop_local_id": "F2",
           "stable_id": "F-011",
-          "title": "Domain model anemic — accepted as residual this loop",
+          "title": "Domain model anemic \u2014 accepted as residual this loop",
           "status": "accepted_residual",
           "severity": "Noticeable weakness"
         }
@@ -5142,7 +5286,7 @@
       },
       "implementation_review": {
         "verdict": "approved",
-        "reason": "Residual acceptance loop — no code changes, no regression risk. F-004 deletion test fails (modal-coupled handlers); F-011 cross-cutting refactor beyond scope. Both acceptances honest.",
+        "reason": "Residual acceptance loop \u2014 no code changes, no regression risk. F-004 deletion test fails (modal-coupled handlers); F-011 cross-cutting refactor beyond scope. Both acceptances honest.",
         "checks": {
           "reality": "passed",
           "honesty": "passed",
@@ -5159,6 +5303,286 @@
             "outcome": "ok",
             "error": null,
             "duration_ms": 1200
+          }
+        ]
+      }
+    },
+    {
+      "schema_version": 3,
+      "loop": 19,
+      "loop_cap": 22,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "subagent",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 19: fixed unguarded setTimeout in PWAInstallPrompt.tsx (lifecycle gap; clearTimeout added to useEffect cleanup). concurrency 7.0\u21927.5. F-004 and F-011 remain accepted residuals. 28 suites, 189 tests, all green.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 H2H action dep-cluster behind Interface; HeadToHeadPage reduced to display-only orchestration; package DAG enforced; 9-anchor not met: domain model anemic, store implicit global",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 6.0,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts:6 \u2014 Item interface: name?, imageUrl?, description? all optional; Items = Record<string, Item[]> anemic; no smart constructors",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "package.json workspace \u2014 core<-state<-apps DAG enforced; 12 focused hooks; within-app no module-level DAG enforcement",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/ \u2014 12 custom hooks idiomatic; RTK correct; useId() for stable IDs; keyboard shortcut effect co-located with action handlers in useHeadToHeadHandlers",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.5,
+          "delta": "UP",
+          "proof": "apps/web/src/components/PWAInstallPrompt.tsx:49 \u2014 unguarded setTimeout with no clearTimeout in useEffect cleanup fixed; showTimer stored in let binding, cleared on unmount; lifecycle gap removed. Remaining: useImportHandlers.ts FileReader has no abort on unmount (lower-risk: synchronous dispatch).",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 8.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 last structural change loop 17; TierBoardPage 443 LOC accepted floor; PWAInstallPrompt fix is 2-line additive, net honest.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "28 suites 189 tests all green; 6 hook test files covering all extracted handler hooks; PWAInstallPrompt untested at Interface; page-level surface still untested; 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "All extracted hooks pass deletion test; Replace-don't-layer satisfied across 6 hook extractions; PWAInstallPrompt lifecycle fix honest \u2014 addresses real gap, does not over-claim.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [],
+      "strengths": [
+        "packages/core domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end",
+        "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts",
+        "Monorepo DAG enforced by workspace package.json: core<-state<-apps; no circular deps",
+        "persistenceMiddleware \u2014 fully injectable storage + per-instance timer (loop 8)",
+        "12 custom hooks in apps/web/src/hooks/, all tested at Interface level (6 hook test files, 35 tests)",
+        "useHeadToHeadHandlers.ts \u2014 115 LOC; action handlers + keyboard routing; Interface tested (5 tests, loop 17)",
+        "PWAInstallPrompt.tsx \u2014 showTimer lifecycle gap closed (loop 19)"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "id": "F1",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 at natural modal-coupled floor",
+          "why_it_matters": "Accepted residual. Remaining handlers all require modal state context; further extraction would add ceremony.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState declarations + 3 inline handlers all requiring modal state.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443",
+            "apps/web/src/pages/TierBoardPage.tsx:75-82",
+            "apps/web/src/pages/TierBoardPage.tsx:140-183"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell broad; floor is real \u2014 accepted residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept 443 LOC as natural orchestration floor. Already accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/components/ItemModal.tsx",
+              "@tiercade/ui"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-011",
+          "id": "F2",
+          "title": "Domain model anemic \u2014 Item all-optional fields, no smart constructors",
+          "why_it_matters": "Accepted residual. Item interface allows impossible states; Items type allows invalid tier keys.",
+          "what_is_wrong": "packages/core/src/models.ts:6-17 \u2014 Item.id only non-optional; name, imageUrl, description, seasonString all optional. Items = Record<string, Item[]> \u2014 no key-set enforcement. Domain invariants enforced by CLAUDE.md comments, not types.",
+          "evidence": [
+            "packages/core/src/models.ts:6-17",
+            "packages/core/src/models.ts:19",
+            "packages/core/src/tierLogic.ts:1-50"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Every caller must guard against undefined fields or invalid tier keys independently.",
+          "locality_impact": "Domain invariants scattered across reducers and helpers rather than enforced at construction.",
+          "metric_signal": "?? 'Unknown' patterns in handleExportJSON substitute for type weakness",
+          "why_weakens_submission": "Contest-grade domain modeling requires invariants proved at construction. Primary blocker for domain_modeling score.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Cross-cutting type refactor; out of scope. Accepted residual.",
+          "blast_radius": {
+            "change": [
+              "packages/core/src/models.ts"
+            ],
+            "avoid": [
+              "packages/state/src/",
+              "apps/web/src/pages/"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F3",
+          "stable_id": "F-013",
+          "id": "F3",
+          "title": "PWAInstallPrompt unguarded setTimeout \u2014 lifecycle gap",
+          "why_it_matters": "setShowPrompt(true) could fire on unmounted component if user navigates away within 2 seconds of beforeinstallprompt \u2014 RESOLVED this loop.",
+          "what_is_wrong": "apps/web/src/components/PWAInstallPrompt.tsx:49 \u2014 setTimeout(() => setShowPrompt(true), 2000) with no clearTimeout in useEffect cleanup at lines 61-65.",
+          "evidence": [
+            "apps/web/src/components/PWAInstallPrompt.tsx:49",
+            "apps/web/src/components/PWAInstallPrompt.tsx:61-65"
+          ],
+          "test_failed": "n/a",
+          "dependency_category": "in-process",
+          "leverage_impact": "None \u2014 local component only.",
+          "locality_impact": "Single component; fix self-contained.",
+          "metric_signal": "none",
+          "why_weakens_submission": "Unguarded timer is a lifecycle hazard; sets state on unmounted component.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Store timer ID; call clearTimeout in cleanup. Resolved this loop.",
+          "blast_radius": {
+            "change": [
+              "apps/web/src/components/PWAInstallPrompt.tsx"
+            ],
+            "avoid": []
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "PWAInstallPrompt cleanup \u2014 setTimeout at line 49 without clearTimeout in useEffect return is a React lifecycle gap; fix stores timer ID and calls clearTimeout in cleanup. Deletion test: n/a (adding cleanup, not removing module).",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "Cleanup now explicit; no state mutation after unmount. 2-line additive fix.",
+        "should_not_be_done": "Extracting showTimer to useRef \u2014 unnecessary for single-use within useEffect closure; closure binding is honest and simpler.",
+        "tests_after_fix": "No old tests to delete. PWAInstallPrompt Interface-level test not added (browser-event-driven; jsdom BeforeInstallPromptEvent synthetic setup out of scope for 2-line fix)."
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "Add PWAInstallPrompt Interface-level lifecycle test",
+          "kind": "polish",
+          "rank": "minor",
+          "why_it_matters": "The clearTimeout fix is honest but untested at Interface. A test verifying the timer is cancelled on unmount would close the test_strategy gap for this component.",
+          "score_impact": "test_strategy minor improvement; no score change expected at current floor"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {
+          "pattern": "useEffect with setTimeout but no clearTimeout in cleanup",
+          "how_to_recognize": "setTimeout(...) inside useEffect setup with no corresponding clearTimeout in the return function; timer ID not stored anywhere",
+          "smallest_coding_rule": "Every setTimeout inside useEffect must have its ID stored and cleared in the cleanup return.",
+          "stack_example": "PWAInstallPrompt.tsx:49 \u2014 unguarded; fix: let showTimer = setTimeout(...); cleanup: if (showTimer !== null) clearTimeout(showTimer)"
+        },
+        {
+          "pattern": "validateTiersShape(_tiers) { return true } \u2014 always-true stub is a dead-code seam",
+          "how_to_recognize": "Function whose body is return <literal>; doc-comment says 'TypeScript typing enforces most invariants'",
+          "smallest_coding_rule": "If the function always returns a constant, delete it or implement it honestly.",
+          "stack_example": "packages/core/src/tierLogic.ts:75-77 \u2014 stub preserved for API compatibility but enforces nothing"
+        },
+        {
+          "pattern": "5-selector dep cluster shared across N handlers \u2014 identical dep arrays signal extraction",
+          "how_to_recognize": "When 3+ useCallback blocks list the same 4+ state selectors in their dep arrays, they belong in a single hook reading selectors internally",
+          "smallest_coding_rule": "Same 4+ deps in 3+ callbacks = one hook.",
+          "stack_example": "handleExportJSON, handleExportCSV, handleExportMarkdown all had [projectName, tierOrder, tierLabels, tierColors, tiers] \u2014 identical dep arrays exposed the cluster."
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 19 closes the PWAInstallPrompt lifecycle gap: showTimer stored and cleared on unmount; concurrency 7.0\u21927.5. Both open findings remain accepted residuals. 28 suites, 189 tests green. Average score ~7.4. Remaining sub-9.5 blockers: anemic domain model (F-011), implicit global store, no page-level test surfaces \u2014 all require cross-cutting changes beyond run scope.",
+      "loop_result": {
+        "what_changed": "Fixed unguarded setTimeout in apps/web/src/components/PWAInstallPrompt.tsx \u2014 stored timer ID in let showTimer, added clearTimeout(showTimer) to useEffect cleanup. Prevents setShowPrompt(true) on unmounted component.",
+        "evidence_change_is_honest": "28 suites 189 tests all green; no regressions; targeted finding F-013 lifecycle gap resolved by inspection of PWAInstallPrompt.tsx:49 and cleanup at lines 61-65",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "apps/web/src/components/PWAInstallPrompt.tsx"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: unguarded setTimeout in PWAInstallPrompt.tsx:49 is gone; showTimer stored and cleared on unmount; no new costume layers or ownership drift; no regression at same or higher severity.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": 3200
           }
         ]
       }

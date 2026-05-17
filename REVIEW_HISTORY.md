@@ -1524,3 +1524,77 @@ No code changes. Both open findings accepted as residuals. Cap reached. HALT_LOO
 
 ## Final Judge Narrative
 18-loop run complete. Final structural state: TierBoardPage 757->443 LOC (7 hooks); ImportExportPage 438->253 LOC (2 hooks); HeadToHeadPage 378->312 LOC (1 hook). 12 custom hooks, all Interface-tested. Core: 12 suites, 94 tests. Full suite: 28 suites, 189 tests. Average score ~7.3. Remaining blockers (anemic domain model, implicit global store) require cross-cutting changes beyond run scope — both formally accepted as residuals. HALT_LOOP_CAP.
+
+--- Loop 19 (UTC 2026-05-16T22:08:00Z) ---
+
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 19 of 22 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 19: fixed unguarded setTimeout in PWAInstallPrompt.tsx (clearTimeout added to useEffect cleanup). concurrency 7.0→7.5. F-004 and F-011 remain accepted residuals. 28 suites, 189 tests, all green.
+
+## Scorecard
+- Architecture quality: 7.5 | SAME | apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — H2H dep-cluster behind Interface; package DAG enforced
+- State management: 6.5 | SAME | packages/state/src/tierSlice.ts:1-343 — one writer per concern; store implicit global
+- Domain modeling: 6.0 | SAME | packages/core/src/models.ts:6 — Item all-optional; anemic. F-011 accepted residual.
+- Data flow: 6.5 | SAME | package DAG enforced; 12 focused hooks; no within-app module-level DAG
+- Framework idioms: 7.5 | SAME | 12 custom hooks; RTK correct; useId() stable IDs
+- Concurrency: 7.5 | UP | apps/web/src/components/PWAInstallPrompt.tsx:49 — showTimer stored + clearTimeout in cleanup; lifecycle gap removed
+- Code simplicity: 8.5 | SAME | TierBoardPage 443 LOC accepted floor
+- Test strategy: 8.0 | SAME | 28 suites 189 tests; PWAInstallPrompt untested at Interface
+- Credibility: 8.0 | SAME | deletion test passes; Replace-don't-layer satisfied; fix honest
+
+## Strengths That Matter
+- 12 custom hooks all tested at Interface; packages/core 12 suites 94 tests framework-free
+- PWAInstallPrompt.tsx — showTimer lifecycle gap closed (loop 19)
+
+## Findings
+### Finding F1 (F-004): TierBoardPage.tsx at 443 LOC — ACCEPTED RESIDUAL
+Remaining handlers modal-state coupled; deletion test fails for extraction. 443 LOC is natural orchestration floor.
+
+### Finding F2 (F-011): Domain model anemic — ACCEPTED RESIDUAL
+packages/core/src/models.ts:6-19 — Item all-optional; Items Record anemic. Cross-cutting refactor out of scope.
+
+### Finding F3 (F-013): PWAInstallPrompt unguarded setTimeout — RESOLVED THIS LOOP
+apps/web/src/components/PWAInstallPrompt.tsx:49 — setTimeout with no clearTimeout in cleanup. Fix: let showTimer + clearTimeout in return.
+Severity: Noticeable weakness (resolved).
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | PWAInstallPrompt cleanup — setTimeout without clearTimeout is lifecycle gap; fix stores timer ID, clears on unmount |
+| new_seam_justified | false |
+| helpful_simplification | Cleanup explicit; no state mutation after unmount; 2-line additive fix |
+| should_not_be_done | Extracting showTimer to useRef — unnecessary for single-use within useEffect closure |
+| tests_after_fix | No old tests to delete; PWAInstallPrompt Interface-level test not added (scope) |
+
+## Improvement Backlog
+1. Add PWAInstallPrompt Interface-level lifecycle test (polish, minor)
+
+## Builder Notes
+→ REVIEW_HISTORY.json `loops[18].builder_notes` for full notes
+
+## Loop 19 Result
+
+One file changed: `apps/web/src/components/PWAInstallPrompt.tsx` — `useEffect` now stores the 2-second `setTimeout` ID in `let showTimer` and calls `clearTimeout(showTimer)` in the cleanup return. Prevents `setShowPrompt(true)` from firing on an unmounted component.
+
+Tests: 28 suites, 189 tests, all green. Targeted finding F-013 (PWAInstallPrompt unguarded setTimeout): **resolved**. Concurrency UP: 7.0→7.5.
+
+## Loop 19 Implementation Review
+verdict: approved
+reason: All three checks passed: unguarded setTimeout in PWAInstallPrompt.tsx:49 is gone; showTimer stored and cleared on unmount; no new costume layers or ownership drift; no regression at same or higher severity.
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none
+
+## Final Judge Narrative
+Good app, place but not win. Loop 19 closes the PWAInstallPrompt lifecycle gap: showTimer stored and cleared on unmount; concurrency 7.0→7.5. Both open findings remain accepted residuals. 28 suites, 189 tests green. Average score ~7.4. Remaining sub-9.5 blockers: anemic domain model (F-011), implicit global store, no page-level test surfaces — all cross-cutting.

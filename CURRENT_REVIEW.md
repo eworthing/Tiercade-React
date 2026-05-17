@@ -1,27 +1,18 @@
 ### Discovery (first loop only)
-- Source roots: `packages/core/src/`, `packages/state/src/`, `packages/ui/src/`, `packages/theme/src/`, `apps/web/src/`, `apps/native/src/`
-- Test command: `npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks` (at repo root)
-- Build command: `cd apps/web && npm run build` (production); `cd apps/native && npx expo prebuild` (native)
-- ADRs found: none (no `docs/adr/` directory)
-- Domain terms (CONTEXT.md): none (no CONTEXT.md present; domain vocabulary derived from `AGENTS.md`: `Item`, `Items`, `TierConfig`, `tierOrder`, `unranked`, `HeadToHeadLogic`, `modelResolver`)
-- Selected lens: Generic (Node section). React 19 + TypeScript + RTK 2.x + Vite + Jest.
-- Provider: `claude_code`; loop_model: `claude-sonnet-4-6`; reviewer_model: `claude-sonnet-4-6`; spawn_isolation: `subagent`.
-- Loop cap: 18 (bumped mid-session).
-- Working tree: clean at Step 0.
-- Test scope: full (no `--test-filter` set).
+see Loop 1 Discovery
 
 ### Loop Counter
-Loop 18 of 18 (cap)
+Loop 19 of 22 (cap)
 
 ### System Flag
-[STATE: HALT_LOOP_CAP]
+[STATE: CONTINUE]
 
 ---
 
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 18 (final, cap reached): no structural extraction. F-004 (TierBoardPage at 443 LOC) accepted as residual — remaining handlers all modal-state coupled, deletion test fails for any further extraction. F-011 (domain model anemic) accepted as residual — cross-cutting type refactor out of scope. Suite: 28 suites, 189 tests, all green. No score changes.
+Loop 19: fixed unguarded `setTimeout` in `PWAInstallPrompt.tsx` — no `clearTimeout` in `useEffect` cleanup meant `setShowPrompt(true)` could fire on an unmounted component. Fix stores timer ID and clears it on unmount. concurrency 7.0→7.5 (lifecycle gap removed). F-004 (TierBoardPage 443 LOC) and F-011 (domain model anemic) remain accepted residuals. Suite: 28 suites, 189 tests, all green.
 
 ## Scorecard (1-10)
 - Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration. Package DAG enforced. F-004 accepted residual (TierBoardPage 443 LOC floor). 9-anchor not met.
@@ -29,61 +20,10 @@ Loop 18 (final, cap reached): no structural extraction. F-004 (TierBoardPage at 
 - Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — `Item` interface all-optional fields; `Items = Record<string, Item[]>` anemic. F-011 accepted residual — cross-cutting refactor out of scope. 9-anchor not met.
 - Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json`. Within-app no module-level DAG enforcement. 9-anchor partial.
 - Framework / platform best practices: 7.5 | SAME | `apps/web/src/hooks/` — 12 focused hooks; RTK patterns correct; `useId()` for stable IDs; keyboard shortcut effect co-located with action handlers in hook. No undocumented carve-outs.
-- Concurrency and runtime safety: 7.0 | SAME | JavaScript single-threaded. No floating promises found. `useEffect` cleanup present in `useHeadToHeadHandlers` and `CelebrationEffect.tsx`. `persistenceMiddleware` per-instance timer (loop 8). 9-anchor partial.
-- Code simplicity and clarity: 8.5 | SAME | Cap reached; no further extraction. Last structural change: `useHeadToHeadHandlers` (loop 17). TierBoardPage 443 LOC accepted as orchestration floor.
-- Test strategy and regression resistance: 8.0 | SAME | Suite: 28 suites, 189 tests, all green. 6 hook test files covering all extracted handler hooks. Page-level surfaces still untested — 9-anchor not met.
-- Overall implementation credibility: 8.0 | SAME | All extracted hooks pass deletion test. Replace-don't-layer satisfied across all 6 hook extractions. Both open findings accepted as residuals. Implementation honest.
-
-## Authority Map
-(Re-emitted because simplicity UP — structural change.)
-
-**Head-to-Head action handlers + keyboard routing**
-- Owner: `apps/web/src/hooks/useHeadToHeadHandlers.ts`
-- Allowed writers: n/a (no mutable state; dispatches RTK actions + navigate)
-- Observers / readers: `HeadToHeadPage` via `useHeadToHeadHandlers(onOpenEndConfirm)` return value
-- Persistence seam: none
-- Async mutation entry points: none (all synchronous dispatch)
-- Verdict: Single and clear — **test surface: `useHeadToHeadHandlers.test.ts` (5 tests, loop 17)**
-
-**TierBoardPage modal state**
-- Owner: `TierBoardPage` local state (7 `useState` declarations, lines 75-82)
-- Allowed writers: `TierBoardPage` handlers (inline setters)
-- Observers / readers: JSX render tree within `TierBoardPage`
-- Persistence seam: none
-- Async mutation entry points: `handleMoveItemWithCelebration` (celebration state)
-- Verdict: Single and clear (local component state; not a shared concern)
-
-**Export handlers (text serialization + URL generation)**
-- Owner: `apps/web/src/hooks/useExportHandlers.ts`
-- Allowed writers: n/a (no mutable state; dispatches downloads + clipboard)
-- Observers / readers: `ImportExportPage` via `useExportHandlers(exportAsPNG)` return value
-- Persistence seam: none (delegates to `downloadFile` + `copyToClipboard` utils)
-- Async mutation entry points: `onCopyLink` — async clipboard write
-- Verdict: Single and clear — **test surface: `useExportHandlers.test.ts` (5 tests, loop 16)**
-
-**Import handlers (file I/O + format dispatch)**
-- Owner: `apps/web/src/hooks/useImportHandlers.ts`
-- Allowed writers: n/a (dispatches to RTK store via thunks)
-- Observers / readers: `ImportExportPage` via `useImportHandlers(dispatch)` return value
-- Persistence seam: none
-- Async mutation entry points: `onImportFile` — FileReader.onload callback
-- Verdict: Single and clear — **test surface: `useImportHandlers.test.ts` (5 tests, loop 15)**
-
-**Batch action handlers**
-- Owner: `apps/web/src/hooks/useBatchActions.ts`
-- Allowed writers: n/a (dispatches to RTK store)
-- Observers / readers: `TierBoardPage` via `useBatchActions(dispatch)` return value
-- Persistence seam: none
-- Async mutation entry points: none
-- Verdict: Single and clear — **test surface: `useBatchActions.test.ts` (6 tests, loop 14)**
-
-**Tier/Item domain state**
-- Owner: `packages/state/src/tierSlice.ts`
-- Allowed writers: dispatched actions (captureSnapshot, moveItemBetweenTiersWithUndo, addItemToTier, updateItem, deleteItems, moveItemsBetweenTiers)
-- Observers / readers: all page components via `useAppSelector`
-- Persistence seam: `persistenceMiddleware` (injectable storage, per-instance timer, loop 8)
-- Async mutation entry points: thunks in `packages/state/src/`
-- Verdict: Single and clear — **test surface: `undoRedoThunks.test.ts`, `tierSlice.test.ts`**
+- Concurrency and runtime safety: 7.5 | UP | `apps/web/src/components/PWAInstallPrompt.tsx:49` — unguarded `setTimeout` with no `clearTimeout` in cleanup fixed; timer ID stored in `showTimer`, cleared on unmount. Lifecycle gap removed. Remaining: `useImportHandlers.ts` FileReader has no abort on unmount (lower-risk: synchronous dispatch). 9-anchor not met.
+- Code simplicity and clarity: 8.5 | SAME | TierBoardPage 443 LOC accepted floor. `PWAInstallPrompt` fix is 2-line additive, net honest.
+- Test strategy and regression resistance: 8.0 | SAME | Suite: 28 suites, 189 tests, all green. Page-level surfaces still untested. `PWAInstallPrompt` untested at Interface — 9-anchor not met.
+- Overall implementation credibility: 8.0 | SAME | Deletion test passes across all extracted hooks. Replace-don't-layer satisfied. Both open findings accepted residuals. Fix is honest — addresses real lifecycle gap.
 
 ## Strengths That Matter
 - `packages/core` domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end.
@@ -91,22 +31,19 @@ Loop 18 (final, cap reached): no structural extraction. F-004 (TierBoardPage at 
 - Monorepo DAG enforced by workspace `package.json`: `core←state←apps`; no circular dependencies.
 - `persistenceMiddleware` — fully injectable storage (F-005 resolved loop 8); per-instance timer (F-006 resolved loop 8).
 - `undoRedoThunks` — direct test suite covering cross-slice behavior (F-003 resolved loop 7).
-- `TierBoardPage.tsx` — reduced from 757 to 443 LOC; 7 focused modules/hooks extracted (loops 9, 12, 14).
+- `TierBoardPage.tsx` — reduced from 757 to 443 LOC; 7 focused modules/hooks extracted (loops 9-14).
 - `ImportExportPage.tsx` — reduced from 438 to 253 LOC; both import and export handlers extracted (loops 15-16).
 - `HeadToHeadPage.tsx` — reduced from 378 to 312 LOC; action handlers + keyboard effect extracted (loop 17).
-- `useHeadToHeadHandlers.ts` — 115 LOC; Interface tested at `useHeadToHeadHandlers.test.ts` (5 tests, loop 17).
-- `useExportHandlers.ts` — 182 LOC; Interface tested at `useExportHandlers.test.ts` (5 tests, loop 16).
-- `useImportHandlers.ts` — 62 LOC; Interface tested at `useImportHandlers.test.ts` (5 tests, loop 15).
-- `useBatchActions.ts` — 40 LOC; Interface tested at `useBatchActions.test.ts` (6 tests, loop 14).
-- `useItemInteraction.ts` — 81 LOC; Interface tested at `useItemInteraction.test.ts` (7 tests, loop 12).
+- 12 custom hooks in `apps/web/src/hooks/`, all tested at Interface level (6 hook test files, 35 tests).
+- `PWAInstallPrompt.tsx` — `showTimer` lifecycle gap closed (loop 19).
 
 ## Findings
 
 ### Finding #1: `TierBoardPage.tsx` at 443 LOC — god-component at natural modal-coupled floor (F-004)
 
-**Why it matters** — At 443 LOC (down from 757 at loop 5 start), the page retains 3 inline handlers and 7 `useState` declarations. All remaining handlers require modal state context — further extraction would require co-extracting state, raising ceremony.
+**Why it matters** — Accepted residual at 9.5 per loop 18. Remaining handlers all require modal state context.
 
-**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` bundles: 7 `useState` modal/UI state declarations (lines 75-82); `handleItemDoubleClick` (1 line, only `setEditingItem`); `handleCopyLink` (reads 5 selectors + URL generation); `handleMoveItemWithCelebration` (calls modal state setters + presentation context). All remaining handlers require modal state — no clean dispatch-only subset.
+**What is wrong** — `apps/web/src/pages/TierBoardPage.tsx` bundles 7 `useState` modal/UI state declarations (lines 75-82) + 3 inline handlers all closing over modal setters. No extraction passes deletion test without co-moving state.
 
 **Evidence** —
 - `apps/web/src/pages/TierBoardPage.tsx:1-443` — 443 LOC
@@ -119,101 +56,115 @@ Loop 18 (final, cap reached): no structural extraction. F-004 (TierBoardPage at 
 
 **Leverage impact** — Modal coordination still requires reading 443 LOC.
 
-**Locality impact** — Remaining handlers are coupled to modal state; no clean extraction path without co-moving modal state (ceremony).
+**Locality impact** — Remaining handlers coupled to modal state; no clean extraction path.
 
 **Metric signal, if any** — 443 LOC vs 95 LOC `ThemesPage.tsx`.
 
-**Why this weakens submission** — Page shell still broad; floor is real — should be documented as accepted residual.
+**Why this weakens submission** — Page shell still broad; floor is real — accepted residual.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Accept 443 LOC as natural orchestration floor. Promote F-004 to accepted residual. No further extraction attempts.
+**Minimal correction path** — Accept 443 LOC as natural orchestration floor. Already accepted residual.
 
-**Blast radius** — No change needed; acceptance only.
+**Blast radius** — No change needed.
 
 ---
 
 ### Finding #2: Domain model anemic — `Item` all-optional fields, no smart constructors (F-011)
 
-**Why it matters** — `packages/core/src/models.ts` defines `Item` as a bag with all optional fields (`name?`, `imageUrl?`, `description?`). `Items = Record<string, Item[]>` allows any string key including invalid tier names. No construction-time validation, no smart constructors. Impossible states (e.g. `Item` with no `id`) are representable — convention-only guards in reducers.
+**Why it matters** — Accepted residual at 6.0 per loop 18. `Item` all-optional fields; `Items = Record<string, Item[]>` allows invalid tier keys.
 
-**What is wrong** — `packages/core/src/models.ts:1-30` — `Item.id` is the only non-optional field; `name`, `imageUrl`, `description`, `seasonString` all optional. `Items` type is a plain Record, no key-set enforcement. Domain invariants (all tierOrder tiers must have entries) are enforced by comments in `CLAUDE.md`, not the type system.
+**What is wrong** — `packages/core/src/models.ts:6-17` — `Item.id` only non-optional; `name`, `imageUrl`, `description`, `seasonString` all optional. Domain invariants enforced by comments in `CLAUDE.md`, not type system.
 
 **Evidence** —
 - `packages/core/src/models.ts:6-17` — `Item` interface definition
 - `packages/core/src/models.ts:19` — `Items = Record<string, Item[]>`
-- `packages/core/src/tierLogic.ts:1-50` — tier operations assume callers pass valid tier names
+- `packages/core/src/tierLogic.ts:1-50` — tier operations assume valid tier names from callers
 
 **Architectural test failed** — Shallow module
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Every caller must guard against undefined fields or invalid tier keys independently.
+**Leverage impact** — Every caller guards undefined fields independently.
 
-**Locality impact** — Domain invariants scattered across reducers and helpers rather than enforced at construction.
+**Locality impact** — Domain invariants scattered across reducers and helpers.
 
-**Metric signal, if any** — `?? "Unknown"` patterns in `handleExportJSON` (substitutes for type weakness).
+**Metric signal, if any** — `?? "Unknown"` patterns in `handleExportJSON` substitute for type weakness.
 
-**Why this weakens submission** — Contest-grade domain modeling requires invariants proved at construction, not documentation. This is the primary reason domain_modeling stays at 6.0.
+**Why this weakens submission** — Contest-grade domain modeling requires invariants at construction, not docs. Primary reason domain_modeling stays at 6.0.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — This is a cross-cutting change requiring core type refactor; given 2 loops remaining and no clear safe path (would need all consumers updated), promote as accepted residual for this run. Not a valid backlog item at cap 18.
+**Minimal correction path** — Cross-cutting change across 3 packages. Accepted residual.
 
-**Blast radius** — Change: `packages/core/src/models.ts` and all consumers. Avoid: touching slices / pages until models stabilize.
+**Blast radius** — Change: `packages/core/src/models.ts` + all consumers. Avoid touching slices/pages until models stabilize.
+
+---
+
+### Finding #3: `PWAInstallPrompt` unguarded `setTimeout` — lifecycle gap (F-013)
+
+**Why it matters** — `setShowPrompt(true)` could fire on an unmounted component if user navigates away within 2 seconds of `beforeinstallprompt` firing — **resolved this loop**.
+
+**What is wrong** — `apps/web/src/components/PWAInstallPrompt.tsx:49` — `setTimeout(() => setShowPrompt(true), 2000)` with no corresponding `clearTimeout` in the `useEffect` cleanup at line 61-65.
+
+**Evidence** —
+- `apps/web/src/components/PWAInstallPrompt.tsx:49` — unguarded timer (pre-fix)
+- `apps/web/src/components/PWAInstallPrompt.tsx:61-65` — cleanup removed listeners but not the timer (pre-fix)
+
+**Architectural test failed** — n/a (concurrency/lifecycle safety)
+
+**Dependency category** — `in-process`
+
+**Leverage impact** — None — local component only.
+
+**Locality impact** — Single component; fix is self-contained.
+
+**Metric signal, if any** — none
+
+**Why this weakens submission** — Unguarded timer is a lifecycle hazard in React concurrent mode; sets state on unmounted component.
+
+**Severity** — Noticeable weakness
+
+**ADR conflicts** — none
+
+**Minimal correction path** — Store timer ID; call `clearTimeout` in cleanup. **Resolved this loop.**
+
+**Blast radius** — Change: `apps/web/src/components/PWAInstallPrompt.tsx`. Avoid: all other files.
 
 ---
 
 ## Simplification Check
-- Structurally necessary: `useHeadToHeadHandlers` extraction — `handleStart`, `handleVoteLeft`, `handleVoteRight`, `handleSkip`, `handleFinish` all dispatch to H2H slice; keyboard `useEffect` depends on `isActive`, `currentPair`, and all 3 vote/skip handlers. Extraction concentrates the action dep-cluster + keyboard routing behind a stable Interface. Deletion test passes: complexity vanishes from HeadToHeadPage.
-- New seam justified: No new architectural Seam introduced. `useHeadToHeadHandlers` is an in-process hook, not a protocol/port abstraction.
-- Helpful simplification: HeadToHeadPage.tsx 378→312 LOC (-66 lines); 5 `useCallback` blocks removed; keyboard `useEffect` (43 lines) removed; `selectHeadToHeadIsActive`, `selectHeadToHeadCurrentPair` selectors removed from page; `useNavigate`, `useAppDispatch`, action creators removed from page imports.
-- Should NOT be done: Extracting `showEndConfirm` modal state — page-local boolean, not a shared concern. Extracting display-only selectors (pairsQueue, deferredPairs, phase, totalItems) — render-only; no dep cluster.
-- Tests after fix: `apps/web/src/hooks/useHeadToHeadHandlers.test.ts` — 5 tests at new Interface. No old tests to delete (Replace-don't-layer: no prior tests existed for these handlers).
+- Structurally necessary: `PWAInstallPrompt` cleanup — `setTimeout` at line 49 without `clearTimeout` in the `useEffect` return is a React lifecycle gap; fix stores the timer ID and calls `clearTimeout` in the cleanup function. Deletion test: n/a (adding cleanup, not removing a module). Lifecycle safety.
+- New seam justified: No new Seam introduced.
+- Helpful simplification: Cleanup now explicit; no state mutation after unmount.
+- Should NOT be done: Extracting `showTimer` to a ref (`useRef`) — unnecessary for a single-use case within `useEffect` closure; closure binding is honest and simpler.
+- Tests after fix: No old tests to delete. Interface-level test for `PWAInstallPrompt` would verify the timer is cleared on unmount — not added this loop (PWAInstallPrompt is a browser-event-driven component; testing it in jsdom requires synthetic `BeforeInstallPromptEvent`, out of scope for a 2-line fix).
 
 ## Improvement Backlog
 
-No further backlog items. Both previously identified residuals have been formally accepted this loop:
-- **F-004 accepted residual** — TierBoardPage at 443 LOC is the natural orchestration floor (modal-coupled handlers cannot be cleanly extracted without co-moving state).
-- **F-011 accepted residual** — Domain model anemic; `Item` all-optional fields; cross-cutting type refactor out of scope at cap 18.
+1. **Accept F-004 and F-011 as terminal residuals** — Both previously accepted at loop 18; remain accepted. No new structural extraction passes SPT.
+2. **Add `PWAInstallPrompt` lifecycle test** — Verify `clearTimeout` fires on unmount; the fix is honest but untested at Interface. `kind: polish`, `rank: minor`. Not blocking — the fix itself is a 2-line cleanup, not a new seam.
+
+*(Backlog is carried for completeness; Priority 1 for next loop is the only item that could produce structural UP.)*
 
 ## Deepening Candidates
 
-None. Cap reached. All extraction candidates evaluated; no further candidates pass deletion test at current scope.
+None. All hook extractions complete. Domain model anemic change is a cross-cutting refactor — out of scope. `validateTiersShape()` stub in `tierLogic.ts:75-77` always returns `true` — a cosmetic deletion candidate, not a deepening.
 
 ## Builder Notes
-1. **Pattern** — 5-selector dep cluster shared across N handlers: identical `useAppSelector` dep arrays signal a hook extraction opportunity. **How to recognize** — When 3+ `useCallback` blocks list the same 4+ state selectors in their dep arrays, they belong in a single hook that reads those selectors internally. **Smallest coding rule** — "Same 4+ deps in 3+ callbacks = one hook." **Stack example** — `handleExportJSON`, `handleExportCSV`, `handleExportMarkdown` all had `[projectName, tierOrder, tierLabels, tierColors, tiers]` — identical dep arrays exposed the cluster.
-2. **Pattern** — jsdom missing `URL.createObjectURL` in test environments. **How to recognize** — Spy on `URL.createObjectURL` fails with "Property does not exist" error in jsdom. **Smallest coding rule** — Install via `Object.defineProperty(URL, 'createObjectURL', { writable: true, configurable: true, value: jest.fn() })` in beforeEach rather than `jest.spyOn`. **Stack example** — `useExportHandlers.test.ts:72-84` installs stubs before spy.
-3. **Pattern** — `handleExport` dispatcher pattern: a switch delegating to per-format handlers. Belongs in the same hook as the handlers — not a separate abstraction. **How to recognize** — A `useCallback` whose body is a `switch` calling other `useCallback`s is a routing artifact; it follows its handlers. **Smallest coding rule** — "A router belongs with its routes."
-4. **Pattern** — keyboard shortcut `useEffect` belongs in the same hook as the handlers it routes to. **How to recognize** — `useEffect` deps list contains N action handlers defined in the same component — the effect's dep cluster IS the handler set. **Smallest coding rule** — "Effect that only calls handlers = belongs in the handler hook." **Stack example** — `useHeadToHeadHandlers` keyboard effect deps: `[isActive, currentPair, onVoteLeft, onVoteRight, onSkip, onOpenEndConfirm]` — all owned by the hook except the modal callback (passed as param).
+1. **Pattern** — `useEffect` with a `setTimeout` inside the setup block but no `clearTimeout` in the return. **How to recognize** — `let timerId = setTimeout(...)` or `const timer = setTimeout(...)` inside `useEffect` with no corresponding `clearTimeout(timerId)` in the cleanup. **Smallest coding rule** — "Every `setTimeout` inside `useEffect` must have its ID in the cleanup return." **Stack example** — `PWAInstallPrompt.tsx:49` — timer was unguarded; fix: `let showTimer: ReturnType<typeof setTimeout> | null = null` + `if (showTimer !== null) clearTimeout(showTimer)` in cleanup.
+2. **Pattern** — `validateTiersShape(_tiers) { return true }` stub — a function whose body always returns a literal is a dead-code seam. **How to recognize** — Stub with no real logic, doc-comment reads "TypeScript typing enforces most invariants." **Smallest coding rule** — If the function always returns a constant, either delete it or implement it honestly. Stubs that promise validation but deliver nothing are honesty leaks.
+3. **Pattern** — 5-selector dep cluster shared across N handlers. **How to recognize** — When 3+ `useCallback` blocks list the same 4+ state selectors in dep arrays, they belong in a single hook. **Smallest coding rule** — "Same 4+ deps in 3+ callbacks = one hook."
 
 ## Final Judge Narrative
-Good app, place but not win. 18-loop run complete. Final structural state: TierBoardPage 757→443 LOC (loops 9-14, 7 hooks); ImportExportPage 438→253 LOC (loops 15-16, 2 hooks); HeadToHeadPage 378→312 LOC (loop 17, 1 hook). Total 12 custom hooks in `apps/web/src/hooks/`, all tested at Interface level (6 hook test files). Core pure-function layer: 12 suites, 94 tests. Full suite: 28 suites, 189 tests, all green. Average score ~7.3. Remaining sub-9.5 blockers: anemic domain model (F-011 accepted), implicit global store, no page-level test surfaces — all require cross-cutting changes beyond run scope. Both open findings formally accepted as residuals this loop.
+Good app, place but not win. Loop 19 closes the PWAInstallPrompt lifecycle gap: `showTimer` stored and cleared on unmount; concurrency 7.0→7.5. Both open findings remain accepted residuals. 28 suites, 189 tests green. Average score ~7.4. Remaining sub-9.5 blockers: anemic domain model (F-011), implicit global store, no page-level test surfaces — all require cross-cutting changes beyond run scope.
 
-## Loop 16 Result
+## Loop 19 Result
 
-Three files changed: `useExportHandlers.ts` (new, 182 LOC), `useExportHandlers.test.ts` (new, 5 tests), `ImportExportPage.tsx` (401→253 LOC, 5 `useCallback` blocks removed, 3 `useAppSelector` calls removed, `downloadFile` helper removed, `ExportFormatter` import removed).
+One file changed: `apps/web/src/components/PWAInstallPrompt.tsx` — `useEffect` now stores the 2-second `setTimeout` ID in `let showTimer` and calls `clearTimeout(showTimer)` in the cleanup return. Prevents `setShowPrompt(true)` from firing on an unmounted component.
 
-`useExportHandlers` extracts `handleCopyLink`, `handleExportJSON`, `handleExportCSV`, `handleExportMarkdown`, `handleExport` from `ImportExportPage.tsx`. All 4 format handlers closed over the same 5 selectors (`projectName`, `tierOrder`, `tierLabels`, `tierColors`, `tiers`); the hook reads them internally. Hook accepts `exportAsPNG` as a parameter (from `useExport`, different concern). Returns `{ onCopyLink, onExportJSON, onExportCSV, onExportMarkdown, onExport }`. Page calls `const { onExport: handleExport } = useExportHandlers(exportAsPNG)`. The `downloadFile` utility moved to the hook file (no longer a page-level helper). `ExportFormatter`, `copyToClipboard`, `generateShareUrl` imports removed from page.
-
-Tests: `npm run test:hooks` (5 suites, 30 tests). Full suite: 27 suites, 184 tests, all green. Targeted finding F-010 (ImportExportPage export handlers inline): **resolved** (all 5 export handlers now in `useExportHandlers`; page no longer imports format utilities).
-
-## Loop 17 Result
-
-Three files changed: `useHeadToHeadHandlers.ts` (new, 115 LOC), `useHeadToHeadHandlers.test.ts` (new, 5 tests), `HeadToHeadPage.tsx` (378→312 LOC, 5 `useCallback` blocks removed, keyboard `useEffect` removed, `useNavigate`/`useAppDispatch`/action creator imports removed from page).
-
-`useHeadToHeadHandlers` extracts `handleStart`, `handleVoteLeft`, `handleVoteRight`, `handleSkip`, `handleFinish` from `HeadToHeadPage.tsx`. Hook reads `selectHeadToHeadIsActive` and `selectHeadToHeadCurrentPair` internally. Accepts `onOpenEndConfirm: () => void` (modal state owned by page — clean inversion for Escape key). Keyboard shortcut `useEffect` (ArrowLeft/1 → voteLeft, ArrowRight/2 → voteRight, Space → skip, Escape → openEndConfirm) co-located inside hook with the actions it routes to. Adds `onGoHome` (for empty-state navigation — page previously had inline `navigate("/")`). Returns `{ onStart, onVoteLeft, onVoteRight, onSkip, onFinish, onGoHome }`.
-
-Tests: `npm run test:hooks` (6 suites, 35 tests). Full suite: 28 suites, 189 tests, all green. New finding F-012 (HeadToHeadPage action handlers inline): **resolved** this loop.
-
-## Loop 18 Result
-
-No code changes. Residual acceptance loop:
-- F-004 (TierBoardPage at 443 LOC): **accepted residual** — remaining handlers `handleItemDoubleClick`, `handleCopyLink`, `handleMoveItemWithCelebration` all close over modal `useState` setters; no extraction passes deletion test without co-moving state (ceremony increase, not decrease).
-- F-011 (domain model anemic): **accepted residual** — `Item` all-optional fields; `Items = Record<string, Item[]>` allows invalid tier keys; full type-system refactor requires touching all consumers across 3 packages (out of scope at cap 18).
-
-Full suite: 28 suites, 189 tests, all green. Cap reached. State: **HALT_LOOP_CAP**.
+Tests: `npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks` — 28 suites, 189 tests, all green. Targeted finding F-013 (PWAInstallPrompt unguarded setTimeout): **resolved** — cleanup now explicit; no state mutation after unmount. Concurrency UP: 7.0→7.5.
