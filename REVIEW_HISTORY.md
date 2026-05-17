@@ -1598,3 +1598,80 @@ conditions: none
 
 ## Final Judge Narrative
 Good app, place but not win. Loop 19 closes the PWAInstallPrompt lifecycle gap: showTimer stored and cleared on unmount; concurrency 7.0→7.5. Both open findings remain accepted residuals. 28 suites, 189 tests green. Average score ~7.4. Remaining sub-9.5 blockers: anemic domain model (F-011), implicit global store, no page-level test surfaces — all cross-cutting.
+
+--- Loop 20 (UTC 2026-05-17T02:25:00Z) ---
+
+### Discovery (first loop only)
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 20 of 22 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+---
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 20: added `ItemMedia` discriminated union + `createItem` smart constructor to `packages/core/src/models.ts`. Deleted `validateTiersShape` stub. domain_modeling 6.0→7.0 (UP). 28 suites, 197 tests, all green.
+
+## Scorecard (1-10)
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115`
+- State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343`
+- Domain modeling: 7.0 | UP | `packages/core/src/models.ts` — `ItemMedia` discriminated union + `createItem` constructor added; `validateTiersShape` stub deleted; 8 new Interface tests
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced; within-app no module-level DAG
+- Framework / platform best practices: 7.5 | SAME | 12 focused hooks; RTK patterns correct
+- Concurrency and runtime safety: 7.5 | SAME | `PWAInstallPrompt.tsx` unguarded timer fixed loop 19
+- Code simplicity and clarity: 8.5 | SAME | `validateTiersShape` stub deleted; `createItem` additive and honest
+- Test strategy and regression resistance: 8.0 | SAME | 28 suites, 197 tests (8 new at `createItem` Interface), all green
+- Overall implementation credibility: 8.0 | SAME | Domain model honesty improved; `validateTiersShape` removal honest
+
+## Authority Map
+- Item construction (media invariant): Owner: createItem constructor. Verdict: Single and clear
+- Tier item placement: Owner: tierSlice.ts via Redux. Verdict: Single and clear
+
+## Strengths That Matter
+- `packages/core` 12 suites, 102 tests; `ItemMedia` discriminated union; RTK slice ownership; monorepo DAG enforced; `validateTiersShape` deleted
+
+## Findings
+### Finding F1 (F-004): TierBoardPage.tsx at 443 LOC — ACCEPTED RESIDUAL
+Remaining handlers modal-state coupled. 443 LOC is natural orchestration floor.
+
+### Finding F2 (F-014): Domain model still admits impossible media state via direct Item construction
+apps/web/src/components/ItemModal.tsx:114-135 still uses direct object construction, not createItem.
+Severity: Noticeable weakness.
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | ItemMedia + createItem — caller workaround at ItemModal.tsx:88-97 is evidence; deletion test passes |
+| new_seam_justified | false |
+| helpful_simplification | validateTiersShape stub deleted — honesty leak removed |
+| should_not_be_done | Making Item fields non-optional — cross-cutting, breaks serialized data |
+| tests_after_fix | 8 new tests at createItem Interface; no old tests deleted |
+
+## Improvement Backlog
+1. Migrate ItemModal.tsx add-item block to createItem (structural, helpful, domain_modeling +0.5)
+
+## Builder Notes
+→ REVIEW_HISTORY.json `loops[19].builder_notes` for full notes
+
+## Loop 20 Result
+
+Three files changed: `packages/core/src/models.ts` — Added `ItemMedia` discriminated union + `createItem` smart constructor. `packages/core/src/tierLogic.ts` — Deleted `validateTiersShape` stub. `packages/core/test/models.test.ts` — 8 new Interface tests.
+
+Tests: 28 suites, 197 tests (up from 189), all green. Targeted finding F-011 domain model anemic: **carried forward** (partially improved). domain_modeling UP: 6.0→7.0.
+
+## Loop 20 Implementation Review
+verdict: approved
+reason: All three checks passed: createItem smart constructor enforces media mutual exclusivity at construction; validateTiersShape stub deleted with zero callers affected; 8 new Interface tests at createItem surface; no regressions.
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none
+
+## Final Judge Narrative
+Good app, place but not win. Loop 20: domain_modeling UP 6.0→7.0 — ItemMedia discriminated union + createItem smart constructor make the media impossible-state pattern partially enforced at construction; validateTiersShape honesty-leak stub deleted. 28 suites, 197 tests green (8 new at createItem Interface). Primary remaining gap: ItemModal.tsx still uses direct object construction.

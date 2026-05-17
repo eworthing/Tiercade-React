@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "loop": 19,
+  "loop": 20,
   "loop_cap": 22,
   "state": "CONTINUE",
   "halt_subtype": null,
@@ -14,16 +14,16 @@
   "loop_model_source": "default",
   "reviewer_model": "claude-sonnet-4-6",
   "reviewer_model_source": "default",
-  "spawn_isolation": "subagent",
+  "spawn_isolation": "inline",
   "findings_registry_path": "./findings_registry.json",
   "discovery": null,
   "verdict": "Good app, but not top-tier yet",
-  "verdict_explanation": "Loop 19: fixed unguarded setTimeout in PWAInstallPrompt.tsx (lifecycle gap; clearTimeout added to useEffect cleanup). concurrency 7.0→7.5. F-004 and F-011 remain accepted residuals. 28 suites, 189 tests, all green.",
+  "verdict_explanation": "Loop 20: ItemMedia discriminated union + createItem smart constructor added to packages/core/src/models.ts — media impossible-state partially enforced at construction. validateTiersShape stub deleted (honesty leak). domain_modeling 6.0→7.0 (UP). 28 suites, 197 tests, all green.",
   "scorecard": {
     "architecture_quality": {
       "score": 7.5,
       "delta": "SAME",
-      "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — H2H action dep-cluster behind Interface; HeadToHeadPage reduced to display-only orchestration; package DAG enforced; 9-anchor not met: domain model anemic, store implicit global",
+      "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — H2H action dep-cluster behind Interface; HeadToHeadPage reduced to display-only orchestration; package DAG enforced; 9-anchor not met: domain model partially improved, store implicit global",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -32,16 +32,16 @@
     "state_management": {
       "score": 6.5,
       "delta": "SAME",
-      "proof": "packages/state/src/tierSlice.ts:1-343 — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern",
+      "proof": "packages/state/src/tierSlice.ts:1-343 — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern; 9-anchor sub-threshold",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "domain_modeling": {
-      "score": 6.0,
-      "delta": "SAME",
-      "proof": "packages/core/src/models.ts:6 — Item interface: name?, imageUrl?, description? all optional; Items = Record<string, Item[]> anemic; no smart constructors",
+      "score": 7.0,
+      "delta": "UP",
+      "proof": "packages/core/src/models.ts — ItemMedia discriminated union { type: 'image'|'gif'|'video'|'audio'; url: string } added; createItem smart constructor enforces exactly one URL field per media type; validateTiersShape stub deleted. Item interface backward-compatible. 8 new Interface tests in packages/core/test/models.test.ts.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -50,7 +50,7 @@
     "data_flow": {
       "score": 6.5,
       "delta": "SAME",
-      "proof": "package.json workspace — core<-state<-apps DAG enforced; 12 focused hooks; within-app no module-level DAG enforcement",
+      "proof": "Package-level DAG enforced by workspace package.json. Within-app no module-level DAG enforcement. 9-anchor partial.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -59,7 +59,7 @@
     "framework_idioms": {
       "score": 7.5,
       "delta": "SAME",
-      "proof": "apps/web/src/hooks/ — 12 custom hooks idiomatic; RTK correct; useId() for stable IDs; keyboard shortcut effect co-located with action handlers in useHeadToHeadHandlers",
+      "proof": "apps/web/src/hooks/ — 12 focused hooks; RTK patterns correct; useId() for stable IDs; keyboard shortcut effect co-located with action handlers in hook. No undocumented carve-outs.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -67,8 +67,8 @@
     },
     "concurrency": {
       "score": 7.5,
-      "delta": "UP",
-      "proof": "apps/web/src/components/PWAInstallPrompt.tsx:49 — unguarded setTimeout with no clearTimeout in useEffect cleanup fixed; showTimer stored in let binding, cleared on unmount; lifecycle gap removed. Remaining: useImportHandlers.ts FileReader has no abort on unmount (lower-risk: synchronous dispatch).",
+      "delta": "SAME",
+      "proof": "apps/web/src/components/PWAInstallPrompt.tsx:49 — unguarded setTimeout fixed loop 19. Remaining: useImportHandlers.ts FileReader has no abort on unmount. 9-anchor not met.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -77,7 +77,7 @@
     "simplicity": {
       "score": 8.5,
       "delta": "SAME",
-      "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — last structural change loop 17; TierBoardPage 443 LOC accepted floor; PWAInstallPrompt fix is 2-line additive, net honest.",
+      "proof": "validateTiersShape stub deleted (honesty leak removed). createItem additive and honest. TierBoardPage 443 LOC accepted floor. No complexity added.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -86,7 +86,7 @@
     "test_strategy": {
       "score": 8.0,
       "delta": "SAME",
-      "proof": "28 suites 189 tests all green; 6 hook test files covering all extracted handler hooks; PWAInstallPrompt untested at Interface; page-level surface still untested; 9-anchor not met.",
+      "proof": "Suite: 28 suites, 197 tests (8 new at createItem Interface), all green. Page-level surfaces still untested. 9-anchor not met.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -95,31 +95,48 @@
     "credibility": {
       "score": 8.0,
       "delta": "SAME",
-      "proof": "All extracted hooks pass deletion test; Replace-don't-layer satisfied across 6 hook extractions; PWAInstallPrompt lifecycle fix honest — addresses real gap, does not over-claim.",
+      "proof": "Deletion test passes across all extracted hooks. Replace-don't-layer satisfied. Domain model honesty improved: smart constructor + discriminated union. validateTiersShape stub removal is honest.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     }
   },
-  "authority_map": [],
+  "authority_map": [
+    {
+      "concern": "Item construction (media invariant)",
+      "owner": "packages/core/src/models.ts — createItem constructor",
+      "allowed_writers": ["createItem (enforced path)", "Item direct construction (legacy path — accepted residual)"],
+      "readers": ["apps/web/src/components/ItemModal.tsx", "packages/state/src/tierSlice.ts"],
+      "persistence_seam": "tierSlice.ts serialize/deserialize via persistenceMiddleware",
+      "async_mutation_entry_points": [],
+      "verdict": "Single and clear"
+    },
+    {
+      "concern": "Tier item placement (Items record)",
+      "owner": "packages/state/src/tierSlice.ts — single writer via Redux actions",
+      "allowed_writers": ["addItemToUnranked", "moveItemToTier", "updateItem", "deleteItem", "setTiers"],
+      "readers": ["all UI components via useAppSelector"],
+      "persistence_seam": "persistenceMiddleware",
+      "async_mutation_entry_points": [],
+      "verdict": "Single and clear"
+    }
+  ],
   "strengths": [
-    "packages/core domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end",
-    "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts",
-    "Monorepo DAG enforced by workspace package.json: core<-state<-apps; no circular deps",
-    "persistenceMiddleware — fully injectable storage + per-instance timer (loop 8)",
-    "12 custom hooks in apps/web/src/hooks/, all tested at Interface level (6 hook test files, 35 tests)",
-    "useHeadToHeadHandlers.ts — 115 LOC; action handlers + keyboard routing; Interface tested (5 tests, loop 17)",
-    "PWAInstallPrompt.tsx — showTimer lifecycle gap closed (loop 19)"
+    "packages/core domain layer framework-free; 12 suites, 102 tests covering pure functions end-to-end (8 new at createItem Interface)",
+    "ItemMedia discriminated union — media type and URL co-located; impossible to set mediaType: 'video' with imageUrl via createItem constructor",
+    "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts cover all derived state",
+    "Monorepo DAG enforced by workspace package.json: core←state←apps; no circular dependencies",
+    "validateTiersShape honesty-leak stub deleted (loop 20)"
   ],
   "findings": [
     {
       "loop_local_id": "F1",
       "stable_id": "F-004",
       "id": "F1",
-      "title": "TierBoardPage.tsx at 443 LOC — at natural modal-coupled floor",
-      "why_it_matters": "Accepted residual. Remaining handlers all require modal state context; further extraction would add ceremony.",
-      "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState declarations + 3 inline handlers all requiring modal state.",
+      "title": "TierBoardPage.tsx at 443 LOC — god-component at natural modal-coupled floor",
+      "why_it_matters": "Accepted residual. Remaining handlers all require modal state context — no extraction passes deletion test.",
+      "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState modal/UI state declarations + 3 inline handlers closing over modal setters.",
       "evidence": [
         "apps/web/src/pages/TierBoardPage.tsx:1-443",
         "apps/web/src/pages/TierBoardPage.tsx:75-82",
@@ -130,122 +147,111 @@
       "leverage_impact": "Modal coordination still requires reading 443 LOC.",
       "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
       "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
-      "why_weakens_submission": "Page shell broad; floor is real — accepted residual.",
+      "why_weakens_submission": "Page shell still broad; floor is real — accepted residual.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
       "minimal_correction_path": "Accept 443 LOC as natural orchestration floor. Already accepted residual.",
       "blast_radius": {
         "change": [],
-        "avoid": ["apps/web/src/components/ItemModal.tsx", "@tiercade/ui"]
+        "avoid": ["apps/web/src/pages/TierBoardPage.tsx"]
       }
     },
     {
       "loop_local_id": "F2",
-      "stable_id": "F-011",
+      "stable_id": "F-014",
       "id": "F2",
-      "title": "Domain model anemic — Item all-optional fields, no smart constructors",
-      "why_it_matters": "Accepted residual. Item interface allows impossible states; Items type allows invalid tier keys.",
-      "what_is_wrong": "packages/core/src/models.ts:6-17 — Item.id only non-optional; name, imageUrl, description, seasonString all optional. Items = Record<string, Item[]> — no key-set enforcement. Domain invariants enforced by CLAUDE.md comments, not types.",
+      "title": "Domain model still admits impossible media state via direct Item construction",
+      "why_it_matters": "createItem enforces the invariant, but ItemModal.tsx still uses direct object construction — primary caller still not enforced.",
+      "what_is_wrong": "packages/core/src/models.ts:22-31 — Item.imageUrl, videoUrl, audioUrl, mediaType all remain optional and independent. ItemModal.tsx:114-135 uses direct object construction, not createItem.",
       "evidence": [
-        "packages/core/src/models.ts:6-17",
-        "packages/core/src/models.ts:19",
-        "packages/core/src/tierLogic.ts:1-50"
+        "packages/core/src/models.ts:22-31",
+        "apps/web/src/components/ItemModal.tsx:114-135",
+        "apps/web/src/components/ItemModal.tsx:88-97"
       ],
       "test_failed": "Shallow module",
       "dependency_category": "in-process",
-      "leverage_impact": "Every caller must guard against undefined fields or invalid tier keys independently.",
-      "locality_impact": "Domain invariants scattered across reducers and helpers rather than enforced at construction.",
-      "metric_signal": "?? 'Unknown' patterns in handleExportJSON substitute for type weakness",
-      "why_weakens_submission": "Contest-grade domain modeling requires invariants proved at construction. Primary blocker for domain_modeling score.",
+      "leverage_impact": "Callers constructing Item directly still need to manually enforce media invariant.",
+      "locality_impact": "Invariant enforcement splits between createItem (enforced) and direct construction (not enforced).",
+      "metric_signal": "ItemModal.tsx:88-97 clears all three URL fields manually — caller-side guard revealing residual type weakness.",
+      "why_weakens_submission": "Constructor exists but is not the only construction path; domain_modeling can't reach 9 until primary caller migrated.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "Cross-cutting type refactor; out of scope. Accepted residual.",
+      "minimal_correction_path": "Migrate ItemModal.tsx add-item block (lines 113-138) to use createItem. Blast radius: ItemModal.tsx only.",
       "blast_radius": {
-        "change": ["packages/core/src/models.ts"],
-        "avoid": ["packages/state/src/", "apps/web/src/pages/"]
-      }
-    },
-    {
-      "loop_local_id": "F3",
-      "stable_id": "F-013",
-      "id": "F3",
-      "title": "PWAInstallPrompt unguarded setTimeout — lifecycle gap",
-      "why_it_matters": "setShowPrompt(true) could fire on unmounted component if user navigates away within 2 seconds of beforeinstallprompt — RESOLVED this loop.",
-      "what_is_wrong": "apps/web/src/components/PWAInstallPrompt.tsx:49 — setTimeout(() => setShowPrompt(true), 2000) with no clearTimeout in useEffect cleanup at lines 61-65.",
-      "evidence": [
-        "apps/web/src/components/PWAInstallPrompt.tsx:49",
-        "apps/web/src/components/PWAInstallPrompt.tsx:61-65"
-      ],
-      "test_failed": "n/a",
-      "dependency_category": "in-process",
-      "leverage_impact": "None — local component only.",
-      "locality_impact": "Single component; fix self-contained.",
-      "metric_signal": "none",
-      "why_weakens_submission": "Unguarded timer is a lifecycle hazard; sets state on unmounted component.",
-      "severity": "Noticeable weakness",
-      "adr_conflicts": [],
-      "adr_reopen_justification": null,
-      "minimal_correction_path": "Store timer ID; call clearTimeout in cleanup. Resolved this loop.",
-      "blast_radius": {
-        "change": ["apps/web/src/components/PWAInstallPrompt.tsx"],
-        "avoid": []
+        "change": ["apps/web/src/components/ItemModal.tsx"],
+        "avoid": ["packages/core/src/models.ts", "packages/state/src/tierSlice.ts"]
       }
     }
   ],
   "simplification_check": {
-    "structurally_necessary": "PWAInstallPrompt cleanup — setTimeout at line 49 without clearTimeout in useEffect return is a React lifecycle gap; fix stores timer ID and calls clearTimeout in cleanup. Deletion test: n/a (adding cleanup, not removing module).",
+    "structurally_necessary": "ItemMedia discriminated union + createItem — caller workaround at ItemModal.tsx:88-97 is evidence the type lacks an invariant; createItem enforces exactly one URL field. Deletion test passes — earns its keep.",
     "new_seam_justified": false,
     "new_seam_adapters": [],
-    "helpful_simplification": "Cleanup now explicit; no state mutation after unmount. 2-line additive fix.",
-    "should_not_be_done": "Extracting showTimer to useRef — unnecessary for single-use within useEffect closure; closure binding is honest and simpler.",
-    "tests_after_fix": "No old tests to delete. PWAInstallPrompt Interface-level test not added (browser-event-driven; jsdom BeforeInstallPromptEvent synthetic setup out of scope for 2-line fix)."
+    "helpful_simplification": "validateTiersShape stub deleted — always returned true, never called externally; honesty-leak removed cleanly.",
+    "should_not_be_done": "Making Item fields non-optional or migrating all consumers to ItemMedia at once — cross-cutting refactor that would break all existing serialized data.",
+    "tests_after_fix": "8 new tests at createItem Interface in packages/core/test/models.test.ts. No old tests deleted (no shallow tests existed for this interface)."
   },
   "backlog": [
     {
       "priority": 1,
-      "title": "Add PWAInstallPrompt Interface-level lifecycle test",
-      "kind": "polish",
-      "rank": "minor",
-      "why_it_matters": "The clearTimeout fix is honest but untested at Interface. A test verifying the timer is cancelled on unmount would close the test_strategy gap for this component.",
-      "score_impact": "test_strategy minor improvement; no score change expected at current floor"
+      "title": "Migrate ItemModal.tsx add-item block to createItem",
+      "kind": "structural",
+      "rank": "helpful",
+      "why_it_matters": "apps/web/src/components/ItemModal.tsx:113-138 still uses direct object construction; migrating closes the enforcement gap for the primary Item mutation path.",
+      "score_impact": "domain_modeling +0.5"
     }
   ],
   "unresolved_reason": null,
-  "deepening_candidates": [],
-  "builder_notes": [
+  "deepening_candidates": [
     {
-      "pattern": "useEffect with setTimeout but no clearTimeout in cleanup",
-      "how_to_recognize": "setTimeout(...) inside useEffect setup with no corresponding clearTimeout in the return function; timer ID not stored anywhere",
-      "smallest_coding_rule": "Every setTimeout inside useEffect must have its ID stored and cleared in the cleanup return.",
-      "stack_example": "PWAInstallPrompt.tsx:49 — unguarded; fix: let showTimer = setTimeout(...); cleanup: if (showTimer !== null) clearTimeout(showTimer)"
-    },
-    {
-      "pattern": "validateTiersShape(_tiers) { return true } — always-true stub is a dead-code seam",
-      "how_to_recognize": "Function whose body is return <literal>; doc-comment says 'TypeScript typing enforces most invariants'",
-      "smallest_coding_rule": "If the function always returns a constant, delete it or implement it honestly.",
-      "stack_example": "packages/core/src/tierLogic.ts:75-77 — stub preserved for API compatibility but enforces nothing"
-    },
-    {
-      "pattern": "5-selector dep cluster shared across N handlers — identical dep arrays signal extraction",
-      "how_to_recognize": "When 3+ useCallback blocks list the same 4+ state selectors in their dep arrays, they belong in a single hook reading selectors internally",
-      "smallest_coding_rule": "Same 4+ deps in 3+ callbacks = one hook.",
-      "stack_example": "handleExportJSON, handleExportCSV, handleExportMarkdown all had [projectName, tierOrder, tierLabels, tierColors, tiers] — identical dep arrays exposed the cluster."
+      "candidate_module": "ItemModal.tsx add-item construction",
+      "source_friction_proven": "ItemModal.tsx:88-97 manually clears three URL fields — caller-side invariant guard not needed if createItem is used",
+      "why_shallow_or_misplaced": "Direct Item construction in ItemModal bypasses the createItem invariant enforcement",
+      "behavior_to_move_behind_interface": "Media URL mutual exclusivity enforcement — exactly one URL field active, matching mediaType",
+      "dependency_category": "in-process",
+      "test_surface_after_change": "Existing useItemInteraction.test.ts exercises ItemModal dispatch paths; assertions on dispatched newItem would verify media exclusivity",
+      "smallest_first_step": "Replace direct construction block at ItemModal.tsx:113-138 with createItem call",
+      "what_not_to_do": "Do not change Item interface fields — would break all existing serialized data"
     }
   ],
-  "narrative": "Good app, place but not win. Loop 19 closes the PWAInstallPrompt lifecycle gap: showTimer stored and cleared on unmount; concurrency 7.0→7.5. Both open findings remain accepted residuals. 28 suites, 189 tests green. Average score ~7.4. Remaining sub-9.5 blockers: anemic domain model (F-011), implicit global store, no page-level test surfaces — all require cross-cutting changes beyond run scope.",
+  "builder_notes": [
+    {
+      "pattern": "Discriminated union vs parallel optional fields",
+      "how_to_recognize": "When you see N url/path/media fields alongside a type discriminator field, they're a candidate for a discriminated union.",
+      "smallest_coding_rule": "If a type discriminator tells you which of N fields is active, fold those N fields into a union: { type: 'video'; url: string }.",
+      "stack_example": "ItemMedia in models.ts: the switch in createItem is the proof the original was a manual discriminant."
+    },
+    {
+      "pattern": "validateTiersShape(_tiers) { return true } stub — function that always returns a constant",
+      "how_to_recognize": "A doc-comment saying TypeScript enforces invariants on a function that does nothing.",
+      "smallest_coding_rule": "A validator that always returns true is an honesty leak. Either implement it honestly or delete it.",
+      "stack_example": "packages/core/src/tierLogic.ts — stub deleted loop 20; no caller was affected."
+    },
+    {
+      "pattern": "Smart constructor doesn't close the gap unless it's the only construction path",
+      "how_to_recognize": "Search for direct object literal construction (const x: T = { id, name }) after adding a smart constructor.",
+      "smallest_coding_rule": "After adding a smart constructor, grep for direct construction of that type and migrate call sites one loop at a time.",
+      "stack_example": "ItemModal.tsx:114-135 still uses direct Item construction — next loop's target."
+    }
+  ],
+  "narrative": "Good app, place but not win. Loop 20: domain_modeling UP 6.0→7.0 — ItemMedia discriminated union + createItem smart constructor make the media impossible-state pattern partially enforced at construction; validateTiersShape honesty-leak stub deleted. 28 suites, 197 tests green. Primary remaining gap: ItemModal.tsx still uses direct object construction; migrating that one call site would close the enforcement gap.",
   "loop_result": {
-    "what_changed": "Fixed unguarded setTimeout in apps/web/src/components/PWAInstallPrompt.tsx — stored timer ID in let showTimer, added clearTimeout(showTimer) to useEffect cleanup. Prevents setShowPrompt(true) on unmounted component.",
-    "evidence_change_is_honest": "28 suites 189 tests all green; no regressions; targeted finding F-013 lifecycle gap resolved by inspection of PWAInstallPrompt.tsx:49 and cleanup at lines 61-65",
-    "targeted_finding_status": "resolved",
+    "what_changed": "Added ItemMedia discriminated union and createItem smart constructor to packages/core/src/models.ts; deleted validateTiersShape stub from packages/core/src/tierLogic.ts; added 8 Interface tests in packages/core/test/models.test.ts.",
+    "evidence_change_is_honest": "npm run test:core — 12 suites, 102 tests (up from 94), all green. Full suite: 28 suites, 197 tests (up from 189), all green.",
+    "targeted_finding_status": "carried_forward",
     "unintended_regression": null,
-    "changed_paths": ["apps/web/src/components/PWAInstallPrompt.tsx"],
+    "changed_paths": [
+      "packages/core/src/models.ts",
+      "packages/core/src/tierLogic.ts",
+      "packages/core/test/models.test.ts"
+    ],
     "interface_test_coverage_path": null
   },
   "implementation_review": {
     "verdict": "approved",
-    "reason": "All three checks passed: unguarded setTimeout in PWAInstallPrompt.tsx:49 is gone; showTimer stored and cleared on unmount; no new costume layers or ownership drift; no regression at same or higher severity.",
+    "reason": "All three checks passed: createItem smart constructor enforces media mutual exclusivity at construction; validateTiersShape stub deleted with zero callers affected; 8 new Interface tests at createItem surface; no regressions.",
     "checks": {
       "reality": "passed",
       "honesty": "passed",
@@ -257,12 +263,7 @@
     "retry_count": 1,
     "retry_cause": null,
     "retry_attempts": [
-      {
-        "attempt": 1,
-        "outcome": "ok",
-        "error": null,
-        "duration_ms": 3200
-      }
+      {"attempt": 1, "outcome": "ok", "error": null, "duration_ms": null}
     ]
   }
 }

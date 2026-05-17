@@ -2,7 +2,7 @@
 see Loop 1 Discovery
 
 ### Loop Counter
-Loop 19 of 22 (cap)
+Loop 20 of 22 (cap)
 
 ### System Flag
 [STATE: CONTINUE]
@@ -12,21 +12,41 @@ Loop 19 of 22 (cap)
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 19: fixed unguarded `setTimeout` in `PWAInstallPrompt.tsx` — no `clearTimeout` in `useEffect` cleanup meant `setShowPrompt(true)` could fire on an unmounted component. Fix stores timer ID and clears it on unmount. concurrency 7.0→7.5 (lifecycle gap removed). F-004 (TierBoardPage 443 LOC) and F-011 (domain model anemic) remain accepted residuals. Suite: 28 suites, 189 tests, all green.
+Loop 20: added `ItemMedia` discriminated union + `createItem` smart constructor to `packages/core/src/models.ts`. Enforces media mutual exclusivity at construction — eliminates the impossible state where `imageUrl`, `videoUrl`, `audioUrl`, and `mediaType` could all coexist independently. Deleted `validateTiersShape` stub (always returns `true`, never called externally, honesty leak). 8 new interface tests at `createItem` surface. domain_modeling 6.0→7.0 (UP). Suite: 28 suites, 197 tests, all green.
 
 ## Scorecard (1-10)
 - Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration. Package DAG enforced. F-004 accepted residual (TierBoardPage 443 LOC floor). 9-anchor not met.
 - State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern. 9-anchor sub-threshold.
-- Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — `Item` interface all-optional fields; `Items = Record<string, Item[]>` anemic. F-011 accepted residual — cross-cutting refactor out of scope. 9-anchor not met.
+- Domain modeling: 7.0 | UP | `packages/core/src/models.ts` — `ItemMedia` discriminated union + `createItem` smart constructor enforce media invariant at construction. `validateTiersShape` stub deleted. `Items = Record<string, Item[]>` and `Item` interface still admits some impossible combinations via direct construction (no `ItemMedia` enforcement at the interface level for existing callers). 9-anchor not fully met: `Item` fields remain independently optional for backward compat.
 - Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json`. Within-app no module-level DAG enforcement. 9-anchor partial.
 - Framework / platform best practices: 7.5 | SAME | `apps/web/src/hooks/` — 12 focused hooks; RTK patterns correct; `useId()` for stable IDs; keyboard shortcut effect co-located with action handlers in hook. No undocumented carve-outs.
-- Concurrency and runtime safety: 7.5 | UP | `apps/web/src/components/PWAInstallPrompt.tsx:49` — unguarded `setTimeout` with no `clearTimeout` in cleanup fixed; timer ID stored in `showTimer`, cleared on unmount. Lifecycle gap removed. Remaining: `useImportHandlers.ts` FileReader has no abort on unmount (lower-risk: synchronous dispatch). 9-anchor not met.
-- Code simplicity and clarity: 8.5 | SAME | TierBoardPage 443 LOC accepted floor. `PWAInstallPrompt` fix is 2-line additive, net honest.
-- Test strategy and regression resistance: 8.0 | SAME | Suite: 28 suites, 189 tests, all green. Page-level surfaces still untested. `PWAInstallPrompt` untested at Interface — 9-anchor not met.
-- Overall implementation credibility: 8.0 | SAME | Deletion test passes across all extracted hooks. Replace-don't-layer satisfied. Both open findings accepted residuals. Fix is honest — addresses real lifecycle gap.
+- Concurrency and runtime safety: 7.5 | SAME | `apps/web/src/components/PWAInstallPrompt.tsx:49` — unguarded `setTimeout` fixed loop 19. Remaining: `useImportHandlers.ts` FileReader has no abort on unmount (lower-risk: synchronous dispatch). 9-anchor not met.
+- Code simplicity and clarity: 8.5 | SAME | `validateTiersShape` stub deleted (honesty leak removed). `createItem` additive and honest. TierBoardPage 443 LOC accepted floor.
+- Test strategy and regression resistance: 8.0 | SAME | Suite: 28 suites, 197 tests (8 new at `createItem` Interface), all green. Page-level surfaces still untested. 9-anchor not met.
+- Overall implementation credibility: 8.0 | SAME | Deletion test passes across all extracted hooks. Replace-don't-layer satisfied. Domain model honesty improved: smart constructor + discriminated union. `validateTiersShape` stub removal is honest.
+
+## Authority Map
+(Re-emitting because domain modeling finding is Priority 1 this loop.)
+
+- **Concern**: Item construction (media invariant)
+  - **Owner**: `packages/core/src/models.ts` — `createItem` constructor
+  - **Allowed writers**: `createItem` (enforced path), direct `Item` literal (legacy path, still valid)
+  - **Readers**: `apps/web/src/components/ItemModal.tsx`, `packages/state/src/tierSlice.ts`
+  - **Persistence seam**: `tierSlice.ts` serialize/deserialize via `persistenceMiddleware`
+  - **Async mutation entry points**: none (pure construction)
+  - **Verdict**: Single and clear (constructor path); Split (legacy direct construction still exists — accepted residual given backward compat requirement)
+
+- **Concern**: Tier item placement (`Items` record)
+  - **Owner**: `packages/state/src/tierSlice.ts` — single writer via Redux actions
+  - **Allowed writers**: `addItemToUnranked`, `moveItemToTier`, `updateItem`, `deleteItem`, `setTiers`
+  - **Readers**: all UI components via `useAppSelector`
+  - **Persistence seam**: `persistenceMiddleware`
+  - **Async mutation entry points**: none (synchronous Redux dispatch)
+  - **Verdict**: Single and clear
 
 ## Strengths That Matter
-- `packages/core` domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end.
+- `packages/core` domain layer framework-free; 12 suites, 102 tests covering pure functions end-to-end (8 new at `createItem` Interface).
+- `ItemMedia` discriminated union — media type and URL are co-located; impossible to set `mediaType: "video"` with `imageUrl` via the constructor.
 - RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in `selectors.ts` cover all derived state.
 - Monorepo DAG enforced by workspace `package.json`: `core←state←apps`; no circular dependencies.
 - `persistenceMiddleware` — fully injectable storage (F-005 resolved loop 8); per-instance timer (F-006 resolved loop 8).
@@ -36,6 +56,7 @@ Loop 19: fixed unguarded `setTimeout` in `PWAInstallPrompt.tsx` — no `clearTim
 - `HeadToHeadPage.tsx` — reduced from 378 to 312 LOC; action handlers + keyboard effect extracted (loop 17).
 - 12 custom hooks in `apps/web/src/hooks/`, all tested at Interface level (6 hook test files, 35 tests).
 - `PWAInstallPrompt.tsx` — `showTimer` lifecycle gap closed (loop 19).
+- `validateTiersShape` honesty-leak stub deleted (loop 20).
 
 ## Findings
 
@@ -72,99 +93,66 @@ Loop 19: fixed unguarded `setTimeout` in `PWAInstallPrompt.tsx` — no `clearTim
 
 ---
 
-### Finding #2: Domain model anemic — `Item` all-optional fields, no smart constructors (F-011)
+### Finding #2: Domain model still admits impossible media state via direct `Item` construction (F-014)
 
-**Why it matters** — Accepted residual at 6.0 per loop 18. `Item` all-optional fields; `Items = Record<string, Item[]>` allows invalid tier keys.
+**Why it matters** — `createItem` enforces the invariant, but `Item` interface fields remain independently optional; callers using `ItemModal.tsx`-style direct object construction (`const newItem: Item = { id, name }; newItem.imageUrl = ...`) can still produce invalid state.
 
-**What is wrong** — `packages/core/src/models.ts:6-17` — `Item.id` only non-optional; `name`, `imageUrl`, `description`, `seasonString` all optional. Domain invariants enforced by comments in `CLAUDE.md`, not type system.
+**What is wrong** — `packages/core/src/models.ts:22-31` — `Item.imageUrl`, `videoUrl`, `audioUrl`, `mediaType` all remain optional and independent in the base interface. The `createItem` constructor path enforces mutual exclusivity; direct object construction does not. `ItemModal.tsx:114-135` still uses the direct construction path.
 
 **Evidence** —
-- `packages/core/src/models.ts:6-17` — `Item` interface definition
-- `packages/core/src/models.ts:19` — `Items = Record<string, Item[]>`
-- `packages/core/src/tierLogic.ts:1-50` — tier operations assume valid tier names from callers
+- `packages/core/src/models.ts:22-31` — `Item` interface with parallel optional URL fields
+- `apps/web/src/components/ItemModal.tsx:114-135` — direct object construction, not using `createItem`
 
 **Architectural test failed** — Shallow module
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Every caller guards undefined fields independently.
+**Leverage impact** — Callers that construct `Item` directly still need to manually enforce invariant.
 
-**Locality impact** — Domain invariants scattered across reducers and helpers.
+**Locality impact** — Invariant enforcement splits between `createItem` (enforced) and direct construction (not enforced).
 
-**Metric signal, if any** — `?? "Unknown"` patterns in `handleExportJSON` substitute for type weakness.
+**Metric signal, if any** — `ItemModal.tsx:88-97` clears all three URL fields manually — caller-side guard revealing residual type weakness.
 
-**Why this weakens submission** — Contest-grade domain modeling requires invariants at construction, not docs. Primary reason domain_modeling stays at 6.0.
-
-**Severity** — Noticeable weakness
-
-**ADR conflicts** — none
-
-**Minimal correction path** — Cross-cutting change across 3 packages. Accepted residual.
-
-**Blast radius** — Change: `packages/core/src/models.ts` + all consumers. Avoid touching slices/pages until models stabilize.
-
----
-
-### Finding #3: `PWAInstallPrompt` unguarded `setTimeout` — lifecycle gap (F-013)
-
-**Why it matters** — `setShowPrompt(true)` could fire on an unmounted component if user navigates away within 2 seconds of `beforeinstallprompt` firing — **resolved this loop**.
-
-**What is wrong** — `apps/web/src/components/PWAInstallPrompt.tsx:49` — `setTimeout(() => setShowPrompt(true), 2000)` with no corresponding `clearTimeout` in the `useEffect` cleanup at line 61-65.
-
-**Evidence** —
-- `apps/web/src/components/PWAInstallPrompt.tsx:49` — unguarded timer (pre-fix)
-- `apps/web/src/components/PWAInstallPrompt.tsx:61-65` — cleanup removed listeners but not the timer (pre-fix)
-
-**Architectural test failed** — n/a (concurrency/lifecycle safety)
-
-**Dependency category** — `in-process`
-
-**Leverage impact** — None — local component only.
-
-**Locality impact** — Single component; fix is self-contained.
-
-**Metric signal, if any** — none
-
-**Why this weakens submission** — Unguarded timer is a lifecycle hazard in React concurrent mode; sets state on unmounted component.
+**Why this weakens submission** — Constructor exists but is not the only construction path; domain_modeling can't reach 9 until direct construction is guided or removed.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Store timer ID; call `clearTimeout` in cleanup. **Resolved this loop.**
+**Minimal correction path** — Migrate `ItemModal.tsx` add-item block (lines 113-138) to use `createItem`. Blast radius: `apps/web/src/components/ItemModal.tsx` only. Small fix for next loop.
 
-**Blast radius** — Change: `apps/web/src/components/PWAInstallPrompt.tsx`. Avoid: all other files.
+**Blast radius** — Change: `apps/web/src/components/ItemModal.tsx:113-138`. Avoid: all other files.
 
 ---
 
 ## Simplification Check
-- Structurally necessary: `PWAInstallPrompt` cleanup — `setTimeout` at line 49 without `clearTimeout` in the `useEffect` return is a React lifecycle gap; fix stores the timer ID and calls `clearTimeout` in the cleanup function. Deletion test: n/a (adding cleanup, not removing a module). Lifecycle safety.
-- New seam justified: No new Seam introduced.
-- Helpful simplification: Cleanup now explicit; no state mutation after unmount.
-- Should NOT be done: Extracting `showTimer` to a ref (`useRef`) — unnecessary for a single-use case within `useEffect` closure; closure binding is honest and simpler.
-- Tests after fix: No old tests to delete. Interface-level test for `PWAInstallPrompt` would verify the timer is cleared on unmount — not added this loop (PWAInstallPrompt is a browser-event-driven component; testing it in jsdom requires synthetic `BeforeInstallPromptEvent`, out of scope for a 2-line fix).
+- Structurally necessary: `ItemMedia` discriminated union + `createItem` — caller workaround at `ItemModal.tsx:88-97` (clearing all three URL fields) is evidence the type lacks an invariant. `createItem` enforces exactly one URL field. Deletion test: if `createItem` is deleted, the impossible state is back (media invariant reappears at N callers). Passes deletion test — earns its keep.
+- New seam justified: No new Seam. `createItem` is a pure function returning the existing `Item` type; no protocol introduced.
+- Helpful simplification: `validateTiersShape` stub deleted — always returned `true`, never called externally; honesty-leak removed cleanly.
+- Should NOT be done: Making `Item` fields non-optional or migrating all consumers to `ItemMedia` at once — cross-cutting refactor that would break all existing code. Not in scope for one loop.
+- Tests after fix: 8 new tests at `createItem` Interface (`packages/core/test/models.test.ts`). No old tests deleted (replace-don't-layer satisfied — no shallow tests existed for the new interface).
 
 ## Improvement Backlog
 
-1. **Accept F-004 and F-011 as terminal residuals** — Both previously accepted at loop 18; remain accepted. No new structural extraction passes SPT.
-2. **Add `PWAInstallPrompt` lifecycle test** — Verify `clearTimeout` fires on unmount; the fix is honest but untested at Interface. `kind: polish`, `rank: minor`. Not blocking — the fix itself is a 2-line cleanup, not a new seam.
-
-*(Backlog is carried for completeness; Priority 1 for next loop is the only item that could produce structural UP.)*
+1. **Migrate `ItemModal.tsx` add-item block to `createItem`** — `apps/web/src/components/ItemModal.tsx:113-138` still uses direct object construction; the only remaining call site that manually enforces the media invariant outside the constructor. Migrating it would close the direct-construction gap for the primary mutation path. `kind: structural`, `rank: helpful`. Score impact: domain_modeling +0.5.
 
 ## Deepening Candidates
 
-None. All hook extractions complete. Domain model anemic change is a cross-cutting refactor — out of scope. `validateTiersShape()` stub in `tierLogic.ts:75-77` always returns `true` — a cosmetic deletion candidate, not a deepening.
+- **`createItem` constructor adoption** — `ItemModal.tsx:114-135` uses direct object construction. Migrating to `createItem` deepens the interface coverage: all Item construction would go through the enforced path. Dependency category: `in-process`. Test surface: existing `useItemForm` / `useItemInteraction` hook tests already exercise `ItemModal` dispatch paths. Smallest first step: replace the direct construction block in `ItemModal.tsx`. What not to do: do not change the `Item` interface fields — would break all existing serialized data.
 
 ## Builder Notes
-1. **Pattern** — `useEffect` with a `setTimeout` inside the setup block but no `clearTimeout` in the return. **How to recognize** — `let timerId = setTimeout(...)` or `const timer = setTimeout(...)` inside `useEffect` with no corresponding `clearTimeout(timerId)` in the cleanup. **Smallest coding rule** — "Every `setTimeout` inside `useEffect` must have its ID in the cleanup return." **Stack example** — `PWAInstallPrompt.tsx:49` — timer was unguarded; fix: `let showTimer: ReturnType<typeof setTimeout> | null = null` + `if (showTimer !== null) clearTimeout(showTimer)` in cleanup.
-2. **Pattern** — `validateTiersShape(_tiers) { return true }` stub — a function whose body always returns a literal is a dead-code seam. **How to recognize** — Stub with no real logic, doc-comment reads "TypeScript typing enforces most invariants." **Smallest coding rule** — If the function always returns a constant, either delete it or implement it honestly. Stubs that promise validation but deliver nothing are honesty leaks.
-3. **Pattern** — 5-selector dep cluster shared across N handlers. **How to recognize** — When 3+ `useCallback` blocks list the same 4+ state selectors in dep arrays, they belong in a single hook. **Smallest coding rule** — "Same 4+ deps in 3+ callbacks = one hook."
+1. **Pattern** — Discriminated union vs parallel optional fields. Direct: `{ imageUrl?: string; videoUrl?: string; audioUrl?: string; mediaType?: MediaType }` allows all fields simultaneously. **How to recognize** — When you see N url/path/media fields alongside a type discriminator field, they're a candidate for a discriminated union. **Smallest coding rule** — "If a type discriminator tells you which of N fields is active, fold those N fields into a union: `{ type: "video"; url: string }`." **Stack example** — `ItemMedia` in `models.ts`: the `switch` in `createItem` is the proof the original was a manual discriminant.
+2. **Pattern** — `validateTiersShape(_tiers) { return true }` stub — function that always returns a constant. **How to recognize** — A doc-comment saying "TypeScript enforces invariants" on a function that does nothing. **Smallest coding rule** — "A validator that always returns `true` is an honesty leak. Either implement it honestly or delete it. 'API compatibility' is not a reason to keep a function that lies."
+3. **Pattern** — Smart constructor doesn't close the gap unless it's the only construction path. Adding `createItem` is step 1; migrating the primary caller (`ItemModal.tsx`) to use it is step 2. **How to recognize** — Search for direct object literal construction (`const x: T = { id, name }`) after adding a smart constructor. **Smallest coding rule** — "After adding a smart constructor, grep for direct construction of that type and migrate call sites one loop at a time."
 
 ## Final Judge Narrative
-Good app, place but not win. Loop 19 closes the PWAInstallPrompt lifecycle gap: `showTimer` stored and cleared on unmount; concurrency 7.0→7.5. Both open findings remain accepted residuals. 28 suites, 189 tests green. Average score ~7.4. Remaining sub-9.5 blockers: anemic domain model (F-011), implicit global store, no page-level test surfaces — all require cross-cutting changes beyond run scope.
+Good app, place but not win. Loop 20: domain modeling UP 6.0→7.0 — `ItemMedia` discriminated union + `createItem` smart constructor make the media impossible-state-representable pattern partially enforced at construction; `validateTiersShape` honesty-leak stub deleted. 28 suites, 197 tests green (8 new at `createItem` Interface). Primary remaining gap: `ItemModal.tsx` still uses direct object construction (not `createItem`); migrating that one call site would close the enforcement gap and push domain_modeling toward 7.5. Average score ~7.5.
 
-## Loop 19 Result
+## Loop 20 Result
 
-One file changed: `apps/web/src/components/PWAInstallPrompt.tsx` — `useEffect` now stores the 2-second `setTimeout` ID in `let showTimer` and calls `clearTimeout(showTimer)` in the cleanup return. Prevents `setShowPrompt(true)` from firing on an unmounted component.
+Three files changed:
+- `packages/core/src/models.ts` — Added `ItemMedia` discriminated union (`{ type: "image"|"gif"|"video"|"audio"; url: string }`) and `createItem(id, options)` smart constructor that enforces exactly one URL field per media type. `Item` interface unchanged for backward compatibility.
+- `packages/core/src/tierLogic.ts` — Deleted `validateTiersShape` stub (always returned `true`; never called externally; honesty leak).
+- `packages/core/test/models.test.ts` — 8 new tests at `createItem` Interface: media mutual exclusivity for all four media types, minimal item construction, full-options construction, no-media construction.
 
-Tests: `npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks` — 28 suites, 189 tests, all green. Targeted finding F-013 (PWAInstallPrompt unguarded setTimeout): **resolved** — cleanup now explicit; no state mutation after unmount. Concurrency UP: 7.0→7.5.
+Tests: `npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks` — 28 suites, 197 tests (up from 189), all green. Targeted finding F-011 domain model anemic: **carried forward** (partially improved — constructor added; direct construction path in `ItemModal.tsx` not yet migrated). domain_modeling UP: 6.0→7.0.

@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 14,
+  "next_serial": 15,
   "entries": [
     {
       "stable_id": "F-001",
@@ -245,6 +245,13 @@
           "status": "accepted_residual",
           "sha": "39f5e67a03da688bd76832e7d5873789cbf3647b",
           "idempotency_key": "loop19-F-004-accepted_residual"
+        },
+        {
+          "loop": 20,
+          "loop_local_id": "F1",
+          "status": "accepted_residual",
+          "sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
+          "idempotency_key": "loop20-F-004-accepted_residual"
         }
       ]
     },
@@ -540,6 +547,31 @@
           "status": "resolved",
           "sha": "39f5e67a03da688bd76832e7d5873789cbf3647b",
           "idempotency_key": "loop19-F-013-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-014",
+      "title": "Domain model still admits impossible media state via direct Item construction",
+      "category_hint": "anemic-domain-model-direct-construction",
+      "primary_file": "apps/web/src/components/ItemModal.tsx",
+      "primary_evidence_lines": [
+        114,
+        135
+      ],
+      "test_failed": "Shallow module",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 20,
+      "first_seen_sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
+      "last_seen_loop": 20,
+      "last_seen_sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
+      "occurrences": [
+        {
+          "loop": 20,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
+          "idempotency_key": "loop20-F-014-open"
         }
       ]
     }

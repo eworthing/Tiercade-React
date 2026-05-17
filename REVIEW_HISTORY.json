@@ -5586,6 +5586,301 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 20,
+      "loop_cap": 22,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "inline",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 20: ItemMedia discriminated union + createItem smart constructor added to packages/core/src/models.ts \u2014 media impossible-state partially enforced at construction. validateTiersShape stub deleted (honesty leak). domain_modeling 6.0\u21927.0 (UP). 28 suites, 197 tests, all green.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 H2H action dep-cluster behind Interface; HeadToHeadPage reduced to display-only orchestration; package DAG enforced; 9-anchor not met: domain model partially improved, store implicit global",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern; 9-anchor sub-threshold",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 7.0,
+          "delta": "UP",
+          "proof": "packages/core/src/models.ts \u2014 ItemMedia discriminated union { type: 'image'|'gif'|'video'|'audio'; url: string } added; createItem smart constructor enforces exactly one URL field per media type; validateTiersShape stub deleted. Item interface backward-compatible. 8 new Interface tests in packages/core/test/models.test.ts.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "Package-level DAG enforced by workspace package.json. Within-app no module-level DAG enforcement. 9-anchor partial.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/ \u2014 12 focused hooks; RTK patterns correct; useId() for stable IDs; keyboard shortcut effect co-located with action handlers in hook. No undocumented carve-outs.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/components/PWAInstallPrompt.tsx:49 \u2014 unguarded setTimeout fixed loop 19. Remaining: useImportHandlers.ts FileReader has no abort on unmount. 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 8.5,
+          "delta": "SAME",
+          "proof": "validateTiersShape stub deleted (honesty leak removed). createItem additive and honest. TierBoardPage 443 LOC accepted floor. No complexity added.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "Suite: 28 suites, 197 tests (8 new at createItem Interface), all green. Page-level surfaces still untested. 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "Deletion test passes across all extracted hooks. Replace-don't-layer satisfied. Domain model honesty improved: smart constructor + discriminated union. validateTiersShape stub removal is honest.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [
+        {
+          "concern": "Item construction (media invariant)",
+          "owner": "packages/core/src/models.ts \u2014 createItem constructor",
+          "allowed_writers": [
+            "createItem (enforced path)",
+            "Item direct construction (legacy path \u2014 accepted residual)"
+          ],
+          "readers": [
+            "apps/web/src/components/ItemModal.tsx",
+            "packages/state/src/tierSlice.ts"
+          ],
+          "persistence_seam": "tierSlice.ts serialize/deserialize via persistenceMiddleware",
+          "async_mutation_entry_points": [],
+          "verdict": "Single and clear"
+        },
+        {
+          "concern": "Tier item placement (Items record)",
+          "owner": "packages/state/src/tierSlice.ts \u2014 single writer via Redux actions",
+          "allowed_writers": [
+            "addItemToUnranked",
+            "moveItemToTier",
+            "updateItem",
+            "deleteItem",
+            "setTiers"
+          ],
+          "readers": [
+            "all UI components via useAppSelector"
+          ],
+          "persistence_seam": "persistenceMiddleware",
+          "async_mutation_entry_points": [],
+          "verdict": "Single and clear"
+        }
+      ],
+      "strengths": [
+        "packages/core domain layer framework-free; 12 suites, 102 tests covering pure functions end-to-end (8 new at createItem Interface)",
+        "ItemMedia discriminated union \u2014 media type and URL co-located; impossible to set mediaType: 'video' with imageUrl via createItem constructor",
+        "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts cover all derived state",
+        "Monorepo DAG enforced by workspace package.json: core\u2190state\u2190apps; no circular dependencies",
+        "validateTiersShape honesty-leak stub deleted (loop 20)"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "id": "F1",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 god-component at natural modal-coupled floor",
+          "why_it_matters": "Accepted residual. Remaining handlers all require modal state context \u2014 no extraction passes deletion test.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState modal/UI state declarations + 3 inline handlers closing over modal setters.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443",
+            "apps/web/src/pages/TierBoardPage.tsx:75-82",
+            "apps/web/src/pages/TierBoardPage.tsx:140-183"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell still broad; floor is real \u2014 accepted residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept 443 LOC as natural orchestration floor. Already accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/pages/TierBoardPage.tsx"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-014",
+          "id": "F2",
+          "title": "Domain model still admits impossible media state via direct Item construction",
+          "why_it_matters": "createItem enforces the invariant, but ItemModal.tsx still uses direct object construction \u2014 primary caller still not enforced.",
+          "what_is_wrong": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl, videoUrl, audioUrl, mediaType all remain optional and independent. ItemModal.tsx:114-135 uses direct object construction, not createItem.",
+          "evidence": [
+            "packages/core/src/models.ts:22-31",
+            "apps/web/src/components/ItemModal.tsx:114-135",
+            "apps/web/src/components/ItemModal.tsx:88-97"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Callers constructing Item directly still need to manually enforce media invariant.",
+          "locality_impact": "Invariant enforcement splits between createItem (enforced) and direct construction (not enforced).",
+          "metric_signal": "ItemModal.tsx:88-97 clears all three URL fields manually \u2014 caller-side guard revealing residual type weakness.",
+          "why_weakens_submission": "Constructor exists but is not the only construction path; domain_modeling can't reach 9 until primary caller migrated.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Migrate ItemModal.tsx add-item block (lines 113-138) to use createItem. Blast radius: ItemModal.tsx only.",
+          "blast_radius": {
+            "change": [
+              "apps/web/src/components/ItemModal.tsx"
+            ],
+            "avoid": [
+              "packages/core/src/models.ts",
+              "packages/state/src/tierSlice.ts"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "ItemMedia discriminated union + createItem \u2014 caller workaround at ItemModal.tsx:88-97 is evidence the type lacks an invariant; createItem enforces exactly one URL field. Deletion test passes \u2014 earns its keep.",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "validateTiersShape stub deleted \u2014 always returned true, never called externally; honesty-leak removed cleanly.",
+        "should_not_be_done": "Making Item fields non-optional or migrating all consumers to ItemMedia at once \u2014 cross-cutting refactor that would break all existing serialized data.",
+        "tests_after_fix": "8 new tests at createItem Interface in packages/core/test/models.test.ts. No old tests deleted (no shallow tests existed for this interface)."
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "Migrate ItemModal.tsx add-item block to createItem",
+          "kind": "structural",
+          "rank": "helpful",
+          "why_it_matters": "apps/web/src/components/ItemModal.tsx:113-138 still uses direct object construction; migrating closes the enforcement gap for the primary Item mutation path.",
+          "score_impact": "domain_modeling +0.5"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [
+        {
+          "candidate_module": "ItemModal.tsx add-item construction",
+          "source_friction_proven": "ItemModal.tsx:88-97 manually clears three URL fields \u2014 caller-side invariant guard not needed if createItem is used",
+          "why_shallow_or_misplaced": "Direct Item construction in ItemModal bypasses the createItem invariant enforcement",
+          "behavior_to_move_behind_interface": "Media URL mutual exclusivity enforcement \u2014 exactly one URL field active, matching mediaType",
+          "dependency_category": "in-process",
+          "test_surface_after_change": "Existing useItemInteraction.test.ts exercises ItemModal dispatch paths; assertions on dispatched newItem would verify media exclusivity",
+          "smallest_first_step": "Replace direct construction block at ItemModal.tsx:113-138 with createItem call",
+          "what_not_to_do": "Do not change Item interface fields \u2014 would break all existing serialized data"
+        }
+      ],
+      "builder_notes": [
+        {
+          "pattern": "Discriminated union vs parallel optional fields",
+          "how_to_recognize": "When you see N url/path/media fields alongside a type discriminator field, they're a candidate for a discriminated union.",
+          "smallest_coding_rule": "If a type discriminator tells you which of N fields is active, fold those N fields into a union: { type: 'video'; url: string }.",
+          "stack_example": "ItemMedia in models.ts: the switch in createItem is the proof the original was a manual discriminant."
+        },
+        {
+          "pattern": "validateTiersShape(_tiers) { return true } stub \u2014 function that always returns a constant",
+          "how_to_recognize": "A doc-comment saying TypeScript enforces invariants on a function that does nothing.",
+          "smallest_coding_rule": "A validator that always returns true is an honesty leak. Either implement it honestly or delete it.",
+          "stack_example": "packages/core/src/tierLogic.ts \u2014 stub deleted loop 20; no caller was affected."
+        },
+        {
+          "pattern": "Smart constructor doesn't close the gap unless it's the only construction path",
+          "how_to_recognize": "Search for direct object literal construction (const x: T = { id, name }) after adding a smart constructor.",
+          "smallest_coding_rule": "After adding a smart constructor, grep for direct construction of that type and migrate call sites one loop at a time.",
+          "stack_example": "ItemModal.tsx:114-135 still uses direct Item construction \u2014 next loop's target."
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 20: domain_modeling UP 6.0\u21927.0 \u2014 ItemMedia discriminated union + createItem smart constructor make the media impossible-state pattern partially enforced at construction; validateTiersShape honesty-leak stub deleted. 28 suites, 197 tests green. Primary remaining gap: ItemModal.tsx still uses direct object construction; migrating that one call site would close the enforcement gap.",
+      "loop_result": {
+        "what_changed": "Added ItemMedia discriminated union and createItem smart constructor to packages/core/src/models.ts; deleted validateTiersShape stub from packages/core/src/tierLogic.ts; added 8 Interface tests in packages/core/test/models.test.ts.",
+        "evidence_change_is_honest": "npm run test:core \u2014 12 suites, 102 tests (up from 94), all green. Full suite: 28 suites, 197 tests (up from 189), all green.",
+        "targeted_finding_status": "carried_forward",
+        "unintended_regression": null,
+        "changed_paths": [
+          "packages/core/src/models.ts",
+          "packages/core/src/tierLogic.ts",
+          "packages/core/test/models.test.ts"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: createItem smart constructor enforces media mutual exclusivity at construction; validateTiersShape stub deleted with zero callers affected; 8 new Interface tests at createItem surface; no regressions.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": null
+          }
+        ]
+      }
     }
   ]
 }
