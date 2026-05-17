@@ -139,7 +139,7 @@
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
       "last_seen_loop": 16,
-      "last_seen_sha": "b7fcbd5",
+      "last_seen_sha": "0de487e",
       "occurrences": [
         {
           "loop": 5,
@@ -222,7 +222,7 @@
           "loop": 16,
           "loop_local_id": "F1",
           "status": "open",
-          "sha": "b7fcbd5",
+          "sha": "0de487e",
           "idempotency_key": "loop16-F-004-open"
         }
       ]
@@ -401,7 +401,7 @@
       "first_seen_loop": 14,
       "first_seen_sha": "2852fac",
       "last_seen_loop": 16,
-      "last_seen_sha": "b7fcbd5",
+      "last_seen_sha": "0de487e",
       "occurrences": [
         {
           "loop": 14,
@@ -421,7 +421,7 @@
           "loop": 16,
           "loop_local_id": "F2-resolved",
           "status": "resolved",
-          "sha": "b7fcbd5",
+          "sha": "0de487e",
           "idempotency_key": "loop16-F-010-resolved"
         }
       ]
@@ -438,15 +438,15 @@
       "test_failed": "Shallow module",
       "severity": "Noticeable weakness",
       "first_seen_loop": 16,
-      "first_seen_sha": "b7fcbd5",
+      "first_seen_sha": "0de487e",
       "last_seen_loop": 16,
-      "last_seen_sha": "b7fcbd5",
+      "last_seen_sha": "0de487e",
       "occurrences": [
         {
           "loop": 16,
           "loop_local_id": "F2",
           "status": "open",
-          "sha": "b7fcbd5",
+          "sha": "0de487e",
           "idempotency_key": "loop16-F-011-open"
         }
       ]
