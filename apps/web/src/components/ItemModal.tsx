@@ -22,6 +22,7 @@ import {
   deleteItem,
   captureSnapshot,
 } from "@tiercade/state";
+import { createItem } from "@tiercade/core";
 import type { Item, MediaType } from "@tiercade/core";
 
 interface ItemModalProps {
@@ -111,28 +112,14 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         // Add mode - create new item
         dispatch(captureSnapshot("Add Item"));
 
-        const newItem: Item = {
-          id: generateId("item"),
+        const newItem = createItem(generateId("item"), {
           name: trimmedName,
-        };
-
-        if (trimmedSeasonString) {
-          newItem.seasonString = trimmedSeasonString;
-        }
-        if (trimmedDescription) {
-          newItem.description = trimmedDescription;
-        }
-
-        if (values.mediaUrl) {
-          newItem.mediaType = values.mediaType;
-          if (values.mediaType === "video") {
-            newItem.videoUrl = values.mediaUrl;
-          } else if (values.mediaType === "audio") {
-            newItem.audioUrl = values.mediaUrl;
-          } else {
-            newItem.imageUrl = values.mediaUrl;
-          }
-        }
+          seasonString: trimmedSeasonString || undefined,
+          description: trimmedDescription || undefined,
+          media: values.mediaUrl
+            ? { type: values.mediaType as "image" | "gif" | "video" | "audio", url: values.mediaUrl }
+            : undefined,
+        });
 
         dispatch(addItemToUnranked(newItem));
       }

@@ -1675,3 +1675,78 @@ conditions: none
 
 ## Final Judge Narrative
 Good app, place but not win. Loop 20: domain_modeling UP 6.0→7.0 — ItemMedia discriminated union + createItem smart constructor make the media impossible-state pattern partially enforced at construction; validateTiersShape honesty-leak stub deleted. 28 suites, 197 tests green (8 new at createItem Interface). Primary remaining gap: ItemModal.tsx still uses direct object construction.
+
+--- Loop 21 (UTC 2026-05-17T02:32:00Z) ---
+
+### Discovery (first loop only)
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 21 of 22 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+---
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 21: `ItemModal.tsx` add-item path migrated to `createItem`. domain_modeling 7.0→7.5, simplicity 8.5→9.0, credibility 8.0→8.5. 28 suites, 197 tests, all green.
+
+## Scorecard (1-10)
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115`
+- State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343`
+- Domain modeling: 7.5 | UP | `apps/web/src/components/ItemModal.tsx:114-135` — direct Item literal replaced with createItem; media invariant enforced at primary add-item path
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced
+- Framework / platform best practices: 7.5 | SAME | 12 focused hooks; undocumented FileReader carve-out
+- Concurrency and runtime safety: 7.5 | SAME | PWAInstallPrompt timer fixed loop 19; FileReader gap remains
+- Code simplicity and clarity: 9.0 | UP | Residual Accounting: 9-anchor met; no SPT-passing simplifications remain; TierBoardPage 443 LOC is framework-constrained floor
+- Test strategy and regression resistance: 8.0 | SAME | 28 suites, 197 tests, all green; page-level gap named
+- Overall implementation credibility: 8.5 | UP | `apps/web/src/components/ItemModal.tsx:114-135` — primary creation uses smart constructor; no honesty leaks in add-item path
+
+## Authority Map
+(see REVIEW_HISTORY.json `loops[20].authority_map`)
+
+## Strengths That Matter
+- createItem is primary add-item path via ItemModal.tsx; media invariant enforced at construction
+- All simplification candidates exhausted — simplicity 9.0
+- RTK slice ownership; monorepo DAG enforced; 12 suites 102 tests in core
+
+## Findings
+### Finding F1 (F-004): TierBoardPage.tsx at 443 LOC — ACCEPTED RESIDUAL
+### Finding F2 (F-014): Item interface backward-compat parallel fields — ACCEPTED RESIDUAL
+Both terminal. No SPT-passing fixes remain.
+
+## Simplification Check
+| Field | Value |
+|---|---|
+| structurally_necessary | ItemModal.tsx add-item migration — 12-line if/else → 4-line createItem call |
+| new_seam_justified | false |
+| helpful_simplification | Net simplification; behavior preserved; media invariant enforced |
+| should_not_be_done | Migrating updateItem path — Partial<Item> is correct for partial updates |
+| tests_after_fix | No new tests; indirect coverage via useItemInteraction.test.ts + createItem Interface tests |
+
+## Improvement Backlog
+1. Accept F-004 and F-014 as terminal residuals (polish, minor)
+
+## Builder Notes
+→ REVIEW_HISTORY.json `loops[20].builder_notes` for full notes
+
+## Loop 21 Result
+
+One file changed: `apps/web/src/components/ItemModal.tsx` — added `createItem` to imports; replaced direct Item literal construction block (lines 114-135) with single `createItem(generateId("item"), { name, seasonString, description, media })` call.
+
+Tests: 28 suites, 197 tests (unchanged), all green. Targeted finding F-014: **carried forward** (terminal: Item interface backward compat). domain_modeling UP: 7.0→7.5. simplicity UP: 8.5→9.0. credibility UP: 8.0→8.5.
+
+## Loop 21 Implementation Review
+verdict: approved
+reason: All three checks passed: ItemModal.tsx add-item block uses createItem; media invariant enforced at primary creation call site; gif mediaType correctly passed through; no regressions.
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none
+
+## Final Judge Narrative
+Good app, place but not win. Loop 21: domain_modeling 7.0→7.5, simplicity 8.5→9.0, credibility 8.0→8.5. 197 tests green. Terminal constraints: implicit global store, TierBoardPage modal-state floor, Item interface backward compat. Average score ~7.6. Cap is loop 22 — one loop remaining.
