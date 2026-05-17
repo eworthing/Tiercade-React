@@ -14,15 +14,15 @@
       "test_failed": "Interface-as-test-surface",
       "severity": "Serious deduction",
       "first_seen_loop": 29,
-      "first_seen_sha": "pending",
+      "first_seen_sha": "b604e8d",
       "last_seen_loop": 29,
-      "last_seen_sha": "pending",
+      "last_seen_sha": "b604e8d",
       "occurrences": [
         {
           "loop": 29,
           "loop_local_id": "F1",
           "status": "resolved",
-          "sha": "pending",
+          "sha": "b604e8d",
           "idempotency_key": "loop29-F-021-resolved"
         }
       ]
@@ -362,7 +362,7 @@
           "loop": 29,
           "loop_local_id": "F2",
           "status": "accepted_residual",
-          "sha": "pending",
+          "sha": "b604e8d",
           "idempotency_key": "loop29-F-004-accepted_residual"
         }
       ]
@@ -624,9 +624,9 @@
       "test_failed": "Shallow module",
       "severity": "Noticeable weakness",
       "first_seen_loop": 17,
-      "first_seen_sha": "pending",
+      "first_seen_sha": "b604e8d",
       "last_seen_loop": 17,
-      "last_seen_sha": "pending",
+      "last_seen_sha": "b604e8d",
       "occurrences": [
         {
           "loop": 17,
@@ -744,7 +744,7 @@
           "loop": 29,
           "loop_local_id": "F3",
           "status": "accepted_residual",
-          "sha": "pending",
+          "sha": "b604e8d",
           "idempotency_key": "loop29-F-014-accepted_residual"
         }
       ]
