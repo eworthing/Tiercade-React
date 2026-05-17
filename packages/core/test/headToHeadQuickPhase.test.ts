@@ -7,16 +7,7 @@ import {
 } from "../src/headToHead";
 
 function makeItem(id: string, name: string): Item {
-  return {
-    id,
-    name,
-    seasonString: undefined,
-    seasonNumber: undefined,
-    status: undefined,
-    description: undefined,
-    imageUrl: undefined,
-    videoUrl: undefined
-  };
+  return { id, name };
 }
 
 function makeRecord(wins: number, losses: number): HeadToHeadRecord {

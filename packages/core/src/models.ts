@@ -21,15 +21,13 @@ export interface Item {
   seasonNumber?: number;
   status?: string;
   description?: string;
-  imageUrl?: string;
-  videoUrl?: string;
-  audioUrl?: string;
-  mediaType?: MediaType;
+  /** Mutually exclusive media field. Use createItem to enforce invariant at construction. */
+  media?: ItemMedia;
 }
 
 /**
  * Options for createItem smart constructor.
- * `media` encodes the discriminated union — only one URL field is set.
+ * `media` encodes the discriminated union — exactly one URL per media entry.
  */
 export interface ItemCreateOptions {
   name?: string;
@@ -41,12 +39,10 @@ export interface ItemCreateOptions {
 }
 
 /**
- * Smart constructor for Item. Enforces media invariant at construction:
- * exactly one URL field (imageUrl / videoUrl / audioUrl) is set, matching
- * the mediaType. Callers that use createItem never need to manually clear
- * the other URL fields.
- *
- * Returns a plain Item — compatible with all existing consumers.
+ * Smart constructor for Item. Sets `item.media` from the discriminated
+ * `ItemMedia` union, making impossible multi-URL combinations
+ * unrepresentable — a single `media` field replaces the old parallel
+ * `imageUrl / videoUrl / audioUrl / mediaType` fields.
  */
 export function createItem(id: string, options: ItemCreateOptions = {}): Item {
   const item: Item = { id };
@@ -56,22 +52,7 @@ export function createItem(id: string, options: ItemCreateOptions = {}): Item {
   if (options.seasonNumber !== undefined) item.seasonNumber = options.seasonNumber;
   if (options.status !== undefined) item.status = options.status;
   if (options.description !== undefined) item.description = options.description;
-
-  if (options.media) {
-    item.mediaType = options.media.type;
-    switch (options.media.type) {
-      case "image":
-      case "gif":
-        item.imageUrl = options.media.url;
-        break;
-      case "video":
-        item.videoUrl = options.media.url;
-        break;
-      case "audio":
-        item.audioUrl = options.media.url;
-        break;
-    }
-  }
+  if (options.media !== undefined) item.media = options.media;
 
   return item;
 }

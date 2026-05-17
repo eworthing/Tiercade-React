@@ -99,11 +99,11 @@ describe("useItemInteraction — onFileDrop", () => {
     expect(tierItems.length).toBeGreaterThan(0);
     const added = tierItems[tierItems.length - 1];
     expect(added.name).toBe("hero.png");
-    expect(added.mediaType).toBe("image");
-    expect(added.imageUrl).toBe(IMAGE_FILE.dataUrl);
+    expect(added.media?.type).toBe("image");
+    expect(added.media?.url).toBe(IMAGE_FILE.dataUrl);
   });
 
-  it("sets videoUrl (not imageUrl) for video drops", () => {
+  it("sets video media (not image) for video drops", () => {
     const store = makeStore();
     const { result } = renderHook(
       () => useItemInteraction(store.dispatch),
@@ -114,11 +114,11 @@ describe("useItemInteraction — onFileDrop", () => {
 
     const tierItems = store.getState().tier.tiers["A"] ?? [];
     const added = tierItems[tierItems.length - 1];
-    expect(added.videoUrl).toBe(VIDEO_FILE.dataUrl);
-    expect(added.imageUrl).toBeUndefined();
+    expect(added.media?.type).toBe("video");
+    expect(added.media?.url).toBe(VIDEO_FILE.dataUrl);
   });
 
-  it("sets audioUrl (not imageUrl) for audio drops", () => {
+  it("sets audio media (not image) for audio drops", () => {
     const store = makeStore();
     const { result } = renderHook(
       () => useItemInteraction(store.dispatch),
@@ -129,15 +129,15 @@ describe("useItemInteraction — onFileDrop", () => {
 
     const tierItems = store.getState().tier.tiers["B"] ?? [];
     const added = tierItems[tierItems.length - 1];
-    expect(added.audioUrl).toBe(AUDIO_FILE.dataUrl);
-    expect(added.imageUrl).toBeUndefined();
+    expect(added.media?.type).toBe("audio");
+    expect(added.media?.url).toBe(AUDIO_FILE.dataUrl);
   });
 });
 
 // ── onItemMediaDrop ───────────────────────────────────────────────────────────
 
 describe("useItemInteraction — onItemMediaDrop", () => {
-  it("updates imageUrl on existing item with image file", () => {
+  it("updates image media on existing item with image file", () => {
     const store = makeStore();
     // Seed a known item in the S tier
     store.dispatch(
@@ -156,12 +156,11 @@ describe("useItemInteraction — onItemMediaDrop", () => {
 
     const tierItems = store.getState().tier.tiers["S"] ?? [];
     const updated = tierItems.find((i) => i.id === "existing-1");
-    expect(updated?.imageUrl).toBe(IMAGE_FILE.dataUrl);
-    expect(updated?.videoUrl).toBeUndefined();
-    expect(updated?.audioUrl).toBeUndefined();
+    expect(updated?.media?.type).toBe("image");
+    expect(updated?.media?.url).toBe(IMAGE_FILE.dataUrl);
   });
 
-  it("updates videoUrl on existing item with video file", () => {
+  it("updates video media on existing item with video file", () => {
     const store = makeStore();
     store.dispatch(
       tierSlice.actions.addItemToTier({
@@ -179,7 +178,7 @@ describe("useItemInteraction — onItemMediaDrop", () => {
 
     const tierItems = store.getState().tier.tiers["S"] ?? [];
     const updated = tierItems.find((i) => i.id === "existing-2");
-    expect(updated?.videoUrl).toBe(VIDEO_FILE.dataUrl);
-    expect(updated?.imageUrl).toBeUndefined();
+    expect(updated?.media?.type).toBe("video");
+    expect(updated?.media?.url).toBe(VIDEO_FILE.dataUrl);
   });
 });

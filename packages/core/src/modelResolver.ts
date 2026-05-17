@@ -373,7 +373,7 @@ export class ModelResolver {
       name: resolved.title,
       seasonString: resolved.subtitle,
       description: resolved.description,
-      imageUrl: resolved.thumbUri,
+      media: resolved.thumbUri ? { type: "image", url: resolved.thumbUri } : undefined,
     };
   }
 

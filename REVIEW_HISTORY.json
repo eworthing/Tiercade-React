@@ -292,5 +292,151 @@
         ]
       }
     }
+  ,
+    {
+      "schema_version": 3,
+      "loop": 2,
+      "loop_cap": 10,
+      "state": "HALT_SUCCESS",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": {
+        "reason": "All 9 scorecard dimensions at 9.5 with accepted residuals. No open findings. HALT_SUCCESS criteria met per G21.",
+        "next_loop_hint": null,
+        "backlog": []
+      },
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "inline",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": {
+        "source_roots": [
+          "packages/core/src/",
+          "packages/state/src/",
+          "packages/ui/src/",
+          "packages/theme/src/",
+          "apps/web/src/",
+          "apps/native/src/"
+        ],
+        "test_command": "npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks",
+        "build_command": null,
+        "lens": "Generic",
+        "adrs": [],
+        "domain_terms": [
+          "Item", "Items", "TierConfig", "tierOrder", "unranked",
+          "moveItem", "reorderWithin", "HeadToHeadLogic", "quickRankLogic",
+          "modelResolver", "tierSlice", "headToHeadSlice", "themeSlice",
+          "undoRedoSlice", "onboardingSlice", "presentationSlice",
+          "ItemMedia", "createItem", "ItemCreateOptions"
+        ],
+        "test_scope": "full",
+        "test_filter": null,
+        "working_tree_dirty_paths": []
+      },
+      "verdict": "Strong contender",
+      "verdict_explanation": "All three prior findings resolved. Post-loop-2, Item's impossible multi-URL state is eliminated at the type level via a discriminated union (ItemMedia). The persistence seam, H2H algorithm, and selector graph remain intact. All 239 tests pass. No open findings. All 9 dimensions at 9.5 with accepted residuals only.",
+      "scorecard": {
+        "architecture_quality": { "score": 9.5, "delta": "UP", "proof": "F-001 resolved loop 1: onboardingSlice reducer-body I/O removed. F-003 resolved loop 2: Item model no longer admits impossible multi-URL combos. Module graph: packages/core zero React deps.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "HeadToHeadPage.tsx ~450 lines — within accepted complexity for a page-level orchestrator.", "unverifiable_due_to_build_failure": false },
+        "state_management": { "score": 9.5, "delta": "UP", "proof": "F-001 resolved loop 1: onboarding no longer writes localStorage inside reducers. F-002 resolved loop 1: dynamic require() replaced with static import. All state mutations via Redux actions.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Undo history capped at 20 snapshots — deliberate product decision.", "unverifiable_due_to_build_failure": false },
+        "domain_modeling": { "score": 9.5, "delta": "UP", "proof": "F-003 resolved loop 2: Item.imageUrl/videoUrl/audioUrl/mediaType removed; replaced by media?: ItemMedia discriminated union. Impossible multi-URL state unrepresentable.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Item.status is a plain string — acceptable for a user-defined label.", "unverifiable_due_to_build_failure": false },
+        "data_flow": { "score": 9.5, "delta": "UP", "proof": "F-001 resolved loop 1: onboardingSlice back-channel eliminated. All data flows explicit dispatch→reducer→selector→component.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "URL sharing encodes only image/gif media — intentional lossy encode for URL-length reasons.", "unverifiable_due_to_build_failure": false },
+        "framework_idioms": { "score": 9.5, "delta": "UP", "proof": "F-001 resolved loop 1: reducer side effects eliminated. F-002 resolved loop 1: ESM dynamic require() replaced with static import. createSlice, createSelector, createAsyncThunk throughout.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "ItemModal.tsx type cast on form string value — standard and safe given controlled input constraints.", "unverifiable_due_to_build_failure": false },
+        "concurrency": { "score": 9.5, "delta": "SAME", "proof": "No actor isolation concerns. debounce with clearTimeout. No floating promises. All async entry points use createAsyncThunk.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "No concurrency residuals identified.", "unverifiable_due_to_build_failure": false },
+        "simplicity": { "score": 9.5, "delta": "UP", "proof": "F-002 resolved loop 1: unused import removed; require() ceremony eliminated. F-003 resolved loop 2: 4 parallel URL fields deleted. createItem 12→6 lines. getItemMediaType 10→1 line. itemHasMedia 3→1 line.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "headToHead.ts ~1356 lines — passes deletion test; accepted.", "unverifiable_due_to_build_failure": false },
+        "test_strategy": { "score": 9.5, "delta": "UP", "proof": "238→239 tests (loop 1 added persistenceMiddleware.test). Loop 2: 6 test files updated to assert on item.media?.type/url. 239/239 pass post-loop-2.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "No Playwright E2E coverage for ItemMedia rendering — acceptable; unit tests cover the union exhaustively.", "unverifiable_due_to_build_failure": false },
+        "credibility": { "score": 9.5, "delta": "UP", "proof": "F-001 loop 1: reducer-body I/O removed. F-002 loop 1: dynamic require() removed. F-003 loop 2: impossible multi-URL type combinations eliminated. No open findings. 239/239 tests pass.", "residual_blocking_10": false, "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "useItemForm.ts local mediaType state initialized to 'image' — UI-only concern.", "unverifiable_due_to_build_failure": false }
+      },
+      "authority_map": [
+        { "concern": "Tier items + order", "owner": "tierSlice", "writers": ["tierSlice.actions.*"], "readers": ["selectors.ts", "TierBoardPage", "HeadToHeadPage"], "persistence_seam": "createPersistenceMiddleware", "async_entry_points": [] },
+        { "concern": "H2H session", "owner": "headToHeadSlice", "writers": ["headToHeadThunks.*"], "readers": ["HeadToHeadPage", "useHeadToHeadHandlers"], "persistence_seam": "none (session-only)", "async_entry_points": ["startHeadToHead", "finishHeadToHead"] },
+        { "concern": "Undo/redo history", "owner": "undoRedoSlice", "writers": ["undoRedoThunks.captureSnapshot", "performUndo", "performRedo"], "readers": ["AppShell", "TierBoardPage"], "persistence_seam": "createPersistenceMiddleware (trimmed to 20)", "async_entry_points": [] },
+        { "concern": "Onboarding", "owner": "onboardingSlice", "writers": ["completeOnboarding", "skipOnboarding", "resetOnboarding"], "readers": ["AppShell", "OnboardingWizard"], "persistence_seam": "createPersistenceMiddleware (post-loop-1 fix)", "async_entry_points": [] },
+        { "concern": "Persistence I/O", "owner": "createPersistenceMiddleware", "writers": ["createPersistenceMiddleware (debounced save)"], "readers": ["loadPersistedState", "createAppStore"], "persistence_seam": "local-substitutable (injectable Storage)", "async_entry_points": [] },
+        { "concern": "Item media", "owner": "ItemMedia discriminated union (models.ts)", "writers": ["createItem", "useItemForm", "useItemInteraction", "modelResolver.resolvedItemToItem"], "readers": ["TierRow.ItemMediaContent", "TierBoard.DragPreview", "StreamingOverlay", "HeadToHeadPage", "useExportHandlers", "urlSharing"], "persistence_seam": "tierSlice via createPersistenceMiddleware", "async_entry_points": [] }
+      ],
+      "strengths": [
+        "Wilson-score CI with warm-start pairings (headToHead.ts) — real algorithm depth, not scaffolding",
+        "createPersistenceMiddleware injectable Storage seam — testable without global mocks, covers all slices post-loop-1",
+        "createSelector memoization throughout selectors.ts — no inline selector functions",
+        "createAppStore factory with preloadedState + persistenceMiddleware overrides — test isolation without touching globals",
+        "ItemMedia discriminated union — impossible multi-URL state eliminated at the type level; simplifies every reader site"
+      ],
+      "findings": [
+        {
+          "id": "F1",
+          "loop_local_id": "F1",
+          "stable_id": "F-003",
+          "title": "Item allows impossible multi-URL combinations",
+          "severity": "Noticeable weakness",
+          "primary_file": "packages/core/src/models.ts",
+          "primary_lines": "17-28",
+          "status": "resolved",
+          "resolution_loop": 2,
+          "dimensions_affected": ["domain_modeling", "simplicity", "credibility"]
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "F-003 fix is net deletion: 4 fields removed from Item, ~40 lines removed across reader sites.",
+        "new_seam_justified": "No new seam created. ItemMedia union already existed; fix moves it from documentation-only to enforced.",
+        "helpful_simplification": "createItem 12→6 lines. getItemMediaType 10→1 line. itemHasMedia 3→1 line. onFileDrop 8→3 lines. All subtractive.",
+        "should_not_do": "Do not add an ItemMediaValidator class. Do not make Item a class."
+      },
+      "backlog": [],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        "Discriminated union at the type level: if a field combination is impossible, the type must make it impossible.",
+        "Reducer body I/O: move to middleware or thunks.",
+        "Dynamic require() inside ESM: use top-level static import."
+      ],
+      "narrative": "Strong contender. Loop 1 eliminated reducer-body I/O and dynamic require(). Loop 2 closed the domain-modeling gap: impossible multi-URL Item state is now unrepresentable at the type level. All 9 dimensions at 9.5. No open findings. HALT_SUCCESS.",
+      "loop_result": {
+        "what_changed": "Replaced Item.imageUrl/videoUrl/audioUrl/mediaType (4 parallel optional fields) with Item.media?: ItemMedia discriminated union (F-003 resolved). Updated all 18 reader/writer sites.",
+        "evidence_change_is_honest": "239/239 tests pass post-loop-2. Net deletion: ~40 lines removed, ~25 lines added. Old parallel URL fields fully absent from codebase.",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "packages/core/src/models.ts",
+          "packages/core/src/filtering.ts",
+          "packages/core/src/modelResolver.ts",
+          "packages/ui/src/tier-board/TierRow.tsx",
+          "packages/ui/src/tier-board/TierBoard.tsx",
+          "packages/ui/src/components/StreamingOverlay.tsx",
+          "apps/web/src/hooks/useItemForm.ts",
+          "apps/web/src/hooks/useItemInteraction.ts",
+          "apps/web/src/components/ItemModal.tsx",
+          "apps/web/src/hooks/useExportHandlers.ts",
+          "apps/web/src/utils/urlSharing.ts",
+          "apps/web/src/pages/HeadToHeadPage.tsx",
+          "packages/core/test/headToHeadInternals.test.ts",
+          "packages/core/test/headToHeadQuickPhase.test.ts",
+          "packages/core/test/models.test.ts",
+          "packages/core/test/sorting.test.ts",
+          "packages/core/test/filtering.test.ts",
+          "apps/web/src/hooks/useItemInteraction.test.ts"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "F-003 fields absent from Item interface; media?: ItemMedia present. 239/239 tests pass; assertions on media?.type/url. No pre-existing test broke.",
+        "checks": { "reality": "passed", "honesty": "passed", "regression": "passed" },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 2,
+        "retry_count": 2,
+        "retry_cause": "spawn_error",
+        "retry_attempts": [
+          {"attempt": 1, "outcome": "spawn_error", "error": "subagent spawn failed; fell back to inline reviewer", "duration_ms": null},
+          {"attempt": 2, "outcome": "ok", "error": null, "duration_ms": null}
+        ]
+      }
+    }
   ]
 }

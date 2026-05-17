@@ -1,21 +1,22 @@
 {
   "schema_version": 3,
+  "next_serial": 4,
   "entries": [
     {
       "stable_id": "F-001",
       "title": "onboardingSlice reducer-body localStorage I/O",
       "severity": "Serious deduction",
       "status": "resolved",
+      "category_hint": "state_management",
       "first_seen_loop": 1,
       "first_seen_sha": "6fcc574103b72f152802cc77adab1b025ffcb39e",
+      "last_seen_loop": 1,
       "resolution_loop": 1,
       "primary_file": "packages/state/src/onboardingSlice.ts",
       "primary_lines": "13-97",
+      "test_failed": false,
       "occurrences": [
-        "packages/state/src/onboardingSlice.ts:24 — loadInitialState() localStorage.getItem at module load",
-        "packages/state/src/onboardingSlice.ts:72 — completeOnboarding reducer localStorage.setItem",
-        "packages/state/src/onboardingSlice.ts:84 — skipOnboarding reducer localStorage.setItem",
-        "packages/state/src/onboardingSlice.ts:96 — resetOnboarding reducer localStorage.removeItem"
+        { "loop": 1, "loop_local_id": "F1", "status": "resolved", "sha": "5ab6270" }
       ],
       "fuzzy_match_hints": ["localStorage inside reducer", "reducer body side effect", "loadInitialState module load"]
     },
@@ -24,14 +25,16 @@
       "title": "dynamic require() for vote; unused clearDeferredPairs import",
       "severity": "Noticeable weakness",
       "status": "resolved",
+      "category_hint": "framework_idioms",
       "first_seen_loop": 1,
       "first_seen_sha": "6fcc574103b72f152802cc77adab1b025ffcb39e",
+      "last_seen_loop": 1,
       "resolution_loop": 1,
       "primary_file": "packages/state/src/headToHeadThunks.ts",
       "primary_lines": "105,17",
+      "test_failed": false,
       "occurrences": [
-        "packages/state/src/headToHeadThunks.ts:105 — require(\"@tiercade/core\") inside ESM thunk body",
-        "packages/state/src/headToHeadThunks.ts:17 — clearDeferredPairs imported but never used"
+        { "loop": 1, "loop_local_id": "F2", "status": "resolved", "sha": "5ab6270" }
       ],
       "fuzzy_match_hints": ["require() in ESM", "dynamic require inside thunk", "unused import clearDeferredPairs"]
     },
@@ -39,14 +42,18 @@
       "stable_id": "F-003",
       "title": "Item allows impossible multi-URL combinations",
       "severity": "Noticeable weakness",
-      "status": "open",
+      "status": "resolved",
+      "category_hint": "domain_modeling",
       "first_seen_loop": 1,
       "first_seen_sha": "6fcc574103b72f152802cc77adab1b025ffcb39e",
-      "resolution_loop": null,
+      "last_seen_loop": 2,
+      "resolution_loop": 2,
       "primary_file": "packages/core/src/models.ts",
       "primary_lines": "17-28",
+      "test_failed": false,
       "occurrences": [
-        "packages/core/src/models.ts:17-28 — Item interface has imageUrl, videoUrl, audioUrl, mediaType as independent optionals alongside ItemMedia discriminated union"
+        { "loop": 1, "loop_local_id": "F3", "status": "open", "sha": "bff1eff" },
+        { "loop": 2, "loop_local_id": "F1", "status": "resolved", "sha": "<pending>" }
       ],
       "fuzzy_match_hints": ["Item imageUrl videoUrl audioUrl parallel optional fields", "discriminated union not enforced at type level", "impossible combination representable"]
     }

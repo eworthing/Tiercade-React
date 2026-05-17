@@ -34,8 +34,7 @@ describe("Models", () => {
         seasonNumber,
         status: r.status,
         description: r.description,
-        imageUrl: r.imageUrl,
-        videoUrl: r.videoUrl
+        media: r.media,
       };
     });
 
@@ -50,10 +49,7 @@ describe("createItem smart constructor", () => {
   it("creates a minimal item with only id", () => {
     const item = createItem("x");
     expect(item.id).toBe("x");
-    expect(item.mediaType).toBeUndefined();
-    expect(item.imageUrl).toBeUndefined();
-    expect(item.videoUrl).toBeUndefined();
-    expect(item.audioUrl).toBeUndefined();
+    expect(item.media).toBeUndefined();
   });
 
   it("creates item with name and description", () => {
@@ -63,42 +59,33 @@ describe("createItem smart constructor", () => {
     expect(item.description).toBe("Desc");
   });
 
-  it("enforces media invariant: image type sets only imageUrl", () => {
+  it("enforces media invariant: image type — only image url accessible", () => {
     const media: ItemMedia = { type: "image", url: "https://example.com/img.png" };
     const item = createItem("img-item", { media });
-    expect(item.mediaType).toBe("image");
-    expect(item.imageUrl).toBe("https://example.com/img.png");
-    // Only imageUrl set — videoUrl and audioUrl must be absent
-    expect(item.videoUrl).toBeUndefined();
-    expect(item.audioUrl).toBeUndefined();
+    // item.media is the single source of truth — impossible combinations unrepresentable
+    expect(item.media?.type).toBe("image");
+    expect(item.media?.url).toBe("https://example.com/img.png");
   });
 
-  it("enforces media invariant: gif type sets only imageUrl", () => {
+  it("enforces media invariant: gif type — only gif url accessible", () => {
     const media: ItemMedia = { type: "gif", url: "https://example.com/anim.gif" };
     const item = createItem("gif-item", { media });
-    expect(item.mediaType).toBe("gif");
-    expect(item.imageUrl).toBe("https://example.com/anim.gif");
-    expect(item.videoUrl).toBeUndefined();
-    expect(item.audioUrl).toBeUndefined();
+    expect(item.media?.type).toBe("gif");
+    expect(item.media?.url).toBe("https://example.com/anim.gif");
   });
 
-  it("enforces media invariant: video type sets only videoUrl", () => {
+  it("enforces media invariant: video type — only video url accessible", () => {
     const media: ItemMedia = { type: "video", url: "https://example.com/clip.mp4" };
     const item = createItem("vid-item", { media });
-    expect(item.mediaType).toBe("video");
-    expect(item.videoUrl).toBe("https://example.com/clip.mp4");
-    // imageUrl and audioUrl must be absent — the impossible state eliminated
-    expect(item.imageUrl).toBeUndefined();
-    expect(item.audioUrl).toBeUndefined();
+    expect(item.media?.type).toBe("video");
+    expect(item.media?.url).toBe("https://example.com/clip.mp4");
   });
 
-  it("enforces media invariant: audio type sets only audioUrl", () => {
+  it("enforces media invariant: audio type — only audio url accessible", () => {
     const media: ItemMedia = { type: "audio", url: "https://example.com/track.mp3" };
     const item = createItem("aud-item", { media });
-    expect(item.mediaType).toBe("audio");
-    expect(item.audioUrl).toBe("https://example.com/track.mp3");
-    expect(item.imageUrl).toBeUndefined();
-    expect(item.videoUrl).toBeUndefined();
+    expect(item.media?.type).toBe("audio");
+    expect(item.media?.url).toBe("https://example.com/track.mp3");
   });
 
   it("preserves optional fields when provided", () => {
@@ -115,15 +102,12 @@ describe("createItem smart constructor", () => {
     expect(item.seasonNumber).toBe(2);
     expect(item.status).toBe("active");
     expect(item.description).toBe("A complete item");
-    expect(item.mediaType).toBe("image");
-    expect(item.imageUrl).toBe("https://example.com/cover.jpg");
+    expect(item.media?.type).toBe("image");
+    expect(item.media?.url).toBe("https://example.com/cover.jpg");
   });
 
   it("creates item without media when media not provided", () => {
     const item = createItem("no-media", { name: "Text Only" });
-    expect(item.mediaType).toBeUndefined();
-    expect(item.imageUrl).toBeUndefined();
-    expect(item.videoUrl).toBeUndefined();
-    expect(item.audioUrl).toBeUndefined();
+    expect(item.media).toBeUndefined();
   });
 });

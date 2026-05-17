@@ -122,10 +122,10 @@ const ComparisonCard: React.FC<ComparisonCardProps> = ({ item, side, shortcut, o
         backgroundColor: isFlashing ? "var(--spectrum-blue-100, rgba(37, 99, 235, 0.1))" : undefined,
       }}
     >
-      {item.imageUrl ? (
+      {item.media?.type === "image" || item.media?.type === "gif" ? (
         <div className={mediaBox}>
           <img
-            src={item.imageUrl}
+            src={item.media.url}
             alt={itemName}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />

@@ -267,10 +267,11 @@ interface DragPreviewProps {
 }
 
 const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
-  const hasImage = !!item.imageUrl;
-  const hasVideo = !!item.videoUrl;
-  const hasAudio = !!item.audioUrl;
-  const hasMedia = hasImage || hasVideo || hasAudio;
+  const media = item.media;
+  const hasImage = media?.type === "image" || media?.type === "gif";
+  const hasVideo = media?.type === "video";
+  const hasAudio = media?.type === "audio";
+  const hasMedia = media !== undefined;
 
   const containerStyle: React.CSSProperties = {
     display: "flex",
@@ -294,7 +295,7 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
       {hasVideo ? (
         <>
           <video
-            src={item.videoUrl}
+            src={media!.url}
             style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
             loop
             muted
@@ -326,7 +327,7 @@ const DragPreview: React.FC<DragPreviewProps> = ({ item }) => {
       ) : hasImage ? (
         <>
           <Image
-            src={item.imageUrl}
+            src={media!.url}
             alt={item.name ?? item.id}
             UNSAFE_style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           />

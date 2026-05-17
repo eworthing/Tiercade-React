@@ -85,27 +85,15 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
         dispatch(captureSnapshot("Edit Item"));
 
-        // Build updates based on media type
+        // Build updates using the discriminated media union
         const updates: Partial<Item> = {
           name: trimmedName,
           seasonString: trimmedSeasonString || undefined,
           description: trimmedDescription || undefined,
-          mediaType: values.mediaUrl ? values.mediaType : undefined,
-          // Clear other media types when changing
-          imageUrl: undefined,
-          videoUrl: undefined,
-          audioUrl: undefined,
+          media: values.mediaUrl
+            ? { type: values.mediaType as "image" | "gif" | "video" | "audio", url: values.mediaUrl }
+            : undefined,
         };
-
-        if (values.mediaUrl) {
-          if (values.mediaType === "video") {
-            updates.videoUrl = values.mediaUrl;
-          } else if (values.mediaType === "audio") {
-            updates.audioUrl = values.mediaUrl;
-          } else {
-            updates.imageUrl = values.mediaUrl;
-          }
-        }
 
         dispatch(updateItem({ itemId: item.id, updates }));
       } else {

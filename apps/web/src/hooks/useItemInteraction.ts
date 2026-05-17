@@ -38,16 +38,8 @@ export function useItemInteraction(dispatch: AppDispatch): ItemInteractionHandle
       const item: Item = {
         id,
         name: file.fileName,
-        mediaType: file.mediaType,
+        media: { type: file.mediaType, url: file.dataUrl },
       };
-
-      if (file.mediaType === "video") {
-        item.videoUrl = file.dataUrl;
-      } else if (file.mediaType === "audio") {
-        item.audioUrl = file.dataUrl;
-      } else {
-        item.imageUrl = file.dataUrl;
-      }
 
       dispatch(addItemToTier({ item, tierName: tierId }));
     },
@@ -59,19 +51,8 @@ export function useItemInteraction(dispatch: AppDispatch): ItemInteractionHandle
       dispatch(captureSnapshot("Update Item Media"));
 
       const updates: Partial<Item> = {
-        mediaType: file.mediaType,
-        imageUrl: undefined,
-        videoUrl: undefined,
-        audioUrl: undefined,
+        media: { type: file.mediaType, url: file.dataUrl },
       };
-
-      if (file.mediaType === "video") {
-        updates.videoUrl = file.dataUrl;
-      } else if (file.mediaType === "audio") {
-        updates.audioUrl = file.dataUrl;
-      } else {
-        updates.imageUrl = file.dataUrl;
-      }
 
       dispatch(updateItem({ itemId, updates }));
     },

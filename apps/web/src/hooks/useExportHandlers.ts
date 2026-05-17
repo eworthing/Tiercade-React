@@ -83,7 +83,7 @@ export function useExportHandlers(
                 id: item.id,
                 title: item.name ?? item.id,
                 subtitle: item.seasonString,
-                imageUrl: item.imageUrl,
+                imageUrl: item.media?.type === "image" || item.media?.type === "gif" ? item.media.url : undefined,
               },
             ])
         ),

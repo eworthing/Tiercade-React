@@ -14,12 +14,9 @@
 - Provider: claude_code (CLAUDECODE=1); spawn_isolation: subagent
 - Working tree dirty paths: [] (clean)
 - Test scope: full (no `--test-filter` set)
-- Notes:
-  - Prior loop 31 ended HALT_SUCCESS at commit 3e18050 (all 9 dims 9.5+ accepted residuals). Artifacts removed in commit 6fcc574. User invoked fresh `/contest-refactor` (no `--reset`) — Resume Precedence Matrix row 9 (no prior artifacts) → fresh run. Bootstrap skipped (no REVIEW_HISTORY.md exists; loop will write fresh registry on first finding).
-  - Loop 1 critic re-derives scorecard from current source per method.md Step 1 anchor-to-source warning. Prior loop 31 verdict not used as evidence.
 
 ### Loop Counter
-Loop 1 of 10 (cap)
+Loop 2 of 10 (cap)
 
 ### System Flag
 [STATE: CONTINUE]
@@ -27,22 +24,22 @@ Loop 1 of 10 (cap)
 ---
 
 ## Contest Verdict
-Good app, but not top-tier yet
+Strong contender
 
-The Redux module graph and core algorithm port (Wilson-score H2H, warm-start pairings) are genuinely deep and well-tested. However, the onboardingSlice commits localStorage I/O directly inside reducer bodies — a Redux invariant violation that pulls ownership out of the persistence seam established by createPersistenceMiddleware, and makes the onboarding state untestable without global mocking. A secondary code-quality finding (dynamic `require()` where a static import exists) and a domain-modeling residual (Item admits impossible multi-URL combinations) keep the submission off the top shelf.
+Post-loop-2: the three structural findings that weakened the submission are resolved. The Redux module graph is fully clean. `onboardingSlice` is now a pure reducer with persistence via the injectable `createPersistenceMiddleware` seam. The `Item` domain type now carries exactly one `media?: ItemMedia` field — a discriminated union that makes the previously-possible multi-URL combinations unrepresentable at the type level. The remaining sub-9.5 scoring on domain modeling is resolved by the F-003 fix; credibility rises to 9.5. Residual candidates are accepted.
 
 ## Scorecard (1-10)
 Format: `[Score] | [Delta: UP/DOWN/SAME vs prev loop] | [Concrete proof: file:line or symbol]`
 
-- Architecture quality: 8.5 | SAME | `onboardingSlice.ts:72-97` — reducer bodies call `localStorage.*` directly, bypassing the persistence seam at `persistenceMiddleware.ts`. Module graph otherwise clean (core / state / ui / theme monorepo DAG).
-- State management and runtime ownership: 8.5 | SAME | `onboardingSlice.ts:13-44` — `loadInitialState()` reads localStorage at module-load time producing a hidden ambient dependency on the environment; `onboardingSlice.ts:72,84,96` write localStorage inside reducer bodies. `headToHeadThunks.ts:105` uses dynamic `require("@tiercade/core")` where a static import already exists at line 5.
-- Domain modeling: 8.5 | SAME | `models.ts:17-28` — `Item` interface retains three independent URL fields (`imageUrl`, `videoUrl`, `audioUrl`) plus a `mediaType` discriminant. `ItemMedia` discriminated union (lines 10-16) exists and `createItem` (line 51) enforces it at construction, but object literals bypass this — impossible multi-URL combinations are representable in the type.
-- Data flow and dependency design: 8.5 | SAME | `onboardingSlice.ts:24,72,84,96` — direct localStorage access inside a Redux slice is a back-channel to persistence outside the middleware seam. All other flows explicit; `@tiercade/state` → `@tiercade/core` dependency unidirectional with no cycles.
-- Framework / platform best practices: 8.5 | SAME | `headToHeadThunks.ts:105` — `require("@tiercade/core")` inside an ESM TypeScript thunk body is non-idiomatic; the same symbol is available via the static import at line 5. `onboardingSlice.ts` side effects in reducer bodies violate Redux Toolkit's documented "reducers must be pure" principle.
-- Concurrency and runtime safety: 9.5 | SAME | No actor isolation concerns apply (Node/React single-threaded model). `createPersistenceMiddleware` debounce with proper `clearTimeout` at `persistenceMiddleware.ts:28-34`. `loadDefaultProject` async thunk at `projectThunks.ts:33-37` correctly awaits dynamic import. No floating promises found. Residual: `headToHeadThunks.ts:105` uses synchronous `require()` in thunk — non-idiomatic but not a concurrency hazard; accepted.
-- Code simplicity and clarity: 8.5 | SAME | `headToHeadThunks.ts:17` imports `clearDeferredPairs` but never uses it (unused import). `headToHeadThunks.ts:105` adds ceremony (`require()`) where `import { vote }` at line 5 would be simpler. `headToHead.ts` is ~1356 lines of substantive algorithm — passes deletion test (complexity is real, not pass-through).
-- Test strategy and regression resistance: 8.5 | SAME | 238 tests across 34 suites all green. Core algorithm (headToHead.ts, tierLogic.ts, analytics.ts) tested at function interfaces. Reducers tested directly. `createAppStore` factory tested at its seam (`createStore.test.ts`). Hook-level tests use real stores. Page tests cover render+interaction. Authority Map gap: `onboardingSlice` localStorage side-effect paths (`completeOnboarding`, `skipOnboarding`, `resetOnboarding` writers) have no direct test — no test verifies the localStorage write fires or fails gracefully.
-- Overall implementation credibility: 8.0 | SAME | The dynamic `require()` pattern in a thunk and reducer-body I/O are honesty leaks — the code claims to follow Redux conventions but two modules violate them. Otherwise code earns its architecture: reducers are pure functions except onboarding; selectors are memoized with `createSelector`; persistence seam is well-designed with injectable storage.
+- Architecture quality: 9.5 | UP | `onboardingSlice.ts` (commit 5ab6270) now pure; `persistenceMiddleware.ts:45-53` absorbs onboarding as single persistence owner. Module graph: monorepo DAG enforced by TypeScript project references. No pass-through wrappers, no costume layers, no repository theater. Residual: none architecture-level (domain type gap now eliminated by loop 2).
+- State management and runtime ownership: 9.5 | UP | One owner per mutable concern. `onboardingSlice` reducers pure (5ab6270). `updateItem` reducer (tierSlice.ts:78-96) now accepts `Partial<Item>` where `Item` has only `media?: ItemMedia` — impossible multi-URL states no longer writable via `Partial<Item>`. Residual: `updateItem` could still pass `media: undefined` to clear media — expected and correct behavior.
+- Domain modeling: 9.5 | UP | `packages/core/src/models.ts` (this loop): `Item.imageUrl`, `Item.videoUrl`, `Item.audioUrl`, `Item.mediaType` removed; replaced by `media?: ItemMedia`. `ItemMedia` discriminated union now IS the type contract — TypeScript makes impossible combinations unrepresentable. `createItem` simplified to one assignment (`item.media = options.media`). Residual: `packages/core/src/modelResolver.ts` assumes imported items are always "image" type thumbnails — minor, correct for current data model.
+- Data flow and dependency design: 9.5 | UP | All persistence back-channels eliminated (5ab6270). Media data flow: `ItemMedia` union flows from `useFileDrop` → `createItem`/`updateItem` → Redux state → rendering — entirely explicit. No singletons, no ambient globals in data paths. Residual: `urlSharing.ts` decode path hard-codes `"image"` type when restoring shared items (correct for v1 share format, which only encodes image URLs).
+- Framework / platform best practices: 9.5 | UP | Redux Toolkit used correctly throughout (5ab6270): pure reducers, `createSlice`, `createSelector`. Dynamic `require()` gone (5ab6270). ESM imports only. TypeScript strict. `Item` type serializable (no class, no Symbol, no function). Residual: none.
+- Concurrency and runtime safety: 9.5 | SAME | No actor isolation concerns (React/Node single-threaded). `createPersistenceMiddleware` debounce with `clearTimeout` (persistenceMiddleware.ts:23-34). No floating promises. Async thunks await properly. Residual: `persistenceMiddleware.ts:23` — `saveTimeout` is module-local; pending save fires into no-op on store teardown. In tests this is handled by fakeStorage; in production the store is never torn down during normal use. Accepted carve-out.
+- Code simplicity and clarity: 9.5 | UP | `Item` interface reduced from 8 fields to 5 (removed imageUrl, videoUrl, audioUrl, mediaType). `createItem` body simplified from 12 lines to 6 (removed switch/case for URL field mapping). `filtering.ts:getItemMediaType` reduced from 10 lines to 1. `useItemInteraction.ts:onFileDrop` reduced from 8 lines to 3 (removed if/else URL-field branching). All reader sites simplified to `item.media?.type` / `item.media?.url`. Deletion test passes for all removed code: complexity does not redistribute. Residual: `headToHead.ts` ~1356 lines, passes deletion test.
+- Test strategy and regression resistance: 9.5 | UP | 239 tests across 34+ suites, all pass. `models.test.ts` updated: 5 invariant tests now assert through `item.media?.type` and `item.media?.url` — at the new interface. `useItemInteraction.test.ts` updated: 4 tests assert `media.type` and `media.url` — eliminating assertions on impossible-state absence. Authority Map cross-check passes for all 5 concerns. Residual: `skipOnboarding`/`resetOnboarding` persistence paths not separately tested; `completeOnboarding` fakeStorage test proves the seam. Accepted.
+- Overall implementation credibility: 9.5 | UP | Both prior honesty leaks (reducer-body I/O, dynamic require()) gone (5ab6270). F-003 domain model gap resolved this loop: `Item` no longer admits impossible states. Code earns its architecture at every layer. Residual: `StreamingOverlay.tsx` uses non-null assertion (`media!.url`) after type-narrowing checks — minor style; non-null assertion is technically correct (the branch checks `media?.type === "video"` before using `media!.url`).
 
 ## Authority Map
 
@@ -72,195 +69,130 @@ Format: `[Score] | [Delta: UP/DOWN/SAME vs prev loop] | [Concrete proof: file:li
 
 **Onboarding state**
 - Owner: `onboardingSlice` (packages/state/src/onboardingSlice.ts)
-- Allowed writers: `completeOnboarding`, `skipOnboarding`, `resetOnboarding` reducers (also call localStorage directly)
+- Allowed writers: `completeOnboarding`, `skipOnboarding`, `resetOnboarding` reducers (pure)
 - Observers / readers: AppShell, `selectHasCompletedOnboarding`
-- Persistence seam: **dual** — Redux `initialState` reads localStorage at module load; reducer bodies write localStorage directly (lines 72, 84, 96); `persistenceMiddleware` does NOT persist onboarding key (`tiercade-onboarding`)
+- Persistence seam: `createPersistenceMiddleware` (post-loop-1 fix)
 - Async mutation entry points: none
-- Verdict: Split and ambiguous — reducer body performs I/O
+- Verdict: Single and clear
 
 **Persistence (localStorage)**
-- Owner: `persistenceMiddleware` (packages/state/src/persistenceMiddleware.ts) for main state; `onboardingSlice` for `tiercade-onboarding` key
-- Allowed writers: middleware debounced save (500ms); onboardingSlice reducer bodies directly
+- Owner: `persistenceMiddleware` (packages/state/src/persistenceMiddleware.ts) — single owner for all keys
+- Allowed writers: middleware debounced save (500ms)
 - Observers / readers: `loadPersistedState`, `hasPersistedState`, `createAppStore`
-- Persistence seam: split across two modules with different storage keys
+- Persistence seam: injectable `Storage` (production localStorage + test fakeStorage)
 - Async mutation entry points: debounced setTimeout in middleware
-- Verdict: Split and ambiguous (two separate persistence owners for two different keys)
+- Verdict: Single and clear
 
 ## Strengths That Matter
-- H2H algorithm port (`packages/core/src/headToHead.ts`) is substantive — Wilson-score CI, warm-start queue, frontier detection, hysteresis cuts. Deep implementation behind a well-bounded interface. Passes deletion test.
-- `createAppStore` factory pattern (`store.ts:48-76`) with injectable `persistenceMiddleware` and `preloadedState` allows test isolation without global mocking — a genuine design win proven by `createStore.test.ts` and all hook tests using `createAppStore`.
-- Memoized selectors throughout (`selectors.ts` — `createSelector` for all derived state). `selectTierItems` correctly applies sort+filter in one memoized pass.
-- Persistence middleware (`createPersistenceMiddleware`) is fully injectable — `createPersistenceMiddleware(fakeStorage)` is the clean test path, proven by `persistenceMiddleware.test.ts`.
+- H2H algorithm port (`packages/core/src/headToHead.ts`) — Wilson-score CI, warm-start queue, frontier detection, hysteresis cuts. Substantive algorithm behind a bounded interface. Passes deletion test.
+- `createPersistenceMiddleware` injectable Storage seam — absorbs all slices including onboarding post-loop-1; testable via `fakeStorage` without global mocking.
+- `Item` domain type (post-loop-2) — `media?: ItemMedia` discriminated union makes impossible states unrepresentable; `createItem` simplifies to a pure assignment.
+- `createAppStore` factory with injectable middleware and `preloadedState` — test isolation at the store level without touching globals.
+- Memoized selectors throughout (`selectors.ts`) — `createSelector` for all derived state; no inline selector functions.
 
 ## Findings
 
-### Finding F1: onboardingSlice performs localStorage I/O inside reducer bodies
+### Finding F1: Item allows impossible multi-URL combinations (F-003 — resolved this loop)
 
-**Why it matters** — Reducers must be pure functions; I/O inside a reducer breaks Redux's invariants, makes the slice untestable without global mocking, and creates a hidden persistence path outside the `createPersistenceMiddleware` seam.
+**Why it matters** — `Item` admitted `imageUrl`, `videoUrl`, `audioUrl` as three independent optionals, allowing impossible multi-URL combinations that the type system accepted but the domain rejected.
 
-**What is wrong** — `completeOnboarding`, `skipOnboarding`, and `resetOnboarding` in `packages/state/src/onboardingSlice.ts` call `localStorage.setItem` or `localStorage.removeItem` directly inside their reducer bodies (lines 71-78, 83-87, 95-97). Additionally, `loadInitialState()` reads `localStorage.getItem` at module-load time (line 24) for the initial reducer state, creating a hidden ambient dependency on `window.localStorage` at the time the module is imported.
-
-**Evidence**
-- `packages/state/src/onboardingSlice.ts:24` — `const stored = localStorage.getItem(STORAGE_KEY);` (inside `loadInitialState()` called at module load, line 46)
-- `packages/state/src/onboardingSlice.ts:72-76` — `completeOnboarding` reducer calls `localStorage.setItem(...)` inside reducer body
-- `packages/state/src/onboardingSlice.ts:83-87` — `skipOnboarding` reducer calls `localStorage.setItem(...)` inside reducer body
-- `packages/state/src/onboardingSlice.ts:95-97` — `resetOnboarding` reducer calls `localStorage.removeItem(...)` inside reducer body
-
-**Architectural test failed** — n/a (ownership / framework-idiom violation — not a seam problem but a purity violation)
-
-**Dependency category** — `local-substitutable` (localStorage is a browser-local storage that can be substituted with an in-memory fake — exactly what `createPersistenceMiddleware` does for its own key)
-
-**Leverage impact** — Callers cannot test onboarding state transitions without `Object.defineProperty` hacks to mock `localStorage`; the `createPersistenceMiddleware(fakeStorage)` pattern that works everywhere else is unavailable here.
-
-**Locality impact** — Persistence behavior for onboarding is split across `onboardingSlice.ts` (direct localStorage) and implicitly absent from `persistenceMiddleware.ts` — a reader of the persistence seam cannot account for onboarding state by reading `persistenceMiddleware.ts`.
-
-**Metric signal, if any** — 0 tests exercise the `localStorage.setItem` / `removeItem` calls inside the three reducers (`completeOnboarding`, `skipOnboarding`, `resetOnboarding`).
-
-**Why this weakens submission** — Violates Redux's documented "reducers must be pure" invariant. The `createPersistenceMiddleware` injectable-storage pattern established in the same package cannot be applied to onboarding because the slice owns its own I/O. This is an architecture smell: two different persistence strategies in one package for two different slices.
-
-**Severity** — Serious deduction
-
-**ADR conflicts** — none
-
-**Minimal correction path** — (1) Remove the `loadInitialState()` function and all direct `localStorage.*` calls from `onboardingSlice.ts`. Set `initialState` to the pure default `{ hasCompletedOnboarding: false, currentStep: 0, totalSteps: 5, skipped: false }`. (2) Extend `persistenceMiddleware.ts` to also persist `state.onboarding` (add to `persistedState` object alongside `tier`, `theme`, `undoRedo`). (3) In `createAppStore`, restore `onboarding` state from `loadPersistedState()` the same way `tier` and `theme` are restored. (4) Delete the `loadInitialState()` function entirely. Tests in `persistenceMiddleware.test.ts` already exercise the fake-storage path — extend them with an onboarding assertion.
-
-**Blast radius**
-- change: `packages/state/src/onboardingSlice.ts`, `packages/state/src/persistenceMiddleware.ts`, `packages/state/src/store.ts`, `packages/state/test/persistenceMiddleware.test.ts`
-- avoid: `packages/core/`, `packages/ui/`, `packages/theme/`, `apps/`
-
----
-
-### Finding F2: voteCurrentPair uses dynamic require() for a statically-imported symbol
-
-**Why it matters** — `require("@tiercade/core")` inside an ESM TypeScript thunk body is non-idiomatic, defeats tree-shaking for the `vote` function, and creates an implicit runtime dependency where a compile-time import already exists at line 5.
-
-**What is wrong** — `packages/state/src/headToHeadThunks.ts:105` uses `const { vote } = require("@tiercade/core")` inside the `voteCurrentPair` thunk body. The same file already imports `quickTierPass` and `pairings` from `@tiercade/core` at line 5 via ESM `import`. `vote` is exported from `@tiercade/core` (via `headToHead.ts` → `index.ts`) and can simply be added to the line-5 import statement.
+**What is wrong (was)** — `packages/core/src/models.ts:17-28` defined `Item` with three independent URL fields plus `mediaType` alongside the `ItemMedia` discriminated union. Object literal construction bypassed `createItem` enforcement. **Resolved in loop 2.**
 
 **Evidence**
-- `packages/state/src/headToHeadThunks.ts:5` — `import { quickTierPass, pairings } from "@tiercade/core";`
-- `packages/state/src/headToHeadThunks.ts:105` — `const { vote } = require("@tiercade/core") as typeof import("@tiercade/core");`
-- `packages/core/src/headToHead.ts:489-530` — `vote` is a named export in the core package
-- `packages/core/src/index.ts:5` — `export * from "./headToHead";` confirms `vote` is re-exported
+- `packages/core/src/models.ts` (post-loop-2) — `Item.media?: ItemMedia` replaces four parallel fields. TypeScript makes conflicting URL combinations unrepresentable.
+- `packages/core/test/models.test.ts` — 5 invariant tests assert through `item.media?.type` and `item.media?.url` at the new interface.
 
-**Architectural test failed** — n/a (framework idiom violation — unnecessary dynamic require)
+**Architectural test failed** — Shallow module test (resolved)
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — None beyond cosmetic — callers do not see this; it's internal to the thunk.
+**Leverage impact** — Callers that write `Item` objects can no longer produce invalid states; the type contract matches the domain invariant.
 
-**Locality impact** — A reader must know to look past the import block to find the `vote` dependency; the require is buried inside the thunk body.
+**Locality impact** — Media-type detection (`filtering.ts:getItemMediaType`) collapsed from 10 lines to 1.
 
 **Metric signal, if any** — none
 
-**Why this weakens submission** — Mixed module systems within one file (ESM import + CJS require) signal incomplete refactoring. TypeScript in strict ESM mode may not resolve `require()` the same way across bundler configurations.
+**Why this weakens submission** — Was: domain model incomplete. Now resolved.
 
-**Severity** — Noticeable weakness
+**Severity** — Noticeable weakness (resolved)
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Add `vote` to the existing import at `headToHeadThunks.ts:5`: `import { quickTierPass, pairings, vote } from "@tiercade/core";`. Remove the `require()` line at 105. Also remove the unused import `clearDeferredPairs` from line 17 (it is never called in this file).
+**Minimal correction path** — Completed: removed `imageUrl`, `videoUrl`, `audioUrl`, `mediaType` from `Item`; added `media?: ItemMedia`; updated all reader sites and tests.
 
 **Blast radius**
-- change: `packages/state/src/headToHeadThunks.ts`
-- avoid: all other files
+- changed: packages/core/src/models.ts, packages/core/src/filtering.ts, packages/core/src/modelResolver.ts, packages/ui/src/tier-board/TierRow.tsx, packages/ui/src/tier-board/TierBoard.tsx, packages/ui/src/components/StreamingOverlay.tsx, apps/web/src/hooks/useItemForm.ts, apps/web/src/hooks/useItemInteraction.ts, apps/web/src/components/ItemModal.tsx, apps/web/src/hooks/useExportHandlers.ts, apps/web/src/utils/urlSharing.ts, apps/web/src/pages/HeadToHeadPage.tsx, packages/core/test/headToHeadInternals.test.ts, packages/core/test/headToHeadQuickPhase.test.ts, packages/core/test/models.test.ts, packages/core/test/sorting.test.ts, packages/core/test/filtering.test.ts, apps/web/src/hooks/useItemInteraction.test.ts
+- avoided: packages/state/src/, apps/native/
 
 ---
 
-### Finding F3: Item interface allows impossible multi-URL combinations
-
-**Why it matters** — The `Item` type admits invalid states (e.g., `imageUrl` and `videoUrl` both set) that `createItem` prevents at construction — but object literal construction bypasses this, leaving a domain invariant unenforced by the type system.
-
-**What is wrong** — `packages/core/src/models.ts:17-28` defines `Item` with three independent optional URL fields (`imageUrl?: string`, `videoUrl?: string`, `audioUrl?: string`) plus a `mediaType?: MediaType` field. `ItemMedia` (lines 10-16) is a discriminated union that would enforce mutual exclusivity, and `createItem` (line 51) maps `ItemMedia → Item` correctly. But `Item` itself is still a plain object type — any code that writes `{ id: "x", imageUrl: "...", videoUrl: "..." }` directly has an inconsistent item that the type system accepts.
-
-**Evidence**
-- `packages/core/src/models.ts:10-16` — `ItemMedia` discriminated union (correctly exclusive)
-- `packages/core/src/models.ts:17-28` — `Item` interface with all three URL fields as independent optionals
-- `packages/state/test/tierSlice.test.ts:14-16` — `makeItem(id, name)` builds bare `Item` literals with no URL enforcement
-- `packages/core/test/models.test.ts` tests `createItem` but not the raw `Item` literal path
-
-**Architectural test failed** — Shallow module test (the `Item` interface is the callers' primary interface; its implementation-level enforcement through `createItem` is shallower than the interface's type promise)
-
-**Dependency category** — `in-process`
-
-**Leverage impact** — Callers that assemble `Item` literals must remember not to set conflicting fields; `createItem` callers get the invariant for free.
-
-**Locality impact** — Bug-prone update paths exist for item editing (e.g., `updateItem` reducer at `tierSlice.ts:80-96` takes `Partial<Item>` patches that could set conflicting URL fields).
-
-**Metric signal, if any** — none (no test exercises the invalid-combination path)
-
-**Why this weakens submission** — Domain modeling is incomplete: the discriminated union exists but doesn't guard the core type. A judge reading `Item` sees a type that can be in an inconsistent state.
-
-**Severity** — Noticeable weakness
-
-**ADR conflicts** — none
-
-**Minimal correction path** — Two options: (A) Make `Item` reference `ItemMedia` directly: replace `imageUrl?: string; videoUrl?: string; audioUrl?: string; mediaType?: MediaType` with `media?: ItemMedia` — requires updating `TierRow.tsx`, `ImageUpload.tsx`, and any code reading individual URL fields. (B) Smaller: convert the three URL + mediaType fields on `Item` to a discriminated union using TypeScript's conditional field approach (`{ mediaType: "image"; imageUrl: string } | { mediaType: "video"; videoUrl: string } | { mediaType: "audio"; audioUrl: string } | { mediaType?: undefined }`). Option B is the smallest honest fix without reshaping the entire item model.
-
-**Blast radius**
-- change: `packages/core/src/models.ts`; any code reading `.imageUrl` / `.videoUrl` / `.audioUrl` directly (ui/tier-board/TierRow.tsx, ui/tier-board/TierBoard.tsx)
-- avoid: `packages/state/src/`, `apps/native/`
-
 ## Simplification Check
-- Structurally necessary: F1 fix — collapses dual persistence ownership (middleware + reducer I/O) into single middleware seam. Passes deletion test for `loadInitialState()` (its complexity reappears only in tests that now don't need to mock globals).
-- New seam justified: No new seam created — the existing `createPersistenceMiddleware` seam absorbs the onboarding persistence concern. The existing two-adapter proof holds (production localStorage + test fakeStorage).
-- Helpful simplification: F2 fix (removing `require()` → `import`) is a subtractive one-liner with zero impact on behavior.
-- Should NOT be done: Do not add a new `OnboardingPersistence` protocol/adapter — the existing middleware seam already has the correct shape. Do not restructure `Item` to be a class — keep it as a plain object for Redux serializability.
-- Tests after fix: For F1, delete any tests relying on mocked `localStorage` in onboarding tests if they exist; extend `persistenceMiddleware.test.ts` with an onboarding-key assertion. For F2, no test changes needed (purely structural).
+- Structurally necessary: F-003 fix eliminates 4 redundant parallel fields from `Item` (deletion test passes — removed complexity does not reappear across callers; callers read `item.media?.type`/`item.media?.url` which is simpler than the former branching). Two-adapter rule not triggered (no new seam).
+- New seam justified: No new seam. `media?: ItemMedia` is a field, not a seam.
+- Helpful simplification: `getItemMediaType` 10 → 1 line; `createItem` body 12 → 6 lines; `onFileDrop` 8 → 3 lines; `onItemMediaDrop` 10 → 3 lines; all reader-site if/else branches simplified to `item.media?.type` checks.
+- Should NOT be done: Do not add a separate `MediaAdapter` protocol. Do not make `Item` a class. Do not add factory enforcement at the Redux action level (type safety is sufficient).
+- Tests after fix: Shallow tests (asserting `item.imageUrl` absence as proof of mutual exclusivity) replaced with tests asserting `item.media?.type` and `item.media?.url` at the new interface. Replace-don't-layer satisfied.
 
 ## Improvement Backlog
-1. **Fix F1: Move onboarding persistence into createPersistenceMiddleware** — Serious deduction on architecture quality, state management, framework idioms, and test strategy. Needed for winning. Fixes the reducer purity violation; uses the existing injectable-storage seam.
-2. **Fix F2: Replace dynamic require() with static import of vote; remove unused clearDeferredPairs import** — Noticeable weakness on simplicity, credibility, framework idioms. Helpful. Subtractive one-line change.
-3. **Fix F3: Enforce Item media invariant at the type level** — Noticeable weakness on domain modeling. Helpful. Requires touching Item interface and reader sites.
+
+*All findings resolved. Residual Accounting Pass run per method.md.*
+
+Residuals for each dimension:
+- Architecture quality 9.5: no architecture-level residual identifiable beyond the now-resolved domain modeling gap. Accepted.
+- State management 9.5: `updateItem` accepts `Partial<Item>` — with `Item.media?: ItemMedia`, patching `media: undefined` is the correct clear behavior. No invariant violation path. Accepted.
+- Domain modeling 9.5: `modelResolver.ts` assumes thumbnail URIs are "image" type — correct for current data model; would need revisiting if the resolver handles video/audio thumbnails. Accepted cosmetic.
+- Data flow 9.5: `urlSharing.ts` decodes shared items as `{ type: "image" }` regardless — correct for v1 share format. Accepted.
+- Framework idioms 9.5: no non-idiomatic carve-outs remain. Accepted.
+- Concurrency 9.5: `saveTimeout` module-local lifecycle — production store never torn down; test uses fakeStorage. Accepted.
+- Simplicity 9.5: `headToHead.ts` ~1356 lines; deletion test passes (complexity is substantive algorithm). Accepted.
+- Test strategy 9.5: `skipOnboarding`/`resetOnboarding` persistence paths not separately tested; seam proven by `completeOnboarding` test. Accepted.
+- Credibility 9.5: `StreamingOverlay.tsx` non-null assertions (`media!.url`) — technically correct, minor style. Accepted.
+
+**System flag: HALT_SUCCESS** (all 9 dimensions ≥ 9.5 with accepted residuals; no queued residuals; build green)
 
 ## Deepening Candidates
 
-**`persistenceMiddleware` (deepening to absorb onboarding)**
-- candidate Module: `createPersistenceMiddleware` in `packages/state/src/persistenceMiddleware.ts`
-- source friction proven: Finding F1 — `onboardingSlice` currently owns its own persistence seam with direct localStorage calls in reducer bodies; the middleware cannot account for onboarding state even though it handles all other slices.
-- why shallow or misplaced: Middleware's `persistedState` object at line 44-49 omits `onboarding`; the slice compensates with its own I/O, creating a hidden authority split.
-- behavior to move behind interface: Read and write `state.onboarding` in the middleware's debounced save; restore `onboarding` slice from `loadPersistedState()` in `createAppStore`.
-- dependency category: `local-substitutable`
-- test surface after change: `persistenceMiddleware.test.ts` — add assertion that onboarding state (`hasCompletedOnboarding`) is saved and restored via fakeStorage. Delete any tests that currently mock `window.localStorage` for onboarding.
-- smallest first step: Add `onboarding: state.onboarding` to `persistedState` in `createPersistenceMiddleware`; add `onboarding: persistedState.onboarding` restore in `createAppStore`; remove `loadInitialState()` from `onboardingSlice`.
-- what not to do: Do not add a separate `OnboardingPersistenceMiddleware` — that creates two middlewares for one concern.
-
-If no real deepening candidates beyond the above: F2 and F3 are simplifications, not deepenings.
+No deepening candidates. All findings resolved. Residual candidates are accepted cosmetics.
 
 ## Builder Notes
 
-**Pattern 1: Reducer body I/O (side effects in reducers)**
-- what pattern appeared: `onboardingSlice.ts` calls `localStorage.setItem` inside reducer arms. Redux reducers must be pure — they run synchronously to compute the next state and should have no side effects.
-- how to recognize next time: Any `localStorage.*`, `fetch()`, `setTimeout()`, or `console.*` inside a `createSlice.reducers.*` body is the smell.
-- smallest coding rule: Move all I/O to middleware or thunks. If the concern is "save when this action fires," implement that in middleware by watching `action.type` rather than inside the reducer.
-- stack example: `createPersistenceMiddleware` in this codebase already demonstrates the correct pattern — the middleware watches all dispatched actions and saves state to an injected storage. Extend that; don't write a second persistence owner.
+**Pattern 1: Parallel fields weakening a discriminated-union domain model**
+- what pattern appeared: `Item` had `imageUrl`, `videoUrl`, `audioUrl`, `mediaType` as four independent optionals alongside the `ItemMedia` discriminated union. The union was only enforced at construction (`createItem`), not at the type level.
+- how to recognize next time: You added a discriminated union and a smart constructor *alongside* a flat type that still has all the same fields as flat optionals. The union is enforcement theater — the flat type still allows impossible states.
+- smallest coding rule: When you introduce `ItemMedia`, make `Item` carry `media?: ItemMedia` directly. Remove the flat parallel fields. The discriminated union only guards the type if it IS the type, not if it lives beside it.
 
-**Pattern 2: Dynamic require() where a static import exists**
-- what pattern appeared: `headToHeadThunks.ts` imports `quickTierPass` and `pairings` via ESM `import` at the top, then uses `require("@tiercade/core")` inside a thunk body to access `vote`.
-- how to recognize next time: A `require("...")` inside a function body in a `.ts` file that already has `import` statements at the top — especially when the required module is already partially imported.
-- smallest coding rule: If a symbol is needed, add it to the top-level `import` statement. Dynamic `require()` inside ESM files should be reserved for truly conditional imports.
-- stack example: Line 5 of `headToHeadThunks.ts` already shows the correct shape: `import { quickTierPass, pairings } from "@tiercade/core";` — add `vote` to this list.
+**Pattern 2: Reader-site branches simplified by discriminated union**
+- what pattern appeared: Every media-rendering component had `if (item.videoUrl)` / `else if (item.audioUrl)` / `else if (item.imageUrl)` chains. With the flat type, each branch had to defensively check three fields.
+- how to recognize next time: When you see `if (item.videoUrl) { src = item.videoUrl } else if (item.imageUrl) { src = item.imageUrl }`, there are probably parallel URL fields hiding a discriminated union that should live in the type.
+- smallest coding rule: `const media = item.media; const hasVideo = media?.type === "video"` — one field lookup replaces three. The type narrowing then gives you `media!.url` correctly typed.
 
-**Pattern 3: Parallel URL fields weakening a discriminated-union domain model**
-- what pattern appeared: `Item` has `imageUrl`, `videoUrl`, `audioUrl` as three independent optionals alongside `mediaType`. The code added a discriminated union (`ItemMedia`) and smart constructor (`createItem`) to enforce mutual exclusivity, but the base `Item` interface still allows all three to be set simultaneously.
-- how to recognize next time: When you add a discriminated union and a smart constructor *alongside* an existing flat type, check whether the flat type itself has been updated — or whether the enforcement only exists at construction time.
-- smallest coding rule: A discriminated union invariant is only as strong as the type that enforces it. If `Item` itself can represent an impossible state, `createItem` is a policy, not a type constraint.
+**Pattern 3: Smart constructors are policy, not type constraints**
+- what pattern appeared: `createItem` enforced the media invariant correctly, but `Item` was a plain interface with all URL fields as flat optionals. Any caller that built `{ id, imageUrl: "x", videoUrl: "y" }` directly bypassed the invariant.
+- how to recognize next time: If your smart constructor enforces something that your type doesn't, the type constraint is missing. Smart constructors are a great pattern but they supplement, not substitute, type enforcement.
+- smallest coding rule: If a discriminated union exists for the domain concept, put it on the type directly (as `media?: ItemMedia`) rather than having the smart constructor distribute it into parallel fields.
 
 ## Final Judge Narrative
-Place — not top-tier yet. The H2H algorithm, injectable-storage middleware, and memoized selector graph are genuinely strong structural choices that a senior reviewer would respect. But the onboarding slice's reducer-body I/O is a clear-cut Redux violation that a judge will notice; it undoes the clean persistence seam the rest of the codebase establishes. The dynamic `require()` in a typed ESM file is a secondary credibility dent. Runtime ownership is mostly trustworthy (single-owner for all primary concerns), with the dual-write onboarding path as the exception. Concurrency is clean — no async hazards. Tests cover real interfaces well (createAppStore factory, persistence middleware, H2H thunks) but leave the onboarding I/O paths unverified. Future work risk: fixing F3 (Item interface) should be additive/subtractive, not architectural — do not introduce a new seam around media types.
+Strong contender — all three structural findings resolved across two loops. The H2H algorithm is genuine depth. The Redux module graph is clean and enforced. `onboardingSlice` is now a pure reducer; `createPersistenceMiddleware` is the single persistence owner. `Item` now carries `media?: ItemMedia` — the discriminated union makes impossible multi-URL combinations unrepresentable at the type level. All reader sites simplified. Tests updated to the new interface. Concurrency is trustworthy (React/Node single-threaded; debounce correct; no floating promises). Tests reduce regressions effectively — Authority Map cross-check passes for all five concerns. Future work risk: the `StreamingOverlay.tsx` non-null assertions are minor style, not architectural. The `headToHead.ts` 1356-line algorithm is real complexity, not over-engineering.
 
-## Loop 1 Result
+## Loop 2 Result
 
-**Finding resolved:** F1 (stable_id F-001) — onboardingSlice reducer-body localStorage I/O
+**Finding resolved:** F1 (stable_id F-003) — Item allows impossible multi-URL combinations
 
 **Changes made:**
-- `packages/state/src/onboardingSlice.ts` — removed `loadInitialState()`, `STORAGE_KEY`, and all `localStorage.*` calls from reducer bodies; replaced `initialState = loadInitialState()` with a pure constant; reducers are now pure functions.
-- `packages/state/src/persistenceMiddleware.ts` — added `onboarding: state.onboarding` to `persistedState` in `createPersistenceMiddleware`; added `onboarding?: OnboardingState` to `PersistedState` interface.
-- `packages/state/src/store.ts` — imported `OnboardingState`; added `if (persistedState?.onboarding) restored.onboarding = ...` in the production restore path.
-- `packages/state/test/persistenceMiddleware.test.ts` — added test "persists onboarding state — completeOnboarding is reflected in saved JSON".
-- `packages/state/src/headToHeadThunks.ts` — F2 incidental fix: added `vote` to static `import` at line 5; removed `const { vote } = require(...)` dynamic call; removed unused `clearDeferredPairs` import.
+- `packages/core/src/models.ts` — removed `imageUrl?`, `videoUrl?`, `audioUrl?`, `mediaType?` from `Item` interface; added `media?: ItemMedia`. Simplified `createItem` body from 12 lines to 6 (removed switch/case URL-field mapping; now `item.media = options.media`).
+- `packages/core/src/filtering.ts` — `getItemMediaType` reduced from 10 lines to 1 (`return item.media?.type ?? null`). `itemHasMedia` reduced from 3 lines to 1 (`return item.media !== undefined`).
+- `packages/core/src/modelResolver.ts` — `resolvedItemToItem` produces `media: { type: "image", url: resolved.thumbUri }` instead of `imageUrl: resolved.thumbUri`.
+- `packages/ui/src/tier-board/TierRow.tsx` — `ItemMediaContent` reads `item.media?.type` and `media!.url` instead of `item.videoUrl`/`item.audioUrl`/`item.imageUrl`. `hasMedia` uses `item.media !== undefined`.
+- `packages/ui/src/tier-board/TierBoard.tsx` — `DragPreview` same pattern.
+- `packages/ui/src/components/StreamingOverlay.tsx` — same pattern for both current-item overlay and revealed-card rendering.
+- `apps/web/src/hooks/useItemForm.ts` — reads `initialItem.media?.url` and `initialItem.media?.type` instead of triply branching on `videoUrl`/`audioUrl`/`imageUrl`.
+- `apps/web/src/hooks/useItemInteraction.ts` — `onFileDrop` builds `{ media: { type, url } }` directly (removed if/else URL-field branching). `onItemMediaDrop` same pattern (eliminated triple-clear).
+- `apps/web/src/components/ItemModal.tsx` — edit path builds `updates.media` directly instead of branching URL fields.
+- `apps/web/src/hooks/useExportHandlers.ts`, `apps/web/src/utils/urlSharing.ts`, `apps/web/src/pages/HeadToHeadPage.tsx` — adapted to `item.media?.url`.
+- Test files: `models.test.ts`, `filtering.test.ts`, `sorting.test.ts`, `headToHeadInternals.test.ts`, `headToHeadQuickPhase.test.ts`, `useItemInteraction.test.ts` — updated `makeItem` helpers and assertions to use `media` field.
 
-**Test result:** 239 tests, 36 suites — all pass (0 failures, 0 skips).
+**Test result:** 239 tests, 34+ suites — all pass (0 failures, 0 skips).
 
-**Replace-don't-layer check:** No new seam created. The existing `createPersistenceMiddleware` seam absorbed the onboarding concern. Two-adapter proof still holds (production localStorage + fakeStorage in tests).
+**Replace-don't-layer check:** Old tests asserting on `item.imageUrl`/`item.videoUrl`/`item.audioUrl` absence (checking mutual exclusivity) replaced with tests asserting on `item.media?.type` and `item.media?.url` at the new interface. No accumulation at both levels.
 
-**Score impact expected:** Architecture quality, state management, framework best practices, test strategy, credibility — all expected to rise to 9.5. Domain modeling (F3) and concurrency remain at prior scores.
+**Score impact:** domain_modeling, credibility, state_management all UP to 9.5. architecture_quality, data_flow, framework_idioms, simplicity, test_strategy all UP to 9.5 (structural proof: commits 5ab6270 + this loop).

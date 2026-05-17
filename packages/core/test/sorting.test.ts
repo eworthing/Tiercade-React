@@ -10,8 +10,7 @@ function makeItem(partial: Partial<Item> & { id: string }): Item {
     seasonNumber: partial.seasonNumber,
     status: partial.status,
     description: partial.description,
-    imageUrl: partial.imageUrl,
-    videoUrl: partial.videoUrl
+    media: partial.media,
   };
 }
 

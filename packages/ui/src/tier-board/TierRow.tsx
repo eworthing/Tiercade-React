@@ -354,16 +354,17 @@ const MediaBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 /** Renders the appropriate media content based on item type */
 const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) => {
   const displayName = item.name ?? item.id;
-  const hasVideo = !!item.videoUrl;
-  const hasAudio = !!item.audioUrl;
-  const hasImage = !!item.imageUrl;
-  const isGif = item.mediaType === "gif";
+  const media = item.media;
+  const hasVideo = media?.type === "video";
+  const hasAudio = media?.type === "audio";
+  const hasImage = media?.type === "image" || media?.type === "gif";
+  const isGif = media?.type === "gif";
 
   if (hasVideo) {
     return (
       <>
         <video
-          src={item.videoUrl}
+          src={media!.url}
           style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
           loop
           muted
@@ -419,7 +420,7 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
           </svg>
           AUDIO
         </MediaBadge>
-        <audio src={item.audioUrl} style={{ display: "none" }} />
+        <audio src={media!.url} style={{ display: "none" }} />
       </>
     );
   }
@@ -428,7 +429,7 @@ const ItemMediaContent: React.FC<ItemMediaContentProps> = ({ item, isHovered }) 
     return (
       <>
         <Image
-          src={item.imageUrl}
+          src={media!.url}
           alt={displayName}
           UNSAFE_style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
         />
@@ -551,7 +552,7 @@ const SortableTierItem: React.FC<SortableTierItemProps> = ({
     transformOrigin: "center center",
   };
 
-  const hasMedia = !!(item.imageUrl || item.videoUrl || item.audioUrl);
+  const hasMedia = item.media !== undefined;
 
   const handleClick = (e: React.MouseEvent) => {
     if (e.detail === 1) {

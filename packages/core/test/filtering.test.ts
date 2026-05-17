@@ -13,10 +13,8 @@ function makeItem(partial: Partial<Item> & { id: string }): Item {
     id: partial.id,
     name: partial.name,
     description: partial.description,
-    imageUrl: partial.imageUrl,
-    videoUrl: partial.videoUrl,
     status: partial.status,
-    mediaType: partial.mediaType,
+    media: partial.media,
   };
 }
 
@@ -91,11 +89,11 @@ describe("itemMatchesFilters — searchText", () => {
 // ---------------------------------------------------------------------------
 
 describe("itemMatchesFilters — hasMedia / noMedia", () => {
-  const withImage = makeItem({ id: "a", imageUrl: "img.png" });
-  const withVideo = makeItem({ id: "b", videoUrl: "vid.mp4" });
+  const withImage = makeItem({ id: "a", media: { type: "image", url: "img.png" } });
+  const withVideo = makeItem({ id: "b", media: { type: "video", url: "vid.mp4" } });
   const noMedia = makeItem({ id: "c" });
 
-  it("hasMedia filter passes items with imageUrl", () => {
+  it("hasMedia filter passes items with media", () => {
     expect(itemMatchesFilters(withImage, { hasMedia: true })).toBe(true);
   });
 
@@ -107,7 +105,7 @@ describe("itemMatchesFilters — hasMedia / noMedia", () => {
     expect(itemMatchesFilters(noMedia, { noMedia: true })).toBe(true);
   });
 
-  it("noMedia filter rejects items with videoUrl", () => {
+  it("noMedia filter rejects items with video media", () => {
     expect(itemMatchesFilters(withVideo, { noMedia: true })).toBe(false);
   });
 });
@@ -208,10 +206,10 @@ describe("filterAllTiers", () => {
   it("filters by hasMedia across tiers — media items kept, non-media removed", () => {
     const tiers: Items = {
       S: [
-        makeItem({ id: "1", name: "With Image", imageUrl: "img.png" }),
+        makeItem({ id: "1", name: "With Image", media: { type: "image", url: "img.png" } }),
         makeItem({ id: "2", name: "No Media" }),
       ],
-      A: [makeItem({ id: "3", name: "With Video", videoUrl: "vid.mp4" })],
+      A: [makeItem({ id: "3", name: "With Video", media: { type: "video", url: "vid.mp4" } })],
     };
 
     const result = filterAllTiers(tiers, { hasMedia: true });
