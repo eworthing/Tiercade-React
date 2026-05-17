@@ -1,3 +1,22 @@
+--- Loop 28 (UTC 2026-05-17T03:55:00Z) ---
+
+## Loop 28 Scorecard
+architecture_quality: 7.5 SAME | state_management: 6.5 SAME | domain_modeling: 9.5 SAME (residual accepted) | data_flow: 8.0 UP | framework_idioms: 8.5 SAME | concurrency: 8.0 SAME | simplicity: 9.5 SAME (residual accepted) | test_strategy: 9.5 SAME (residual accepted) | credibility: 9.5 SAME (residual accepted)
+
+## Loop 28 Findings
+F1 (F-020) resolved: data_flow DAG was convention-only — no machine enforcement. Added packages/core/test/dag.test.ts with 7 DAG enforcement tests. Cross-package and within-app layer rules enforced at npm test time.
+F2 (F-004) accepted_residual: TierBoardPage.tsx god-component floor (carry-forward)
+F3 (F-014) accepted_residual: Item interface parallel URL fields (carry-forward)
+
+## Loop 28 Implementation Review
+Verdict: approved. All three checks passed: dag.test.ts enforces cross-package and within-app DAG at test time (7 assertions); deletion test confirms the test earns its keep; no new Seam, no costume layer, no regression — diff is test-only.
+
+## Loop 28 State
+[STATE: CONTINUE]
+
+## Final Judge Narrative
+Good app, place but not win. Loop 28: data_flow 6.5→8.0 via dag.test.ts — 7 tests enforce cross-package and within-app layer DAG at npm test time. Convention-only enforcement replaced by machine-detectable checks. 35 suites, 234 tests, all green. avg ~8.44.
+
 --- Loop 3 (UTC 2026-05-16T00:30:00Z) ---
 
 ### Discovery

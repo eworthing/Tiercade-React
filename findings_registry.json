@@ -1,7 +1,29 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 20,
+  "next_serial": 21,
   "entries": [
+    {
+      "stable_id": "F-020",
+      "title": "data_flow DAG was convention-only — no machine enforcement",
+      "category_hint": "dag-enforcement",
+      "primary_file": "packages/core/test/dag.test.ts",
+      "primary_evidence_lines": [1, 164],
+      "test_failed": "n/a",
+      "severity": "Serious deduction",
+      "first_seen_loop": 28,
+      "first_seen_sha": "de02fda",
+      "last_seen_loop": 28,
+      "last_seen_sha": "de02fda",
+      "occurrences": [
+        {
+          "loop": 28,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": "<pending>",
+          "idempotency_key": "loop28-F-020-resolved"
+        }
+      ]
+    },
     {
       "stable_id": "F-001",
       "title": "Build failure blocks structural review",
@@ -300,6 +322,13 @@
           "loop_local_id": "F2",
           "status": "accepted_residual",
           "idempotency_key": "loop27-F-004-accepted_residual"
+        },
+        {
+          "loop": 28,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "<pending>",
+          "idempotency_key": "loop28-F-004-accepted_residual"
         }
       ]
     },
@@ -668,6 +697,13 @@
           "loop_local_id": "F3",
           "status": "accepted_residual",
           "idempotency_key": "loop27-F-014-accepted_residual"
+        },
+        {
+          "loop": 28,
+          "loop_local_id": "F3",
+          "status": "accepted_residual",
+          "sha": "<pending>",
+          "idempotency_key": "loop28-F-014-accepted_residual"
         }
       ]
     },

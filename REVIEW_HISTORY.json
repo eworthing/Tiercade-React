@@ -7741,6 +7741,76 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 28,
+      "loop_cap": 30,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "inline",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 28: data_flow 6.5→8.0 via dag.test.ts — 7 tests enforce cross-package and within-app DAG at npm test time. 35 suites, 234 tests, all green.",
+      "scorecard": {
+        "architecture_quality": {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — package DAG enforced by test (loop 28); implicit global store. 9-anchor not met.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "state_management": {"score": 6.5, "delta": "SAME", "proof": "packages/state/src/tierSlice.ts:1-343 — implicit global store, no process-lifetime pattern. 9-anchor not met.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "domain_modeling": {"score": 9.5, "delta": "SAME", "proof": "packages/core/src/models.ts — createItem smart constructor + ItemMedia discriminated union (loop 20).", "residual_blocking_10": "packages/core/src/models.ts:22-31 — Item parallel URL fields for backward compat", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Framework-constrained backward compat.", "unverifiable_due_to_build_failure": false},
+        "data_flow": {"score": 8.0, "delta": "UP", "proof": "packages/core/test/dag.test.ts (new, loop 28) — 7 tests enforce cross-package and within-app DAG. Ambient Redux global store remaining.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "framework_idioms": {"score": 8.5, "delta": "SAME", "proof": "All 6 pages use named RTK selectors from @tiercade/state (loop 27).", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "concurrency": {"score": 8.0, "delta": "SAME", "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 — useEffect cleanup + abort tests.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "simplicity": {"score": 9.5, "delta": "SAME", "proof": "dag.test.ts 164 lines, no external deps. TierBoardPage.tsx:1-443 accepted residual.", "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 — modal orchestration floor", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Framework-constrained modal-state co-location.", "unverifiable_due_to_build_failure": false},
+        "test_strategy": {"score": 9.5, "delta": "SAME", "proof": "All 6 web pages have direct page-level test files. dag.test.ts adds 7 DAG assertions. 35 suites, 234 tests.", "residual_blocking_10": "AppShell routing thin wrapper — no AppRuntime analog in React/Vite", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "React/Vite stack has no AppRuntime/root-scene shell. E2E covers integration. Accepted.", "unverifiable_due_to_build_failure": false},
+        "credibility": {"score": 9.5, "delta": "SAME", "proof": "DAG enforcement added (loop 28); all prior loops gains maintained. 9-anchor met.", "residual_blocking_10": "packages/core/src/models.ts:22-31 — Item parallel URL fields", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Framework-constrained backward compat.", "unverifiable_due_to_build_failure": false}
+      },
+      "authority_map": [],
+      "strengths": ["packages/core domain layer framework-free; dag.test.ts enforces cross-package DAG at test time", "All 6 web pages have direct page-level test files", "RTK slice ownership one clear writer per concern across 6 slices"],
+      "findings": [
+        {"loop_local_id": "F1", "stable_id": "F-020", "id": "F1", "title": "data_flow DAG was convention-only — no machine enforcement", "why_it_matters": "Resolved. Violations now caught at npm test time.", "what_is_wrong": "Cross-package and within-app DAG enforced only by convention.", "evidence": ["packages/core/test/dag.test.ts (new, loop 28)"], "test_failed": "n/a", "dependency_category": "in-process", "leverage_impact": "Test makes violations machine-detectable.", "locality_impact": "DAG violations caught immediately at test run.", "metric_signal": "7 new DAG assertions; 35 suites 234 tests.", "why_weakens_submission": "data_flow 6.5 blocked by convention-only enforcement.", "severity": "Serious deduction", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Added dag.test.ts.", "blast_radius": {"change": ["packages/core/test/dag.test.ts"], "avoid": []}},
+        {"loop_local_id": "F2", "stable_id": "F-004", "id": "F2", "title": "TierBoardPage.tsx at 443 LOC — god-component floor", "why_it_matters": "Accepted residual.", "what_is_wrong": "443 LOC modal orchestration.", "evidence": ["apps/web/src/pages/TierBoardPage.tsx:1-443"], "test_failed": "Shallow module", "dependency_category": "in-process", "leverage_impact": "Modal coordination 443 LOC.", "locality_impact": "Coupled to modal state.", "metric_signal": "443 LOC", "why_weakens_submission": "Accepted residual.", "severity": "Noticeable weakness", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Accept.", "blast_radius": {"change": [], "avoid": ["apps/web/src/pages/TierBoardPage.tsx"]}},
+        {"loop_local_id": "F3", "stable_id": "F-014", "id": "F3", "title": "Item interface backward-compat parallel URL fields", "why_it_matters": "Terminal accepted residual.", "what_is_wrong": "packages/core/src/models.ts:22-31 — parallel optional URL fields.", "evidence": ["packages/core/src/models.ts:22-31"], "test_failed": "Shallow module", "dependency_category": "in-process", "leverage_impact": "Primary path enforced.", "locality_impact": "Terminal.", "metric_signal": "none", "why_weakens_submission": "domain_modeling cant reach 10.", "severity": "Noticeable weakness", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Accept.", "blast_radius": {"change": [], "avoid": ["packages/core/src/models.ts"]}}
+      ],
+      "simplification_check": {"structurally_necessary": "DAG test — deletion test passes: removing it loses machine-enforcement", "new_seam_justified": false, "new_seam_adapters": [], "helpful_simplification": "Node built-ins only — no new deps", "should_not_be_done": "eslint-plugin-import (requires npm install)", "tests_after_fix": "No tests deleted; 35 suites 234 tests all green"},
+      "backlog": [{"priority": 1, "title": "state_management 6.5 — document Redux store lifetime; add configureStore factory", "kind": "structural", "rank": "needed for winning", "why_it_matters": "Ambient global store; no process-lifetime ownership documented.", "score_impact": "state_management 6.5 → 7.5; architecture_quality 7.5 → 8.0"}],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {"pattern": "DAG enforcement via import-scanning tests", "how_to_recognize": "Layer violations caught only by code review, not CI", "smallest_coding_rule": "Walk source with fs.readdirSync, grep specifiers, assert forbidden patterns absent.", "stack_example": "packages/core/test/dag.test.ts"},
+        {"pattern": "Within-app layer ordering: utils→hooks→components→pages", "how_to_recognize": "hooks importing components = violation; components importing hooks = allowed", "smallest_coding_rule": "Hooks must not import components or pages; components must not import pages.", "stack_example": "dag.test.ts within-app section"},
+        {"pattern": "Two enforcement levels for monorepo DAG", "how_to_recognize": "workspace package.json catches npm-level cycles; import-scanning test catches source-level violations", "smallest_coding_rule": "Both levels needed — workspace does not catch @tiercade/state in packages/core/src.", "stack_example": "packages/core/test/dag.test.ts"},
+        {"pattern": "CardView in S2 uses render-prop pattern", "how_to_recognize": "<CardView items={...}>{(item) => ...}</CardView>", "smallest_coding_rule": "Stub: ({ items, children }) => <div>{items.map(item => children(item))}</div>", "stack_example": "ThemesPage.test.tsx"}
+      ],
+      "narrative": "Good app, place but not win. Loop 28: data_flow 6.5→8.0 via dag.test.ts. 35 suites, 234 tests, all green. avg ~8.44.",
+      "loop_result": {
+        "what_changed": "Added packages/core/test/dag.test.ts — 7 DAG enforcement tests covering cross-package and within-app layer ordering.",
+        "evidence_change_is_honest": "35 suites, 234 tests all green. dag.test.ts 7/7 assertions pass. Violation detection verified.",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": ["packages/core/test/dag.test.ts"],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: dag.test.ts enforces cross-package and within-app DAG at test time; deletion test confirms it earns its keep; no new Seam, no costume layer, no regression — diff is test-only.",
+        "checks": {"reality": "passed", "honesty": "passed", "regression": "passed"},
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [{"attempt": 1, "outcome": "ok", "error": null, "duration_ms": null}]
+      }
     }
   ]
 }
