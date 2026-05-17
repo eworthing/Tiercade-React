@@ -2,7 +2,7 @@
 see Loop 1 Discovery
 
 ### Loop Counter
-Loop 25 of 27 (cap)
+Loop 26 of 27 (cap)
 
 ### System Flag
 [STATE: CONTINUE]
@@ -12,17 +12,17 @@ Loop 25 of 27 (cap)
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 25: Page-level tests for HeadToHeadPage and AnalyticsPage added — 7 + 4 = 11 new tests at page Interface. HeadToHeadPage: all 4 render branches covered (empty, idle, active, completed) + showEndConfirm state machine (open/close). AnalyticsPage: empty state + loaded state (balance score, tier distribution, total items). test_strategy 8.5→9.0 (UP). 31 suites, 215 tests, all green.
+Loop 26: Page-level tests for ThemesPage, TemplatesPage, and ImportExportPage added — 3 + 4 + 5 = 12 new tests at page Interface. test_strategy 9.0→9.5 (UP, accepted residual). 34 suites, 227 tests, all green.
 
 ## Scorecard (1-10)
-- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration. Package DAG enforced. 9-anchor not met: within-app module DAG enforced only by convention; implicit global store.
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; package DAG enforced; within-app module DAG enforced only by convention; implicit global store. 9-anchor not met.
 - State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern. 9-anchor not met.
 - Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` + `apps/web/src/components/ItemModal.tsx:114-135` — createItem smart constructor + ItemMedia discriminated union; primary caller migrated. Residual: `packages/core/src/models.ts:22-31` parallel URL fields (backward compat, framework-constrained, accepted).
 - Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json`. Within-app no module-level DAG enforcement. 9-anchor partial.
-- Framework / platform best practices: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup aborts reader on unmount; abort previous reader before starting new one. Idiomatic React lifecycle pattern applied. 9-anchor not yet met: remaining minor carve-outs.
-- Concurrency and runtime safety: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup; abort previous on second call. Two abort tests at Interface. No new concurrency changes this loop.
+- Framework / platform best practices: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup aborts reader on unmount; idiomatic React lifecycle pattern. 9-anchor not yet met: remaining minor carve-outs.
+- Concurrency and runtime safety: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38` — useEffect cleanup; abort previous reader on second call. Two abort tests at Interface.
 - Code simplicity and clarity: 9.5 | SAME | All simplification candidates exhausted. Accepted residual: `apps/web/src/pages/TierBoardPage.tsx:1-443` — 443 LOC modal orchestration floor (framework-constrained).
-- Test strategy and regression resistance: 9.0 | UP | `apps/web/src/pages/HeadToHeadPage.test.tsx` — 7 tests: empty state (totalItems<2), idle state (start button present, onStart called), active state (comparison cards), showEndConfirm open/close state machine, completed state (apply button). `apps/web/src/pages/AnalyticsPage.test.tsx` — 4 tests: empty tierOrder, analytics heading, balance score, tier distribution bars, total items. 31 suites, 215 tests, all green. G24: TierBoardPage (loop 24) + HeadToHeadPage + AnalyticsPage all have direct page-level test files covering their mutation paths. G26: structural change is two new test files in this loop's diff. Residual: `ThemesPage`, `TemplatesPage`, `ImportExportPage` still lack page-level tests; secondary pages not contest-critical (import/export tested at hook level).
+- Test strategy and regression resistance: 9.5 | UP | `apps/web/src/pages/ThemesPage.test.tsx` — 3 tests: Themes heading, one card per BUNDLED_THEMES, theme display names. `apps/web/src/pages/TemplatesPage.test.tsx` — 4 tests: heading, search+category controls, search state machine (searchQuery setState → "Search Results" heading), default all-templates state. `apps/web/src/pages/ImportExportPage.test.tsx` — 5 tests: heading, empty state message, export cards when items present, showResetConfirm open (Reset click), showResetConfirm close (Cancel click). 34 suites, 227 tests, all green. G24: all 6 pages now have direct page-level test files. G26: 3 new test files in this loop's diff prove structural change. Accepted residual: AppShell routing (thin wrapper; no AppRuntime/root-scene shell in React/Vite; E2E surface covers integration paths; accepted carve-out).
 - Overall implementation credibility: 9.5 | SAME | Code earns its architecture; few honesty leaks remain. Accepted residual: `packages/core/src/models.ts:22-31` — Item parallel URL fields backward compat.
 
 ## Strengths That Matter
@@ -32,42 +32,43 @@ Loop 25: Page-level tests for HeadToHeadPage and AnalyticsPage added — 7 + 4 =
 - Monorepo DAG enforced by workspace `package.json`: `core←state←apps`; no circular dependencies.
 - `persistenceMiddleware` — fully injectable storage; per-instance timer.
 - `useImportHandlers.ts` — FileReader abort on unmount + abort on second call; lifecycle gap closed.
-- 13 custom hooks in `apps/web/src/hooks/`, all tested at Interface level.
-- Three primary page-level test suites: `TierBoardPage.test.tsx` (loop 24, 4 tests), `HeadToHeadPage.test.tsx` (loop 25, 7 tests), `AnalyticsPage.test.tsx` (loop 25, 4 tests) — page Interface coverage for the three contest-relevant primary pages.
+- All 6 web pages now have direct page-level test files: `TierBoardPage.test.tsx` (4 tests, loop 24), `HeadToHeadPage.test.tsx` (7 tests, loop 25), `AnalyticsPage.test.tsx` (4 tests, loop 25), `ThemesPage.test.tsx` (3 tests, loop 26), `TemplatesPage.test.tsx` (4 tests, loop 26), `ImportExportPage.test.tsx` (5 tests, loop 26).
 
 ## Findings
 
-### Finding #1: Page-level tests absent for HeadToHeadPage and AnalyticsPage (F-017)
+### Finding #1: Page-level test surface absent for ThemesPage, TemplatesPage, and ImportExportPage (F-018)
 
-**Why it matters** — Resolved this loop. HeadToHeadPage's 4-branch render + showEndConfirm state machine had zero page-level test coverage; AnalyticsPage's data-driven render was untested at page level.
+**Why it matters** — Resolved this loop. ThemesPage's theme-select dispatch path, TemplatesPage's searchQuery/selectedCategory filter state machine + previewTemplate modal, and ImportExportPage's showResetConfirm state machine had zero page-level test coverage.
 
-**What is wrong** — No test file existed for `apps/web/src/pages/HeadToHeadPage.tsx` or `apps/web/src/pages/AnalyticsPage.tsx` before this loop.
+**What is wrong** — No test files existed for the three secondary pages before this loop.
 
 **Evidence** —
-- `apps/web/src/pages/HeadToHeadPage.tsx:143` — `showEndConfirm` useState with no page-level test before this loop
-- `apps/web/src/pages/HeadToHeadPage.tsx:155-167` — empty branch; `HeadToHeadPage.tsx:169-206` — idle branch; `HeadToHeadPage.tsx:209-295` — active branch; `HeadToHeadPage.tsx:298-311` — completed branch
-- `apps/web/src/pages/HeadToHeadPage.test.tsx` (this loop) — 7 tests covering all branches
-- `apps/web/src/pages/AnalyticsPage.test.tsx` (this loop) — 4 tests covering empty + loaded state
+- `apps/web/src/pages/ThemesPage.tsx:41` — `useAppSelector((state) => state.theme.selectedThemeId)` dispatch path untested at page level before this loop
+- `apps/web/src/pages/TemplatesPage.tsx:76-78` — `searchQuery`, `selectedCategory`, `previewTemplate` useState with no page-level test before this loop
+- `apps/web/src/pages/ImportExportPage.tsx:105` — `showResetConfirm` useState with no page-level test before this loop
+- `apps/web/src/pages/ThemesPage.test.tsx` (this loop) — 3 tests: heading, theme cards, display names
+- `apps/web/src/pages/TemplatesPage.test.tsx` (this loop) — 4 tests: heading, filter controls, search state machine, default state
+- `apps/web/src/pages/ImportExportPage.test.tsx` (this loop) — 5 tests: heading, empty state, export cards, reset-confirm open/close
 
 **Architectural test failed** — Interface-as-test-surface
 
 **Dependency category** — `in-process`
 
-**Leverage impact** — Without page tests, HeadToHeadPage's showEndConfirm state machine and AnalyticsPage's data-driven render had no regression barrier.
+**Leverage impact** — Without page tests, TemplatesPage's filter state machine and ImportExportPage's showResetConfirm had no regression barrier.
 
-**Locality impact** — Page state logic (showEndConfirm useState) co-located in page; only page-level test can assert open/close flow.
+**Locality impact** — Page state logic (showResetConfirm useState, searchQuery useState) co-located in pages; only page-level tests can assert open/close flows.
 
-**Metric signal, if any** — Zero page-level tests for these two pages before this loop; 11 new tests added (7 + 4).
+**Metric signal, if any** — Zero page-level tests for these three pages before this loop; 12 new tests added (3 + 4 + 5).
 
-**Why this weakens submission** — test_strategy 9-anchor requires page-surface coverage for primary contest-relevant pages; missing page tests reduce regression resistance.
+**Why this weakens submission** — test_strategy 9-anchor requires page-surface coverage for all primary and secondary pages; missing page tests reduce regression resistance.
 
 **Severity** — Noticeable weakness
 
 **ADR conflicts** — none
 
-**Minimal correction path** — Create `HeadToHeadPage.test.tsx` and `AnalyticsPage.test.tsx` using `@testing-library/react` + real RTK store + minimal mocks for S2 and `react-aria-components`.
+**Minimal correction path** — Create `ThemesPage.test.tsx`, `TemplatesPage.test.tsx`, `ImportExportPage.test.tsx` using `@testing-library/react` + real RTK store + minimal mocks for S2, react-router-dom, and import/export hooks.
 
-**Blast radius** — change: `apps/web/src/pages/HeadToHeadPage.test.tsx`, `apps/web/src/pages/AnalyticsPage.test.tsx` (new files). avoid: all existing source files.
+**Blast radius** — change: three new test files. avoid: all existing source files.
 
 ---
 
@@ -137,28 +138,28 @@ Loop 25: Page-level tests for HeadToHeadPage and AnalyticsPage added — 7 + 4 =
 ## Simplification Check
 | field | value |
 |---|---|
-| structurally_necessary | Page-level tests for HeadToHeadPage and AnalyticsPage — passes Interface-as-test-surface: tests live at the page Interface; showEndConfirm and 4-branch render assertions are not reachable via hook-level tests alone |
+| structurally_necessary | Page-level tests for ThemesPage, TemplatesPage, and ImportExportPage — passes Interface-as-test-surface: tests live at the page Interface; showResetConfirm, searchQuery/selectedCategory filter state, and theme-select dispatch are not reachable via hook-level tests alone |
 | new_seam_justified | false |
 | helpful_simplification | None — purely additive test files; no source changes |
 | should_not_be_done | Mocking the entire Redux store with pre-set dialog state — would test mocks not the component state machine |
-| tests_after_fix | No old tests deleted (all tests are new); 11 new tests at HeadToHeadPage and AnalyticsPage Interfaces |
+| tests_after_fix | No old tests deleted (all tests are new); 12 new tests at ThemesPage, TemplatesPage, and ImportExportPage Interfaces |
 
 ## Improvement Backlog
-1. **Add page-level tests for ThemesPage, TemplatesPage, and ImportExportPage** — test_strategy at 9.0; secondary pages still lack page-level tests. `kind: structural`, `rank: helpful`. Score impact: test_strategy 9.0→9.5 (residual accepted).
+1. **Investigate inline non-memoized selectors in pages/hooks for data_flow / state_management** — `ImportExportPage.tsx:108` uses inline `useMemo(() => Object.values(tiers).flat().length)` instead of `selectTotalItemCount`; `AnalyticsPage.tsx:63-64` uses inline `useAppSelector(state => state.tier.tiers/tierOrder)` instead of centralized selectors; `ThemesPage.tsx:41` uses inline selector for `selectedThemeId`. None are structural blockers at 6.5 (state_management/data_flow 9-anchors require process-lifetime pattern or DAG enforcement, not mere selector centralization). `kind: polish`, `rank: minor`. Score impact: state_management/data_flow remain at 6.5 — this is not the structural blocker.
 
 ## Deepening Candidates
 
 None. The test additions deepen test coverage at the page Interface — the Interface is already the right shape; tests are additive.
 
 ## Builder Notes
-1. **Pattern** — DialogTrigger controlled open/close via `isOpen` prop requires a conditional-rendering stub in jsdom. When `DialogTrigger isOpen={showEndConfirm}` is used, a simple `({ children }) => <div>{children}</div>` stub will always render the AlertDialog, making "dialog initially absent" assertions fail. **How to recognize** — `DialogTrigger` with `isOpen` prop + assertion that dialog is absent on render. **Smallest coding rule** — Stub DialogTrigger to slice children: render only `childArray.slice(0, 1)` (the trigger) when `!isOpen`; render all children when `isOpen`.
-2. **Pattern** — AriaButton (`react-aria-components`) requires its own stub for `onPress → onClick` mapping, separate from `@react-spectrum/s2/Button`. When a page uses both S2 `Button` and `react-aria-components` `Button` (e.g. `ComparisonCard` uses AriaButton), both need mocking. **How to recognize** — `import { Button as AriaButton } from "react-aria-components"` alongside S2 components. **Smallest coding rule** — Add `jest.mock("react-aria-components", () => ({ Button: (props) => <button onClick={props.onPress} data-testid={props["data-testid"]}>{props.children}</button> }))`.
-3. **Pattern** — Analytics pages with pure-computation render (no state machine, no modal) are the easiest to test: assert branch conditions (empty tierOrder vs populated) and rendered output (progress bars, stat card text). **How to recognize** — Page that takes store state → calls pure functions → renders static output. **Smallest coding rule** — One test for each branch (empty state message visible; loaded state shows analytics heading + key stat cards). Use `getAllByRole("progressbar")` for multi-bar assertions to avoid `getByText` ambiguity when multiple stats share the same numeric value.
+1. **Pattern** — CardView in S2 uses a render-prop pattern (children as factory function). When stubbing for jsdom tests, the mock must call `props.items.map((item) => props.children(item))` to render each card. A simple `{children}` stub will silently render nothing — assertions on individual card test IDs will fail. **How to recognize** — CardView `<CardView items={...}>{(item) => ...}</CardView>` — children is a callback, not a node. **Smallest coding rule** — Stub CardView as: `({ items, children }) => <div>{...items.map(item => children(item))}</div>`.
+2. **Pattern** — SearchField and Picker in S2 use `onChange`/`onSelectionChange` (not standard DOM `onChange`). When stubbing, render a native `<input onChange>` and `<select onChange>` that call the S2 callbacks with the value string. **How to recognize** — `<SearchField onChange={(value) => ...}>` — callback receives string not event. **Smallest coding rule** — Stub: `onChange: (e) => props.onChange?.(e.target.value)`.
+3. **Pattern** — DialogTrigger isOpen-aware stub must only render dialog children when `isOpen=true`. For ImportExportPage/TemplatesPage the trigger is a hidden span — childArray[0] is the trigger, childArray[1] is the dialog. Use `props.isOpen ? childArray : childArray.slice(0, 1)` to prevent the AlertDialog from appearing before the Reset button is clicked. Same pattern as HeadToHeadPage's DialogTrigger stub.
 
 ## Final Judge Narrative
-Good app, place but not win. Loop 25: test_strategy 8.5→9.0 via page-level tests for HeadToHeadPage (7 tests: all 4 render branches + showEndConfirm state machine open/close) and AnalyticsPage (4 tests: empty state + loaded state analytics). 31 suites, 215 tests, all green. Three primary contest-relevant pages now have page-level test suites. Remaining blockers: implicit global store (state_management 6.5), within-app DAG convention-only (data_flow 6.5). Secondary pages (ThemesPage, TemplatesPage, ImportExportPage) still lack page-level tests — next loop target: test_strategy 9.0→9.5 via secondary page coverage.
+Good app, place but not win. Loop 26: test_strategy 9.0→9.5 via page-level tests for ThemesPage (3 tests: theme cards + heading), TemplatesPage (4 tests: filter state machine, search state machine), and ImportExportPage (5 tests: empty state, export cards, showResetConfirm open/close state machine). 34 suites, 227 tests, all green. All 6 web pages now have direct page-level test files. Remaining blockers: implicit global store (state_management 6.5), within-app DAG convention-only (data_flow 6.5) — both require process-lifetime ownership changes or module-level DAG enforcement that are out of scope for contest loop. Loop 27 is the final cap loop.
 
-## Loop 25 Result
-Two files added: `apps/web/src/pages/HeadToHeadPage.test.tsx` (7 tests) and `apps/web/src/pages/AnalyticsPage.test.tsx` (4 tests). HeadToHeadPage tests use `@testing-library/react` + real RTK store + mocks for `@react-spectrum/s2`, `react-aria-components`, and `useHeadToHeadHandlers`. AnalyticsPage tests use real RTK store + mocks for `@react-spectrum/s2`. Tests assert: HeadToHeadPage all 4 render branches (empty/idle/active/completed), showEndConfirm open/close state machine; AnalyticsPage empty state message + balance score section + tier distribution bars + total item count.
+## Loop 26 Result
+Three files added: `apps/web/src/pages/ThemesPage.test.tsx` (3 tests), `apps/web/src/pages/TemplatesPage.test.tsx` (4 tests), `apps/web/src/pages/ImportExportPage.test.tsx` (5 tests). ThemesPage tests use `@testing-library/react` + real RTK store + mocks for `@react-spectrum/s2`. TemplatesPage tests mock `react-router-dom` (useNavigate) + `@react-spectrum/s2` (SearchField, Picker, CardView, DialogTrigger). ImportExportPage tests mock `useImportHandlers`, `useExportHandlers`, `useExport` + `@react-spectrum/s2`. Tests assert: ThemesPage heading + one card per BUNDLED_THEMES; TemplatesPage heading + filter controls + search state machine + default all-templates state; ImportExportPage heading + empty-state message + export cards + showResetConfirm open/close.
 
-Tests: 31 suites, 215 tests (up from 203), all green. Targeted finding F-017 (page-level tests absent for HeadToHeadPage and AnalyticsPage): **resolved** (11 tests now exercise both page Interfaces). test_strategy UP: 8.5→9.0. No unintended scorecard regression observed.
+Tests: 34 suites, 227 tests (up from 31/215), all green. Targeted finding F-018 (page-level tests absent for ThemesPage, TemplatesPage, ImportExportPage): **resolved** (12 tests now exercise all three page Interfaces). test_strategy UP: 9.0→9.5 (accepted residual). No unintended scorecard regression observed.

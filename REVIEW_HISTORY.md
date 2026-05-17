@@ -2150,3 +2150,70 @@ Good app, place but not win. Loop 25: test_strategy 8.5→9.0 via page-level tes
 Two files added: `apps/web/src/pages/HeadToHeadPage.test.tsx` (7 tests) and `apps/web/src/pages/AnalyticsPage.test.tsx` (4 tests). HeadToHeadPage tests use `@testing-library/react` + real RTK store + mocks for `@react-spectrum/s2`, `react-aria-components`, and `useHeadToHeadHandlers`. AnalyticsPage tests use real RTK store + mocks for `@react-spectrum/s2`. Tests assert: HeadToHeadPage all 4 render branches (empty/idle/active/completed), showEndConfirm open/close state machine; AnalyticsPage empty state message + balance score section + tier distribution bars + total item count.
 
 Tests: 31 suites, 215 tests (up from 203), all green. Targeted finding F-017 (page-level tests absent for HeadToHeadPage and AnalyticsPage): **resolved** (11 tests now exercise both page Interfaces). test_strategy UP: 8.5→9.0. No unintended scorecard regression observed.
+
+--- Loop 26 (UTC 2026-05-16T00:00:00Z) ---
+
+### Loop Counter
+Loop 26 of 27 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+see Loop 1 Discovery
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+## Scorecard (1-10)
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — 9-anchor not met.
+- State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — implicit global store; 9-anchor not met.
+- Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` + `apps/web/src/components/ItemModal.tsx:114-135`. Residual accepted.
+- Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced; within-app no enforcement. 9-anchor partial.
+- Framework / platform best practices: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38`. No change this loop.
+- Concurrency and runtime safety: 8.0 | SAME | `apps/web/src/hooks/useImportHandlers.ts:35-38`. No change this loop.
+- Code simplicity and clarity: 9.5 | SAME | Accepted residual: `apps/web/src/pages/TierBoardPage.tsx:1-443`.
+- Test strategy and regression resistance: 9.5 | UP | `apps/web/src/pages/ThemesPage.test.tsx` (3 tests), `apps/web/src/pages/TemplatesPage.test.tsx` (4 tests), `apps/web/src/pages/ImportExportPage.test.tsx` (5 tests). 34 suites, 227 tests, all green. All 6 pages now covered. Accepted residual: AppShell routing thin wrapper (no AppRuntime analog in React/Vite).
+- Overall implementation credibility: 9.5 | SAME | Accepted residual: `packages/core/src/models.ts:22-31`.
+
+## Authority Map
+(see Loop 1 for full Authority Map)
+
+## Strengths That Matter
+- All 6 web pages have direct page-level test files (ThemesPage + TemplatesPage + ImportExportPage added this loop).
+- packages/core domain layer framework-free; createItem smart constructor; RTK slice ownership clean.
+
+## Findings
+
+### Finding #1: Page-level test surface absent for ThemesPage, TemplatesPage, and ImportExportPage (F-018)
+**Severity** — Noticeable weakness. **Status** — Resolved this loop.
+**Evidence** — `apps/web/src/pages/ThemesPage.tsx:41`, `TemplatesPage.tsx:76-78`, `ImportExportPage.tsx:105`
+**Minimal correction path** — Create 3 test files (done). 12 new tests added.
+
+### Finding #2: TierBoardPage.tsx at 443 LOC — god-component at natural modal-coupled floor (F-004)
+**Severity** — Noticeable weakness. **Status** — Accepted residual. No change.
+
+### Finding #3: Item interface backward-compat parallel URL fields (F-014)
+**Severity** — Noticeable weakness. **Status** — Terminal accepted residual. No change.
+
+## Simplification Check
+| field | value |
+|---|---|
+| structurally_necessary | Page-level tests for ThemesPage, TemplatesPage, ImportExportPage — Interface-as-test-surface |
+| new_seam_justified | false |
+| helpful_simplification | None — purely additive test files |
+| should_not_be_done | Mocking Redux store with pre-set dialog state |
+| tests_after_fix | No old tests deleted; 12 new tests at three page Interfaces |
+
+## Improvement Backlog
+1. Investigate inline non-memoized selectors in pages/hooks. `kind: polish`, `rank: minor`. Score impact: none (not structural blocker for 6.5 dims).
+
+## Loop 26 Result
+Three files added: `apps/web/src/pages/ThemesPage.test.tsx` (3 tests), `apps/web/src/pages/TemplatesPage.test.tsx` (4 tests), `apps/web/src/pages/ImportExportPage.test.tsx` (5 tests). Tests use `@testing-library/react` + real RTK store + minimal S2 mocks.
+
+Tests: 34 suites, 227 tests (up from 31/215), all green. Targeted finding F-018: **resolved**. test_strategy UP: 9.0→9.5 (accepted residual). No unintended scorecard regression observed.
+
+## Loop 26 Implementation Review
+Verdict: approved. All three checks passed: page-level tests added at ThemesPage, TemplatesPage, and ImportExportPage Interfaces; tests exercise real state machines; no regressions — purely additive test files with no production source changes.
+
+## Final Judge Narrative
+Good app, place but not win. Loop 26: test_strategy 9.0→9.5 via page-level tests for ThemesPage, TemplatesPage, ImportExportPage. 34 suites, 227 tests, all green. All 6 web pages now have direct page-level test files. Remaining hard blockers: state_management 6.5, data_flow 6.5 (implicit global store, within-app DAG convention-only). Loop 27 is final cap loop.

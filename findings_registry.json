@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 18,
+  "next_serial": 19,
   "entries": [
     {
       "stable_id": "F-001",
@@ -287,6 +287,13 @@
           "status": "accepted_residual",
           "sha": null,
           "idempotency_key": "loop25-F-004-accepted_residual"
+        },
+        {
+          "loop": 26,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": null,
+          "idempotency_key": "loop26-F-004-accepted_residual"
         }
       ]
     },
@@ -642,6 +649,13 @@
           "status": "accepted_residual",
           "sha": null,
           "idempotency_key": "loop25-F-014-accepted_residual"
+        },
+        {
+          "loop": 26,
+          "loop_local_id": "F3",
+          "status": "accepted_residual",
+          "sha": null,
+          "idempotency_key": "loop26-F-014-accepted_residual"
         }
       ]
     },
@@ -708,6 +722,28 @@
           "status": "resolved",
           "sha": null,
           "idempotency_key": "loop25-F-017-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-018",
+      "title": "Page-level test surface absent for ThemesPage, TemplatesPage, and ImportExportPage",
+      "category_hint": "missing-tests-page-level",
+      "primary_file": "apps/web/src/pages/ThemesPage.tsx",
+      "primary_evidence_lines": [41, 41],
+      "test_failed": "Interface-as-test-surface",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 26,
+      "first_seen_sha": null,
+      "last_seen_loop": 26,
+      "last_seen_sha": null,
+      "occurrences": [
+        {
+          "loop": 26,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": null,
+          "idempotency_key": "loop26-F-018-resolved"
         }
       ]
     }

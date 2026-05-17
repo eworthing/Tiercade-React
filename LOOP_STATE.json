@@ -1,45 +1,19 @@
 {
   "schema_version": 1,
-  "loop": 23,
+  "loop": 26,
   "step_started": 11,
   "step_completed": 10,
-  "started_at": "2026-05-17T02:45:00Z",
-  "last_checkpoint_at": "2026-05-17T02:58:00Z",
-  "artifacts_written": [
-    "apps/web/src/hooks/useImportHandlers.ts",
-    "apps/web/src/hooks/useImportHandlers.test.ts",
-    "CURRENT_REVIEW.md",
-    "CURRENT_REVIEW.json",
-    "REVIEW_HISTORY.md",
-    "REVIEW_HISTORY.json",
-    "findings_registry.json"
-  ],
-  "changed_paths": [
-    "apps/web/src/hooks/useImportHandlers.ts",
-    "apps/web/src/hooks/useImportHandlers.test.ts"
-  ],
+  "started_at": "2026-05-16T00:00:00Z",
+  "last_checkpoint_at": "2026-05-16T00:00:00Z",
+  "artifacts_written": [],
+  "changed_paths": [],
   "pre_step3_blob_shas": {
-    "apps/web/src/hooks/useImportHandlers.ts": "2dcdc0a14aa7f3c54c55fcb08ee25eeb914bc605",
-    "apps/web/src/hooks/useImportHandlers.test.ts": "c4f59aa4f2291dbfbdab76f740c8cf87bfdc4854"
+    "apps/web/src/pages/ThemesPage.test.tsx": null,
+    "apps/web/src/pages/TemplatesPage.test.tsx": null,
+    "apps/web/src/pages/ImportExportPage.test.tsx": null
   },
-  "registry_pending_writes": [
-    {
-      "stable_id": "F-015",
-      "occurrence": {"loop": 23, "loop_local_id": "F1", "status": "resolved", "sha": "<pending>"},
-      "idempotency_key": "loop23-F-015-resolved"
-    }
-  ],
-  "commit_message_draft": "loop 23: close FileReader lifecycle gap in useImportHandlers.ts; finding F1 (stable_id F-015) resolved [registry: +1 findings, ~1 occurrence]",
-  "implementation_review": {
-    "verdict": "approved",
-    "reason": "All three checks passed; readerRef + useEffect cleanup + abort-on-second-call correctly resolve the FileReader lifecycle gap; new tests assert abort deterministically at the Interface.",
-    "checks": {"reality": "passed", "honesty": "passed", "regression": "passed"},
-    "regressions": [],
-    "conditions": [],
-    "rounds": 1,
-    "retry_count": 1,
-    "retry_cause": null,
-    "retry_attempts": [{"attempt": 1, "outcome": "ok", "error": null, "duration_ms": null}]
-  },
+  "registry_pending_writes": [],
+  "commit_message_draft": "loop 26: add page-level tests for ThemesPage/TemplatesPage/ImportExportPage; finding F1 (stable_id F-018) resolved [registry: +1 findings, ~3 occurrences]",
+  "implementation_review": null,
   "commit_attempted_sha": null
 }
