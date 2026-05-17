@@ -1154,3 +1154,86 @@ verdict: **approved**
 - regression: passed
 regressions: none
 conditions: none
+
+--- Loop 13 (UTC 2026-05-16T00:25:00Z) ---
+
+### Loop Counter
+Loop 14 of 18 (cap)
+
+### System Flag
+[STATE: CONTINUE]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 14 extracts useBatchActions: 2 batch handlers removed from TierBoardPage (456→443 LOC). 6 new Interface-level tests. simplicity 6.5→7.0.
+
+## Scorecard (1-10)
+- Architecture quality: 7.0 | SAME | apps/web/src/hooks/useBatchActions.ts:1-40 — 2 batch handlers behind BatchActionHandlers Interface; TierBoardPage.tsx:1-443.
+- State management and runtime ownership: 6.5 | SAME | One writer per concern; store implicit global.
+- Domain modeling: 6.0 | SAME | packages/core/src/models.ts:6 — Item data bag, anemic.
+- Data flow and dependency design: 6.5 | SAME | Package DAG enforced. useBatchActions adds cleaner interface.
+- Framework / platform best practices: 7.0 | SAME | 9 focused hooks. ImportExportPage 438 LOC lacks delegation.
+- Concurrency and runtime safety: 7.0 | SAME | JS single-threaded. No floating promises.
+- Code simplicity and clarity: 7.0 | UP | useBatchActions.ts:1-40 — 2 batch handlers extracted; TierBoardPage 456→443 LOC; 3 remaining inline handlers all modal-state coupled.
+- Test strategy and regression resistance: 8.0 | SAME | 25 suites, 174 tests. useBatchActions.test.ts — 6 tests at new Interface.
+- Overall implementation credibility: 8.0 | SAME | Extraction passes deletion test. Replace-don't-layer satisfied (6 new tests; no old tests deleted). Reviewer approved.
+
+## Authority Map
+**TierBoardPage modal state** — Owner: TierBoardPage local state (7 useState). Verdict: Single and clear.
+**Batch action handlers** — Owner: apps/web/src/hooks/useBatchActions.ts. Test surface: useBatchActions.test.ts (6 tests, loop 14). Verdict: Single and clear.
+**Item interaction** — Owner: apps/web/src/hooks/useItemInteraction.ts. Test surface: useItemInteraction.test.ts (7 tests). Verdict: Single and clear.
+**Tier/Item domain state** — Owner: packages/state/src/tierSlice.ts. Persistence seam: persistenceMiddleware. Verdict: Single and clear.
+**Sort/filter derived state** — Owner: apps/web/src/hooks/useTierFilter.ts. Test surface: useTierFilter.test.ts:67-162. Verdict: Single and clear.
+**filterAllTiers** — Owner: packages/core/src/filtering.ts. Test surface: filtering.test.ts:96-176. Verdict: Single and clear.
+
+## Strengths That Matter
+- packages/core framework-free; 12 suites, 94 tests.
+- RTK slice ownership: one writer per concern; memoized selectors.
+- TierBoardPage.tsx — 757→443 LOC; 7 hooks extracted (loops 9, 12, 14).
+- useBatchActions.ts — Interface tested (useBatchActions.test.ts, 6 tests, loop 14).
+
+## Findings
+
+### Finding #1: TierBoardPage.tsx at 443 LOC — natural modal-coupled floor (F-004)
+**Severity** — Noticeable weakness
+**Evidence** — apps/web/src/pages/TierBoardPage.tsx:1-443; lines 75-82 (7 useState); lines 140-183 (3 remaining handlers)
+**Minimal correction path** — Accept as residual. Evaluate ImportExportPage.tsx next.
+
+### Finding #2: ImportExportPage.tsx at 438 LOC — no hook delegation (F-010)
+**Severity** — Noticeable weakness
+**Evidence** — apps/web/src/pages/ImportExportPage.tsx:1-438
+**Minimal correction path** — Extract dispatch-only import handlers to useImportHandlers.ts.
+
+## Simplification Check
+
+| field | value |
+|---|---|
+| structurally_necessary | useBatchActions extraction — dispatch+selection cluster; deletion test passes |
+| new_seam_justified | false |
+| helpful_simplification | TierBoardPage 456→443 LOC; 2 useCallback blocks + 3 imports removed |
+| should_not_be_done | Extracting handleItemDoubleClick (1-line body). Extracting handleMoveItemWithCelebration (modal state coupling). |
+| tests_after_fix | apps/web/src/hooks/useBatchActions.test.ts (6 tests at new Interface) |
+
+## Improvement Backlog
+### Priority 1: Hook delegation for ImportExportPage.tsx at 438 LOC (F-010)
+### Priority 2: Accept F-004 residual — TierBoardPage at natural modal floor
+
+## Builder Notes (compressed)
+- Pattern: dispatch-only handler cluster → REVIEW_HISTORY.json loops[13].builder_notes
+- Pattern: 443 LOC natural floor — remaining handlers tangled → REVIEW_HISTORY.json loops[13].builder_notes
+- Pattern: Test-at-new-Interface maintained 4 loops → REVIEW_HISTORY.json loops[13].builder_notes
+
+## Final Judge Narrative
+Good app, place but not win. Loop 14 closes useBatchActions gap. TierBoardPage 456→443 LOC; 2 batch handlers behind stable Interface with 6 tests. simplicity 6.5→7.0. New finding F-010: ImportExportPage 438 LOC, next extraction target.
+
+## Loop 14 Result
+Three files changed: useBatchActions.ts (new, 40 LOC), useBatchActions.test.ts (new, 6 tests), TierBoardPage.tsx (456→443 LOC). Full suite: 25 suites, 174 tests, all green. F-004: carried_forward.
+
+## Loop 14 Implementation Review
+verdict: **approved**
+- reality: passed
+- honesty: passed
+- regression: passed
+regressions: none
+conditions: none

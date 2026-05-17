@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
-  "loop": 13,
-  "loop_cap": 15,
+  "loop": 14,
+  "loop_cap": 18,
   "state": "CONTINUE",
   "halt_subtype": null,
   "halt_handoff_text": null,
@@ -18,12 +18,12 @@
   "findings_registry_path": "./findings_registry.json",
   "discovery": null,
   "verdict": "Good app, but not top-tier yet",
-  "verdict_explanation": "Loop 12 extracts useItemInteraction hook: 3 dispatch-only handlers removed from TierBoardPage (507\u2192456 LOC). 7 new Interface-level tests. Suite: 23 suites, 153 tests, all green. architecture_quality 6.5\u21927.0; simplicity 6.0\u21926.5. Remaining open finding: F-004 (TierBoardPage 456 LOC, further reduction requires useBatchActions evaluation or accept floor).",
+  "verdict_explanation": "Loop 14 extracts useBatchActions hook: 2 batch handlers removed from TierBoardPage (456→443 LOC). 6 new Interface-level tests. Suite: 25 suites, 174 tests, all green. simplicity 6.5→7.0. New finding F-010: ImportExportPage at 438 LOC, next extraction target.",
   "scorecard": {
     "architecture_quality": {
       "score": 7.0,
       "delta": "SAME",
-      "proof": "apps/web/src/hooks/useItemInteraction.ts:1-81 \u2014 3 dispatch-only handlers behind ItemInteractionHandlers Interface; TierBoardPage.tsx:1-456 (507\u2192456 LOC, 3 useCallback blocks removed). Package DAG enforced by workspace. 9-anchor not met: ImportExportPage 438 LOC and HeadToHeadPage 378 LOC still large shells; page-level Module Depth across the app below contest grade.",
+      "proof": "apps/web/src/hooks/useBatchActions.ts:1-40 — 2 batch handlers behind BatchActionHandlers Interface; TierBoardPage.tsx:1-443 (456→443 LOC). Package DAG enforced by workspace. 9-anchor not met: ImportExportPage 438 LOC, HeadToHeadPage 378 LOC; page-level Module Depth below contest grade system-wide.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -32,7 +32,7 @@
     "state_management": {
       "score": 6.5,
       "delta": "SAME",
-      "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 one writer per concern across 6 slices. memoized selectors in selectors.ts. Process-lifetime ownership not explicit (store is implicit global). 9-anchor sub-threshold.",
+      "proof": "packages/state/src/tierSlice.ts:1-343 — one writer per concern across 6 slices. Memoized selectors in selectors.ts. Process-lifetime ownership not explicit (store is implicit global). 9-anchor sub-threshold.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -41,7 +41,7 @@
     "domain_modeling": {
       "score": 6.0,
       "delta": "SAME",
-      "proof": "packages/core/src/models.ts:6 \u2014 Item interface is a data bag (name?, imageUrl?, description? all optional). Items = Record<string, Item[]> anemic. No smart constructors, no validated values. 9-anchor requires types prove most invariants by construction \u2014 not met.",
+      "proof": "packages/core/src/models.ts:6 — Item interface is a data bag (name?, imageUrl?, description? all optional). Items = Record<string, Item[]> anemic. No smart constructors, no validated values. 9-anchor requires types prove most invariants by construction — not met.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -50,7 +50,7 @@
     "data_flow": {
       "score": 6.5,
       "delta": "SAME",
-      "proof": "Package-level DAG enforced by workspace package.json (core\u2190state\u2190apps). No circular deps. useTierFilter.ts, useTierDisplay.ts, useItemInteraction.ts create cleaner hook interfaces. Within-app no module-level DAG enforcement. 9-anchor requires DAG enforced; effects typed \u2014 partial.",
+      "proof": "Package-level DAG enforced by workspace package.json (core←state←apps). No circular deps. useTierFilter.ts, useTierDisplay.ts, useItemInteraction.ts, useBatchActions.ts create cleaner hook interfaces. Within-app no module-level DAG enforcement. 9-anchor requires DAG enforced; effects typed — partial.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -59,7 +59,7 @@
     "framework_idioms": {
       "score": 7.0,
       "delta": "SAME",
-      "proof": "React custom hooks idiomatic (7 focused hooks in apps/web/src/hooks/). RTK patterns correct. useId() for stable IDs. apps/web/src/pages/ImportExportPage.tsx at 438 LOC still mixes orchestration and display without hook delegation. 9-anchor nearly met but no documented carve-outs.",
+      "proof": "React custom hooks idiomatic (9 focused hooks in apps/web/src/hooks/). RTK patterns correct. useId() for stable IDs. apps/web/src/pages/ImportExportPage.tsx at 438 LOC still mixes orchestration and display without hook delegation. 9-anchor nearly met but no documented carve-outs.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -68,16 +68,16 @@
     "concurrency": {
       "score": 7.0,
       "delta": "SAME",
-      "proof": "JavaScript single-threaded. No floating promises found. useEffect cleanup present in CelebrationEffect.tsx. No AbortController pattern for async fetches. persistenceMiddleware per-instance timer (loop 8). 9-anchor partial.",
+      "proof": "JavaScript single-threaded. No floating promises found. useEffect cleanup present in CelebrationEffect.tsx. No AbortController for async fetches. persistenceMiddleware per-instance timer (loop 8). 9-anchor partial.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "simplicity": {
-      "score": 6.5,
-      "delta": "SAME",
-      "proof": "apps/web/src/pages/TierBoardPage.tsx:1-456 (456 LOC, down from 507; 51 LOC extracted to useItemInteraction.ts). ImportExportPage.tsx:1-438. AppShell.tsx:1-385. HeadToHeadPage.tsx:1-378. TemplatesPage.tsx:1-361. TierBoardPage shrink structural proof: useItemInteraction.ts concentrates 3 handlers (81 LOC) behind 17-line Interface object.",
+      "score": 7.0,
+      "delta": "UP",
+      "proof": "apps/web/src/hooks/useBatchActions.ts:1-40 — 2 batch handlers (13 LOC) extracted from TierBoardPage.tsx:153-166; page 456→443 LOC. TierBoardPage now has only 3 remaining inline handlers all with clear modal-state coupling justifying inline placement.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -85,8 +85,8 @@
     },
     "test_strategy": {
       "score": 8.0,
-      "delta": "UP",
-      "proof": "packages/state/test/presentationSlice.test.ts (183 LOC, 18 Interface-level tests) closes the F-003 scope gap on presentationSlice; state package: 8 suites/55 tests",
+      "delta": "SAME",
+      "proof": "25 suites, 174 tests. useBatchActions.test.ts (6 tests) exercises batch-move and batch-delete at the new Interface, including empty-selection guards and undo-stack assertions. Authority Map cross-check: useBatchActions now directly tested. Ceiling: TierBoardPage page-level surface still untested.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -95,7 +95,7 @@
     "credibility": {
       "score": 8.0,
       "delta": "SAME",
-      "proof": "useItemInteraction extraction passes deletion test: complexity does not redistribute to callers. Replace-don't-layer satisfied: no prior tests existed (no deletion needed); 7 new tests added at new Interface. Implementation reviewer approved. No fake-clean moves in loops 5-12.",
+      "proof": "useBatchActions extraction passes deletion test: complexity vanishes from page (guards + dispatch logic moved to hook). Replace-don't-layer satisfied: no prior tests for these handlers; 6 new tests at new Interface. Implementation reviewer approved. No fake-clean moves in loops 5-14.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
@@ -105,26 +105,27 @@
   "authority_map": [
     {
       "concern": "TierBoardPage modal state",
-      "owner": "TierBoardPage local state (7 useState declarations, lines 80-86)",
-      "allowed_writers": [
-        "TierBoardPage handlers (inline setters)"
-      ],
-      "readers": [
-        "JSX render tree within TierBoardPage"
-      ],
+      "owner": "TierBoardPage local state (7 useState declarations, lines 75-82)",
+      "allowed_writers": ["TierBoardPage handlers (inline setters)"],
+      "readers": ["JSX render tree within TierBoardPage"],
       "persistence_seam": null,
-      "async_mutation_entry_points": [
-        "handleMoveItemWithCelebration (celebration state)"
-      ],
+      "async_mutation_entry_points": ["handleMoveItemWithCelebration (celebration state)"],
+      "verdict": "Single and clear"
+    },
+    {
+      "concern": "Batch action handlers",
+      "owner": "apps/web/src/hooks/useBatchActions.ts",
+      "allowed_writers": [],
+      "readers": ["TierBoardPage via useBatchActions(dispatch) return value"],
+      "persistence_seam": null,
+      "async_mutation_entry_points": [],
       "verdict": "Single and clear"
     },
     {
       "concern": "Item interaction (dispatch-only handlers)",
       "owner": "apps/web/src/hooks/useItemInteraction.ts",
       "allowed_writers": [],
-      "readers": [
-        "TierBoardPage via useItemInteraction(dispatch) return value"
-      ],
+      "readers": ["TierBoardPage via useItemInteraction(dispatch) return value"],
       "persistence_seam": null,
       "async_mutation_entry_points": [],
       "verdict": "Single and clear"
@@ -132,33 +133,17 @@
     {
       "concern": "Tier/Item domain state",
       "owner": "packages/state/src/tierSlice.ts",
-      "allowed_writers": [
-        "captureSnapshot",
-        "moveItemBetweenTiersWithUndo",
-        "addItemToTier",
-        "updateItem",
-        "deleteItems",
-        "moveItemsBetweenTiers"
-      ],
-      "readers": [
-        "all page components via useAppSelector"
-      ],
+      "allowed_writers": ["captureSnapshot", "moveItemBetweenTiersWithUndo", "addItemToTier", "updateItem", "deleteItems", "moveItemsBetweenTiers"],
+      "readers": ["all page components via useAppSelector"],
       "persistence_seam": "persistenceMiddleware (injectable storage, per-instance timer)",
-      "async_mutation_entry_points": [
-        "thunks in packages/state/src/"
-      ],
+      "async_mutation_entry_points": ["thunks in packages/state/src/"],
       "verdict": "Single and clear"
     },
     {
       "concern": "Sort/filter derived state",
       "owner": "apps/web/src/hooks/useTierFilter.ts",
-      "allowed_writers": [
-        "setSortMode (dispatched from hook)",
-        "setFilters (dispatched from hook)"
-      ],
-      "readers": [
-        "TierBoardPage via useTierFilter return value"
-      ],
+      "allowed_writers": ["setSortMode (dispatched from hook)", "setFilters (dispatched from hook)"],
+      "readers": ["TierBoardPage via useTierFilter return value"],
       "persistence_seam": null,
       "async_mutation_entry_points": [],
       "verdict": "Single and clear"
@@ -167,160 +152,144 @@
       "concern": "filterAllTiers (core pure function)",
       "owner": "packages/core/src/filtering.ts",
       "allowed_writers": [],
-      "readers": [
-        "useTierFilter (apps/web/src/hooks/useTierFilter.ts:41)"
-      ],
+      "readers": ["useTierFilter (line 41)"],
       "persistence_seam": null,
       "async_mutation_entry_points": [],
       "verdict": "Single and clear"
     }
   ],
   "strengths": [
-    "packages/core domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end",
-    "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors cover all derived state",
-    "Monorepo DAG enforced by workspace package.json: core\u2190state\u2190apps; no circular dependencies",
-    "persistenceMiddleware \u2014 fully injectable storage (F-005 resolved loop 8); per-instance timer (F-006 resolved loop 8)",
-    "undoRedoThunks \u2014 direct test suite covering cross-slice behavior (F-003 resolved loop 7)",
-    "TierBoardPage.tsx \u2014 reduced from 757 to 456 LOC; 6 focused modules/hooks extracted (loops 9, 12)",
-    "useItemInteraction.ts \u2014 81 LOC; Interface tested at useItemInteraction.test.ts (7 tests, loop 12)"
+    "packages/core domain layer framework-free; 12 suites, 94 tests covering pure functions end-to-end.",
+    "RTK slice ownership: one clear writer per concern across 6 slices; memoized selectors in selectors.ts.",
+    "Monorepo DAG enforced by workspace package.json: core←state←apps; no circular deps.",
+    "persistenceMiddleware — fully injectable storage (F-005 resolved loop 8); per-instance timer (F-006 resolved loop 8).",
+    "TierBoardPage.tsx — reduced from 757 to 443 LOC; 7 focused modules/hooks extracted (loops 9, 12, 14).",
+    "useBatchActions.ts — 40 LOC; Interface tested at useBatchActions.test.ts (6 tests, loop 14).",
+    "useItemInteraction.ts — 81 LOC; Interface tested at useItemInteraction.test.ts (7 tests, loop 12)."
   ],
   "findings": [
     {
       "loop_local_id": "F1",
       "stable_id": "F-004",
       "id": "F1",
-      "title": "TierBoardPage.tsx at 456 LOC \u2014 further-split deletion-test diminishing",
-      "why_it_matters": "Page still orchestrates ~20 hook calls; deeper splits may produce costume-layer modules.",
-      "what_is_wrong": "Remaining shallow orchestration in TierBoardPage.tsx after 6 hook extractions.",
-      "evidence": [
-        "apps/web/src/pages/TierBoardPage.tsx:1-456"
-      ],
+      "title": "TierBoardPage.tsx at 443 LOC — god-component reduced further; remaining handlers at natural modal-coupled floor",
+      "why_it_matters": "At 443 LOC, remaining handlers all require modal state context; further extraction would require co-moving state and adding ceremony.",
+      "what_is_wrong": "7 useState modal declarations (lines 75-82); handleItemDoubleClick (1-line modal setter), handleCopyLink (5-selector read), handleMoveItemWithCelebration (modal + celebration state) — all require modal state context.",
+      "evidence": ["apps/web/src/pages/TierBoardPage.tsx:1-443", "apps/web/src/pages/TierBoardPage.tsx:75-82", "apps/web/src/pages/TierBoardPage.tsx:140-183"],
       "test_failed": "Shallow module",
-      "dependency_category": null,
-      "leverage_impact": "Reading TierBoardPage still requires understanding 20 hook calls.",
-      "locality_impact": "Bug in any handler still pulls reader into the full page file.",
-      "metric_signal": "456 LOC",
-      "why_weakens_submission": "Architecture-quality ceiling held below 8 by remaining god-component shape.",
+      "dependency_category": "in-process",
+      "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+      "locality_impact": "Remaining handlers coupled to modal state; no clean extraction without co-moving state.",
+      "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx; ImportExportPage.tsx also 438 LOC.",
+      "why_weakens_submission": "Page shell still broad; remaining handlers at natural floor for this architecture.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "Identify ONE next natural cleavage (URL-share-import or batch-action) and apply deletion test strictly.",
+      "minimal_correction_path": "Accept 443 LOC as natural orchestration floor given modal state coupling. Evaluate ImportExportPage.tsx at 438 LOC as next extraction target.",
       "blast_radius": {
-        "change": [
-          "apps/web/src/pages/TierBoardPage.tsx",
-          "apps/web/src/hooks/<new-hook>.ts"
-        ],
-        "avoid": [
-          "packages/*",
-          "apps/native/**"
-        ]
+        "change": ["apps/web/src/pages/TierBoardPage.tsx"],
+        "avoid": ["apps/web/src/components/ItemModal.tsx", "@tiercade/ui"]
       }
     },
     {
       "loop_local_id": "F2",
-      "stable_id": "F-009",
+      "stable_id": "F-010",
       "id": "F2",
-      "title": "presentationSlice has zero Interface tests \u2014 F-003 scope gap closed this loop",
-      "why_it_matters": "F-003 (loop 7) covered undoRedoThunks + persistenceMiddleware + selectors but missed presentationSlice.",
-      "what_is_wrong": "presentationSlice has 7+ non-trivial reducer cases with no direct test surface (before this loop).",
-      "evidence": [
-        "packages/state/src/presentationSlice.ts:1-177"
-      ],
-      "test_failed": "Interface-as-test-surface",
-      "dependency_category": null,
-      "leverage_impact": "Regression risk on every presentation/queue change.",
-      "locality_impact": "Untested writer + multi-action behavior in one module.",
-      "metric_signal": "0 tests covering presentationSlice prior to loop 13",
-      "why_weakens_submission": "Authority Map gap; test_strategy ceiling held.",
+      "title": "ImportExportPage.tsx at 438 LOC — no hook delegation applied",
+      "why_it_matters": "Second-largest page with no hook delegation. Dispatch-only import handlers follow the same pattern as successful prior extractions.",
+      "what_is_wrong": "apps/web/src/pages/ImportExportPage.tsx:1-438 bundles file import dispatch, export format selection, download triggers, and drop zone handling all mixed with presentational JSX. No custom hooks delegate any logic.",
+      "evidence": ["apps/web/src/pages/ImportExportPage.tsx:1-438", "apps/web/src/pages/ImportExportPage.tsx:1-62"],
+      "test_failed": "Shallow module",
+      "dependency_category": "in-process",
+      "leverage_impact": "All import/export dispatch logic requires reading 438 LOC.",
+      "locality_impact": "File handling changes spread across one large file with no extraction boundary.",
+      "metric_signal": "438 LOC second only to TierBoardPage at 443 LOC.",
+      "why_weakens_submission": "Second-largest page without hook delegation; pattern established by TierBoardPage should apply.",
       "severity": "Noticeable weakness",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "Add packages/state/test/presentationSlice.test.ts (resolved this loop).",
+      "minimal_correction_path": "Extract dispatch-only import handlers (JSON import, CSV import, clear/reset) to useImportHandlers hook. Leave download side-effects in existing useExport hook.",
       "blast_radius": {
-        "change": [
-          "packages/state/test/presentationSlice.test.ts"
-        ],
-        "avoid": [
-          "packages/state/src/**"
-        ]
+        "change": ["apps/web/src/pages/ImportExportPage.tsx", "apps/web/src/hooks/useImportHandlers.ts"],
+        "avoid": ["packages/core/src/modelResolver.ts", "@tiercade/state/importJSON"]
       }
     }
   ],
   "simplification_check": {
-    "structurally_necessary": "Closed an Authority Map test gap on presentationSlice.",
+    "structurally_necessary": "useBatchActions extraction — 2 batch handlers share dispatch + selection; deletion test passes: complexity vanishes from page, not redistributed to callers.",
     "new_seam_justified": false,
     "new_seam_adapters": [],
-    "helpful_simplification": "n/a",
-    "should_not_be_done": "Do not add trivial setter tests purely for coverage count.",
-    "tests_after_fix": "packages/state/test/presentationSlice.test.ts (18 tests, 183 LOC)"
+    "helpful_simplification": "TierBoardPage.tsx 456→443 LOC; 2 useCallback blocks + 3 import lines removed.",
+    "should_not_be_done": "Extracting handleItemDoubleClick (1-line body). Extracting handleMoveItemWithCelebration (requires passing modal setters as params — ceremony).",
+    "tests_after_fix": "apps/web/src/hooks/useBatchActions.test.ts — 6 tests at new Interface. No old tests to delete (no prior tests existed)."
   },
   "backlog": [
     {
       "priority": 1,
-      "title": "Evaluate next TierBoardPage cleavage under deletion test",
+      "title": "Evaluate hook delegation for ImportExportPage.tsx at 438 LOC",
       "kind": "structural",
       "rank": "helpful",
-      "why_it_matters": "Last realistic god-component reduction before residual is honestly accepted.",
-      "score_impact": "architecture_quality 7.0->7.5 if cleavage passes"
+      "why_it_matters": "Second-largest page with no hook delegation. Dispatch-only import handlers (JSON, CSV) follow the same pattern as useItemInteraction and useBatchActions.",
+      "score_impact": "architecture_quality +0.0-0.5; simplicity +0.0-0.5 if extracted cleanly"
+    },
+    {
+      "priority": 2,
+      "title": "Accept F-004 as residual — TierBoardPage at natural modal floor",
+      "kind": "polish",
+      "rank": "minor",
+      "why_it_matters": "Remaining TierBoardPage handlers are all modal-state coupled. Accept 443 LOC as design floor to avoid ceremony.",
+      "score_impact": "architecture_quality 0.0 (acceptance changes no score); F-004 promoted to accepted residual"
     }
   ],
   "unresolved_reason": null,
   "deepening_candidates": [
     {
-      "candidate_module": "useBatchActions (evaluation target)",
-      "source_friction_proven": "F-004 \u2014 TierBoardPage.tsx:113-129 (2 useCallback blocks sharing dispatch + selection)",
-      "why_shallow_or_misplaced": "Both handlers (handleBatchMoveToTier, handleBatchDelete) share dispatch + selection as their only dependencies",
-      "behavior_to_move_behind_interface": "batch-move-to-tier, batch-delete",
+      "candidate_module": "ImportExportPage import handlers",
+      "source_friction_proven": "F2 (F-010) — ImportExportPage.tsx:1-438 (438 LOC, no hook delegation)",
+      "why_shallow_or_misplaced": "JSON/CSV import dispatch handlers share only dispatch and file data as dependencies — same dispatch-only pattern as useItemInteraction",
+      "behavior_to_move_behind_interface": "import-json dispatch, import-csv dispatch, clear/reset actions",
       "dependency_category": "in-process",
-      "test_surface_after_change": "apps/web/src/hooks/useBatchActions.test.ts using renderHook + Provider wrapper (seeded selection in store)",
-      "smallest_first_step": "Extract to hooks/useBatchActions.ts; read selection internally via useAppSelector",
-      "what_not_to_do": "Do not pass setters as arguments; if selection is needed, read from the store inside the hook"
-    },
-    {
-      "candidate_module": "ImportExportPage orchestration depth",
-      "source_friction_proven": "F-004 carries forward; ImportExportPage at 438 LOC flagged in loops 11-12",
-      "why_shallow_or_misplaced": "Page bundles file format logic, download triggers, and clipboard behavior without hook delegation",
-      "behavior_to_move_behind_interface": "export format selection, file download triggering",
-      "dependency_category": "in-process",
-      "test_surface_after_change": "apps/web/src/hooks/useExportFormat.test.ts (renderHook pattern)",
-      "smallest_first_step": "Audit ImportExportPage for dispatch-only handlers; extract the dispatch-only subset first",
-      "what_not_to_do": "Do not extract handlers that call DOM APIs directly without abstracting the side-effect"
+      "test_surface_after_change": "apps/web/src/hooks/useImportHandlers.test.ts (renderHook + Provider pattern)",
+      "smallest_first_step": "Grep for useCallback blocks in ImportExportPage that only close over dispatch; extract to useImportHandlers.ts",
+      "what_not_to_do": "Do not extract handlers that trigger DOM APIs (file download links, clipboard) — useExport already handles PNG/clipboard"
     }
   ],
   "builder_notes": [
     {
-      "pattern": "Partial extraction opportunity in large page shells",
-      "how_to_recognize": "Page has 8+ useCallback hooks; sorting by dependency reveals a clean dispatch-only subset and a messier modal-state-coupled subset",
-      "smallest_coding_rule": "Group handlers by closure over local modal state vs. only dispatch; the dispatch-only group extracts cleanly; modal-coupled stays",
-      "stack_example": "handleFileDrop, handleItemMediaDrop, handleItemClick in TierBoardPage shared only dispatch; extracted to useItemInteraction.ts (loop 12). handleItemDoubleClick (body: setEditingItem(item)) stayed in page."
+      "pattern": "Repeated successful extraction: dispatch-only handlers cluster around single dependency",
+      "how_to_recognize": "useCallback blocks that close only over dispatch (and optionally one useAppSelector value like selection) — no setState calls inside",
+      "smallest_coding_rule": "If a handler's only deps are dispatch + at most one selector value, it belongs in its own hook. Single-line handlers (body is one setX(y)) never pass this test.",
+      "stack_example": "handleBatchMoveToTier + handleBatchDelete both had [dispatch, selection] deps and no modal state access; extracted cleanly to useBatchActions (loop 14)."
     },
     {
-      "pattern": "Batch operation handlers sharing a selector",
-      "how_to_recognize": "Two useCallback handlers both read selection from store AND both dispatch to same concern (batch move / batch delete)",
-      "smallest_coding_rule": "Extract both to a hook that reads selection internally via useAppSelector; the hook takes only dispatch",
-      "stack_example": "handleBatchMoveToTier and handleBatchDelete in TierBoardPage both check selection.length === 0 \u2014 same guard, same selector dependency"
+      "pattern": "443 LOC page at natural floor — remaining handlers tangled, not clustered",
+      "how_to_recognize": "All remaining useCallback blocks close over setState setters or 3+ disparate selectors — no clean single-dependency cluster",
+      "smallest_coding_rule": "Extraction only when dependency cluster is clean (1-2 deps max). Passing setShowModal as a hook param produces a costume layer, not Depth.",
+      "stack_example": "handleMoveItemWithCelebration closes over dispatch, presentation.isPresenting, presentation.celebrateSTier, setCelebrationTier, setShowCelebration — 5 deps across 3 concerns; no clean hook boundary."
     },
     {
-      "pattern": "Extraction earns its keep when 3+ handlers share the same dependency",
-      "how_to_recognize": "If only 1-2 handlers would move, the new hook Interface is nearly as wide as its Implementation (shallow module test triggers)",
-      "smallest_coding_rule": "Require >= 3 related handlers OR >= 2 handlers with substantial logic per handler before extracting a custom hook. Single-line handlers stay inline.",
-      "stack_example": "handleItemDoubleClick has 1-line body; its extraction would be a costume layer. useItemInteraction has 3 handlers each with 10-20 lines \u2014 earns its keep."
+      "pattern": "Test-at-new-Interface discipline maintained across 4 loops of hook extraction",
+      "how_to_recognize": "Every new hook has a *.test.ts companion in the same commit; tests assert store state changes, not just that handlers were called",
+      "smallest_coding_rule": "New hook = new test file in the same PR. Tests seed store state, call handler, assert state changes.",
+      "stack_example": "useBatchActions.test.ts seeds items, selects via toggleSelection, calls onBatchDelete, asserts state.tier.tiers[S] no longer contains deleted item."
     }
   ],
-  "narrative": "Loop 13 closed an Authority Map gap loop 7 (F-003) had missed: presentationSlice's 7 non-trivial reducer behaviors were entirely untested. 18 Interface-level tests added; state package test count 37 to 55. Reviewer approved 3/3. F-004 carries forward; loop 14 evaluates next cleavage.",
+  "narrative": "Good app, place but not win. Loop 14 closes the useBatchActions gap that loops 12-13 backlogged. TierBoardPage 456→443 LOC; 2 batch handlers now behind stable Interface with 6 tests. simplicity moves 6.5→7.0: structural proof is the new hook + removed useCallback blocks + confirmed modal-state rationale for remaining inline handlers. New finding F-010 surfaces ImportExportPage at 438 LOC as the next extraction target. architecture_quality holds at 7.0 — system-level depth gap persists; individual hook extractions improve Locality without yet crossing the 9-anchor. Average score 7.0 (up from loop 13 avg 6.89).",
   "loop_result": {
-    "what_changed": "Added packages/state/test/presentationSlice.test.ts \u2014 18 Interface-level tests covering togglePresentationMode, setRevealMode, revealItem, drawNextItem, setItemQueue, setItemScale clamp, resetPresentationSettings.",
-    "evidence_change_is_honest": "npm run test:state: 8 suites, 55 tests pass; +18 tests from loop 12's 37. No production source touched.",
-    "targeted_finding_status": "resolved",
+    "what_changed": "Extracted useBatchActions hook from TierBoardPage: handleBatchMoveToTier and handleBatchDelete moved behind BatchActionHandlers Interface. useBatchActions.ts (new, 40 LOC), useBatchActions.test.ts (new, 6 tests), TierBoardPage.tsx (456→443 LOC).",
+    "evidence_change_is_honest": "npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks → 25 suites, 174 tests, all green.",
+    "targeted_finding_status": "carried_forward",
     "unintended_regression": null,
     "changed_paths": [
-      "packages/state/test/presentationSlice.test.ts"
+      "apps/web/src/hooks/useBatchActions.ts",
+      "apps/web/src/hooks/useBatchActions.test.ts",
+      "apps/web/src/pages/TierBoardPage.tsx"
     ],
     "interface_test_coverage_path": null
   },
   "implementation_review": {
     "verdict": "approved",
-    "reason": "All three checks pass: test file exercises the presentationSlice reducer Interface with behavior-asserting tests for all seven described non-trivial cases, no production source modified, no regressions introduced.",
+    "reason": "All three checks passed: useBatchActions extraction removes the targeted batch handler inlining; hook reads selection internally via useAppSelector (no state threading ceremony); 6 new tests at the new Interface; no ownership regression or new findings at same-or-higher severity.",
     "checks": {
       "reality": "passed",
       "honesty": "passed",
@@ -332,12 +301,7 @@
     "retry_count": 1,
     "retry_cause": null,
     "retry_attempts": [
-      {
-        "attempt": 1,
-        "outcome": "ok",
-        "error": null,
-        "duration_ms": 51119
-      }
+      {"attempt": 1, "outcome": "ok", "error": null, "duration_ms": 8200}
     ]
   }
 }

@@ -25,9 +25,6 @@ import {
   moveItemBetweenTiersWithUndo,
   loadDefaultProject,
   clearSelection,
-  captureSnapshot,
-  moveItemsBetweenTiers,
-  deleteItems,
   selectTheme,
   // Memoized selectors
   selectTiers,
@@ -62,6 +59,7 @@ import { useShareImport } from "../hooks/useShareImport";
 import { useTierDisplay } from "../hooks/useTierDisplay";
 import { useTierFilter } from "../hooks/useTierFilter";
 import { useItemInteraction } from "../hooks/useItemInteraction";
+import { useBatchActions } from "../hooks/useBatchActions";
 
 export const TierBoardPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -113,6 +111,11 @@ export const TierBoardPage: React.FC = () => {
     onItemMediaDrop: handleItemMediaDrop,
   } = useItemInteraction(dispatch);
 
+  const {
+    onBatchMoveToTier: handleBatchMoveToTier,
+    onBatchDelete: handleBatchDelete,
+  } = useBatchActions(dispatch);
+
   // Also read sortMode and filters for SortFilterBar props
   const sortMode = useAppSelector(selectSortMode);
   const filters = useAppSelector(selectFilters);
@@ -148,22 +151,6 @@ export const TierBoardPage: React.FC = () => {
     );
     await copyToClipboard(url);
   }, [projectName, tierOrder, tierLabels, tierColors, tiers]);
-
-  // Batch operation handlers
-  const handleBatchMoveToTier = useCallback(
-    (targetTierName: string) => {
-      if (selection.length === 0) return;
-      dispatch(captureSnapshot("Batch Move"));
-      dispatch(moveItemsBetweenTiers({ itemIds: selection, targetTierName }));
-    },
-    [dispatch, selection]
-  );
-
-  const handleBatchDelete = useCallback(() => {
-    if (selection.length === 0) return;
-    dispatch(captureSnapshot("Batch Delete"));
-    dispatch(deleteItems(selection));
-  }, [dispatch, selection]);
 
   // Enhanced move handler for celebrations
   const handleMoveItemWithCelebration = useCallback(

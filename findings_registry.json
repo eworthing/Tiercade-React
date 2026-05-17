@@ -1,6 +1,6 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 10,
+  "next_serial": 11,
   "entries": [
     {
       "stable_id": "F-001",
@@ -203,6 +203,13 @@
           "status": "open",
           "sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
           "idempotency_key": "loop13-F-004-open"
+        },
+        {
+          "loop": 14,
+          "loop_local_id": "F1",
+          "status": "open",
+          "sha": "2852fac",
+          "idempotency_key": "loop14-F-004-open"
         }
       ]
     },
@@ -363,6 +370,31 @@
           "status": "resolved",
           "sha": "366189d1853b64161b7a7ec06b755ecf030bfba9",
           "idempotency_key": "loop13-F-009-resolved"
+        }
+      ]
+    },
+    {
+      "stable_id": "F-010",
+      "title": "ImportExportPage.tsx at 438 LOC \u2014 no hook delegation applied",
+      "category_hint": "god-component-import-export",
+      "primary_file": "apps/web/src/pages/ImportExportPage.tsx",
+      "primary_evidence_lines": [
+        1,
+        438
+      ],
+      "test_failed": "Shallow module",
+      "severity": "Noticeable weakness",
+      "first_seen_loop": 14,
+      "first_seen_sha": "2852fac",
+      "last_seen_loop": 14,
+      "last_seen_sha": "2852fac",
+      "occurrences": [
+        {
+          "loop": 14,
+          "loop_local_id": "F2",
+          "status": "open",
+          "sha": "2852fac",
+          "idempotency_key": "loop14-F-010-open"
         }
       ]
     }
