@@ -11,28 +11,28 @@
 - Test scope: full (no `--test-filter` set).
 
 ### Loop Counter
-Loop 17 of 18 (cap)
+Loop 18 of 18 (cap)
 
 ### System Flag
-[STATE: CONTINUE]
+[STATE: HALT_LOOP_CAP]
 
 ---
 
 ## Contest Verdict
 Good app, but not top-tier yet
 
-Loop 17 extracts `useHeadToHeadHandlers` hook from HeadToHeadPage: 5 inline action `useCallback` blocks (`handleStart`, `handleVoteLeft`, `handleVoteRight`, `handleSkip`, `handleFinish`) + keyboard shortcut `useEffect` moved behind a stable Interface. HeadToHeadPage 378→312 LOC (-66 lines). 5 new Interface-level tests at `useHeadToHeadHandlers.test.ts`. Suite: 28 suites, 189 tests, all green. simplicity 8.0→8.5.
+Loop 18 (final, cap reached): no structural extraction. F-004 (TierBoardPage at 443 LOC) accepted as residual — remaining handlers all modal-state coupled, deletion test fails for any further extraction. F-011 (domain model anemic) accepted as residual — cross-cutting type refactor out of scope. Suite: 28 suites, 189 tests, all green. No score changes.
 
 ## Scorecard (1-10)
-- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage reduced to display-only orchestration. Package DAG enforced. 9-anchor still not met: domain model anemic, store implicit global, page-level tests absent.
+- Architecture quality: 7.5 | SAME | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — H2H action dep-cluster behind Interface; HeadToHeadPage display-only orchestration. Package DAG enforced. F-004 accepted residual (TierBoardPage 443 LOC floor). 9-anchor not met.
 - State management and runtime ownership: 6.5 | SAME | `packages/state/src/tierSlice.ts:1-343` — one writer per concern across 6 slices; store is implicit global, no process-lifetime pattern. 9-anchor sub-threshold.
-- Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — `Item` interface all-optional fields; `Items = Record<string, Item[]>` anemic. No smart constructors. 9-anchor not met.
+- Domain modeling: 6.0 | SAME | `packages/core/src/models.ts:6` — `Item` interface all-optional fields; `Items = Record<string, Item[]>` anemic. F-011 accepted residual — cross-cutting refactor out of scope. 9-anchor not met.
 - Data flow and dependency design: 6.5 | SAME | Package-level DAG enforced by workspace `package.json`. Within-app no module-level DAG enforcement. 9-anchor partial.
-- Framework / platform best practices: 7.5 | SAME | `apps/web/src/hooks/` — 12 focused hooks (up from 11); RTK patterns correct; `useId()` for stable IDs; keyboard shortcut effect co-located with action handlers in hook. No undocumented carve-outs.
-- Concurrency and runtime safety: 7.0 | SAME | JavaScript single-threaded. No floating promises found. `useEffect` cleanup present — `useHeadToHeadHandlers` removes `keydown` listener on cleanup. `persistenceMiddleware` per-instance timer (loop 8). 9-anchor partial.
-- Code simplicity and clarity: 8.5 | UP | `apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115` — 5 H2H action handlers + keyboard `useEffect` extracted from HeadToHeadPage; page 378→312 LOC (-66 lines). 5 `useCallback` blocks + keyboard `useEffect` + 2 internal selectors removed from page. Hook returns `{onStart, onVoteLeft, onVoteRight, onSkip, onFinish, onGoHome}` — clean destructured Interface.
-- Test strategy and regression resistance: 8.0 | SAME | Suite: 28 suites, 189 tests. `useHeadToHeadHandlers.test.ts` — 5 tests: onStart activates, onVoteLeft advances pair, onSkip moves pair, onFinish dispatches+navigates, onGoHome navigates without finishing. Authority Map cross-check: `useHeadToHeadHandlers` Interface directly tested. Remaining ceiling: page-level surfaces still untested — 9-anchor not met.
-- Overall implementation credibility: 8.0 | SAME | `useHeadToHeadHandlers` passes deletion test: keyboard shortcut routing + action dispatch complexity vanishes from page. Replace-don't-layer satisfied: no prior tests for these handlers; 5 new tests at new Interface. Implementation reviewer approved.
+- Framework / platform best practices: 7.5 | SAME | `apps/web/src/hooks/` — 12 focused hooks; RTK patterns correct; `useId()` for stable IDs; keyboard shortcut effect co-located with action handlers in hook. No undocumented carve-outs.
+- Concurrency and runtime safety: 7.0 | SAME | JavaScript single-threaded. No floating promises found. `useEffect` cleanup present in `useHeadToHeadHandlers` and `CelebrationEffect.tsx`. `persistenceMiddleware` per-instance timer (loop 8). 9-anchor partial.
+- Code simplicity and clarity: 8.5 | SAME | Cap reached; no further extraction. Last structural change: `useHeadToHeadHandlers` (loop 17). TierBoardPage 443 LOC accepted as orchestration floor.
+- Test strategy and regression resistance: 8.0 | SAME | Suite: 28 suites, 189 tests, all green. 6 hook test files covering all extracted handler hooks. Page-level surfaces still untested — 9-anchor not met.
+- Overall implementation credibility: 8.0 | SAME | All extracted hooks pass deletion test. Replace-don't-layer satisfied across all 6 hook extractions. Both open findings accepted as residuals. Implementation honest.
 
 ## Authority Map
 (Re-emitted because simplicity UP — structural change.)
@@ -177,21 +177,13 @@ Loop 17 extracts `useHeadToHeadHandlers` hook from HeadToHeadPage: 5 inline acti
 
 ## Improvement Backlog
 
-### Priority 1: Accept F-004 residual — TierBoardPage at natural modal floor
-- Why it matters: Remaining TierBoardPage handlers are all modal-state coupled; no further clean extraction without co-moving state. Accept 443 LOC as the design floor. Removes F-004 from findings.
-- Score impact: `architecture_quality` residual documentation; minor narrative clean-up.
-- Kind: polish
-- Rank: minor
-
-### Priority 2: Accept F-011 residual — domain model anemic (Item all-optional, no smart constructors)
-- Why it matters: Domain modeling at 6.0 due to convention-only invariants. A full type-system refactor is out of scope at cap 18. Documenting as accepted residual is honest.
-- Score impact: `domain_modeling` accepted residual (6.0 stays, no false promotion).
-- Kind: polish
-- Rank: minor
+No further backlog items. Both previously identified residuals have been formally accepted this loop:
+- **F-004 accepted residual** — TierBoardPage at 443 LOC is the natural orchestration floor (modal-coupled handlers cannot be cleanly extracted without co-moving state).
+- **F-011 accepted residual** — Domain model anemic; `Item` all-optional fields; cross-cutting type refactor out of scope at cap 18.
 
 ## Deepening Candidates
 
-No further deepening candidates with real structural friction remaining at current cap. Both remaining backlog items are residual acceptance, not structural extraction.
+None. Cap reached. All extraction candidates evaluated; no further candidates pass deletion test at current scope.
 
 ## Builder Notes
 1. **Pattern** — 5-selector dep cluster shared across N handlers: identical `useAppSelector` dep arrays signal a hook extraction opportunity. **How to recognize** — When 3+ `useCallback` blocks list the same 4+ state selectors in their dep arrays, they belong in a single hook that reads those selectors internally. **Smallest coding rule** — "Same 4+ deps in 3+ callbacks = one hook." **Stack example** — `handleExportJSON`, `handleExportCSV`, `handleExportMarkdown` all had `[projectName, tierOrder, tierLabels, tierColors, tiers]` — identical dep arrays exposed the cluster.
@@ -200,7 +192,7 @@ No further deepening candidates with real structural friction remaining at curre
 4. **Pattern** — keyboard shortcut `useEffect` belongs in the same hook as the handlers it routes to. **How to recognize** — `useEffect` deps list contains N action handlers defined in the same component — the effect's dep cluster IS the handler set. **Smallest coding rule** — "Effect that only calls handlers = belongs in the handler hook." **Stack example** — `useHeadToHeadHandlers` keyboard effect deps: `[isActive, currentPair, onVoteLeft, onVoteRight, onSkip, onOpenEndConfirm]` — all owned by the hook except the modal callback (passed as param).
 
 ## Final Judge Narrative
-Good app, place but not win. Loop 17 executes `useHeadToHeadHandlers` extraction: action dispatch + keyboard routing moves behind stable Interface; HeadToHeadPage 378→312 LOC. simplicity 8.0→8.5: structural proof is the hook + removed useCallback blocks + keyboard useEffect + 5 new Interface tests. One loop remains at cap 18. Priority 1 and 2 are residual acceptances — no further extraction candidates pass the deletion test at current scope. Average score holding near 7.3. Remaining sub-9.5 scores reflect honest structural blockers (anemic domain model, implicit global store, no process-lifetime pattern) — not addressable in remaining budget.
+Good app, place but not win. 18-loop run complete. Final structural state: TierBoardPage 757→443 LOC (loops 9-14, 7 hooks); ImportExportPage 438→253 LOC (loops 15-16, 2 hooks); HeadToHeadPage 378→312 LOC (loop 17, 1 hook). Total 12 custom hooks in `apps/web/src/hooks/`, all tested at Interface level (6 hook test files). Core pure-function layer: 12 suites, 94 tests. Full suite: 28 suites, 189 tests, all green. Average score ~7.3. Remaining sub-9.5 blockers: anemic domain model (F-011 accepted), implicit global store, no page-level test surfaces — all require cross-cutting changes beyond run scope. Both open findings formally accepted as residuals this loop.
 
 ## Loop 16 Result
 
@@ -217,3 +209,11 @@ Three files changed: `useHeadToHeadHandlers.ts` (new, 115 LOC), `useHeadToHeadHa
 `useHeadToHeadHandlers` extracts `handleStart`, `handleVoteLeft`, `handleVoteRight`, `handleSkip`, `handleFinish` from `HeadToHeadPage.tsx`. Hook reads `selectHeadToHeadIsActive` and `selectHeadToHeadCurrentPair` internally. Accepts `onOpenEndConfirm: () => void` (modal state owned by page — clean inversion for Escape key). Keyboard shortcut `useEffect` (ArrowLeft/1 → voteLeft, ArrowRight/2 → voteRight, Space → skip, Escape → openEndConfirm) co-located inside hook with the actions it routes to. Adds `onGoHome` (for empty-state navigation — page previously had inline `navigate("/")`). Returns `{ onStart, onVoteLeft, onVoteRight, onSkip, onFinish, onGoHome }`.
 
 Tests: `npm run test:hooks` (6 suites, 35 tests). Full suite: 28 suites, 189 tests, all green. New finding F-012 (HeadToHeadPage action handlers inline): **resolved** this loop.
+
+## Loop 18 Result
+
+No code changes. Residual acceptance loop:
+- F-004 (TierBoardPage at 443 LOC): **accepted residual** — remaining handlers `handleItemDoubleClick`, `handleCopyLink`, `handleMoveItemWithCelebration` all close over modal `useState` setters; no extraction passes deletion test without co-moving state (ceremony increase, not decrease).
+- F-011 (domain model anemic): **accepted residual** — `Item` all-optional fields; `Items = Record<string, Item[]>` allows invalid tier keys; full type-system refactor requires touching all consumers across 3 packages (out of scope at cap 18).
+
+Full suite: 28 suites, 189 tests, all green. Cap reached. State: **HALT_LOOP_CAP**.

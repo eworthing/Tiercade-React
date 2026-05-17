@@ -1483,3 +1483,44 @@ conditions: none
 
 ## Final Judge Narrative
 Good app, place but not win. Loop 17 executes useHeadToHeadHandlers extraction: action dispatch + keyboard routing behind stable Interface; HeadToHeadPage 378->312 LOC. simplicity 8.0->8.5. One loop remains at cap 18. Remaining backlog is residual acceptance only. Average score ~7.3.
+
+--- Loop 18 (UTC 2026-05-16T21:30:00Z) ---
+
+see Loop 1 Discovery
+
+### Loop Counter
+Loop 18 of 18 (cap)
+
+### System Flag
+[STATE: HALT_LOOP_CAP]
+
+## Contest Verdict
+Good app, but not top-tier yet
+
+Loop 18 (final, cap reached): residual acceptance only. F-004 (TierBoardPage 443 LOC) and F-011 (domain model anemic) accepted as residuals. No code changes. Suite: 28 suites, 189 tests, all green.
+
+## Scorecard
+All dimensions SAME as loop 17. No structural changes.
+- Architecture quality: 7.5 | SAME
+- State management: 6.5 | SAME
+- Domain modeling: 6.0 | SAME (F-011 accepted residual)
+- Data flow: 6.5 | SAME
+- Framework idioms: 7.5 | SAME
+- Concurrency: 7.0 | SAME
+- Code simplicity: 8.5 | SAME
+- Test strategy: 8.0 | SAME
+- Credibility: 8.0 | SAME
+
+## Findings
+### Finding F1 (F-004): TierBoardPage.tsx at 443 LOC — ACCEPTED RESIDUAL
+Remaining handlers (handleItemDoubleClick, handleCopyLink, handleMoveItemWithCelebration) all close over modal useState setters. Deletion test fails — no extraction without co-moving state. 443 LOC is natural orchestration floor.
+
+### Finding F2 (F-011): Domain model anemic — ACCEPTED RESIDUAL
+packages/core/src/models.ts:6-19 — Item all-optional; Items Record anemic. Full type-system refactor requires touching all consumers across 3 packages. Out of scope at cap 18.
+
+## Loop 18 Result
+
+No code changes. Both open findings accepted as residuals. Cap reached. HALT_LOOP_CAP.
+
+## Final Judge Narrative
+18-loop run complete. Final structural state: TierBoardPage 757->443 LOC (7 hooks); ImportExportPage 438->253 LOC (2 hooks); HeadToHeadPage 378->312 LOC (1 hook). 12 custom hooks, all Interface-tested. Core: 12 suites, 94 tests. Full suite: 28 suites, 189 tests. Average score ~7.3. Remaining blockers (anemic domain model, implicit global store) require cross-cutting changes beyond run scope — both formally accepted as residuals. HALT_LOOP_CAP.

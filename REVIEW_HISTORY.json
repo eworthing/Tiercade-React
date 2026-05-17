@@ -5083,6 +5083,85 @@
           }
         ]
       }
+    },
+    {
+      "schema_version": 3,
+      "loop": 18,
+      "loop_cap": 18,
+      "state": "HALT_LOOP_CAP",
+      "halt_subtype": "cap_reached",
+      "halt_handoff_text": "Cap 18 reached. Both remaining findings accepted as residuals. No further extraction candidates pass deletion test.",
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "subagent",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 18 (final, cap reached): residual acceptance only. F-004 (TierBoardPage 443 LOC floor) and F-011 (domain model anemic) accepted as residuals. No code changes. 28 suites, 189 tests, all green. HALT_LOOP_CAP.",
+      "scorecard": {
+        "architecture_quality":   {"score": 7.5, "delta": "SAME", "proof": "F-004 accepted residual; no extraction passes deletion test at current scope", "residual_blocking_10": "TierBoardPage modal-coupled floor; domain model anemic; store implicit global", "residual_disposition": "accepted_residual", "residual_rationale_or_backlog_ref": "F-004, F-011", "unverifiable_due_to_build_failure": false},
+        "state_management":       {"score": 6.5, "delta": "SAME", "proof": "store implicit global; no process-lifetime pattern; not addressable at cap", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "domain_modeling":        {"score": 6.0, "delta": "SAME", "proof": "F-011 accepted residual; Item all-optional; cross-cutting type refactor out of scope", "residual_blocking_10": "Item all-optional fields; Items = Record<string, Item[]> anemic; no smart constructors", "residual_disposition": "accepted_residual", "residual_rationale_or_backlog_ref": "F-011", "unverifiable_due_to_build_failure": false},
+        "data_flow":              {"score": 6.5, "delta": "SAME", "proof": "package DAG enforced; 12 hooks; no within-app module-level DAG", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "framework_idioms":       {"score": 7.5, "delta": "SAME", "proof": "12 custom hooks; RTK correct; keyboard effect co-located with action handlers", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "concurrency":            {"score": 7.0, "delta": "SAME", "proof": "single-threaded JS; no floating promises; useEffect cleanup present", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "simplicity":             {"score": 8.5, "delta": "SAME", "proof": "no code changes this loop; last structural UP was loop 17", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
+        "test_strategy":          {"score": 8.0, "delta": "SAME", "proof": "28 suites 189 tests; 6 hook test files; page-level surfaces still untested", "residual_blocking_10": "page-level test surfaces absent", "residual_disposition": "accepted_residual", "residual_rationale_or_backlog_ref": "beyond cap scope", "unverifiable_due_to_build_failure": false},
+        "credibility":            {"score": 8.0, "delta": "SAME", "proof": "all extracted hooks pass deletion test; Replace-don't-layer satisfied; both residuals honestly accepted", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false}
+      },
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-004",
+          "title": "TierBoardPage.tsx at 443 LOC — accepted as residual this loop",
+          "status": "accepted_residual",
+          "severity": "Noticeable weakness"
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-011",
+          "title": "Domain model anemic — accepted as residual this loop",
+          "status": "accepted_residual",
+          "severity": "Noticeable weakness"
+        }
+      ],
+      "loop_result": {
+        "what_changed": "No code changes. F-004 and F-011 accepted as residuals. Cap reached.",
+        "evidence_change_is_honest": "28 suites 189 tests all green; no new tests needed",
+        "targeted_finding_status": "accepted_residual",
+        "unintended_regression": null,
+        "changed_paths": [],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "Residual acceptance loop — no code changes, no regression risk. F-004 deletion test fails (modal-coupled handlers); F-011 cross-cutting refactor beyond scope. Both acceptances honest.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": 1200
+          }
+        ]
+      }
     }
   ]
 }

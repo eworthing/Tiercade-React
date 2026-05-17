@@ -231,6 +231,13 @@
           "status": "open",
           "sha": "fa7707d",
           "idempotency_key": "loop17-F-004-open"
+        },
+        {
+          "loop": 18,
+          "loop_local_id": "F1",
+          "status": "accepted_residual",
+          "sha": "fa7707d",
+          "idempotency_key": "loop18-F-004-accepted_residual"
         }
       ]
     },
@@ -462,6 +469,13 @@
           "status": "open",
           "sha": "fa7707d",
           "idempotency_key": "loop17-F-011-open"
+        },
+        {
+          "loop": 18,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "fa7707d",
+          "idempotency_key": "loop18-F-011-accepted_residual"
         }
       ]
     },
