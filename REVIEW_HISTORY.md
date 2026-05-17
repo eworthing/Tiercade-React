@@ -1,3 +1,23 @@
+--- Loop 29 (UTC 2026-05-17T03:58:00Z) ---
+
+## Loop 29 Scorecard
+architecture_quality: 8.0 UP | state_management: 8.0 UP | domain_modeling: 9.5 SAME (residual accepted) | data_flow: 8.0 SAME | framework_idioms: 8.5 SAME | concurrency: 8.0 SAME | simplicity: 9.5 SAME (residual accepted) | test_strategy: 9.5 SAME (residual accepted) | credibility: 9.5 SAME (residual accepted)
+
+## Loop 29 Findings
+F1 (F-021): Redux store construction was ambient global — no process-lifetime factory [resolved]
+F2 (F-004): TierBoardPage.tsx at 443 LOC — god-component at natural modal-coupled floor [accepted_residual]
+F3 (F-014): Item interface backward-compat parallel URL fields [accepted_residual]
+
+## Loop 29 Implementation Review
+verdict: approved — createAppStore factory eliminates ambient global; deletion test passes; 4 Interface tests at new seam; no regression.
+
+## Loop 29 State
+[STATE: CONTINUE]
+
+## Final Judge Narrative
+Good app, place but not win. Loop 29: state_management 6.5→8.0 via createAppStore factory. Ambient module-level store construction now a named Interface with documented process-lifetime contract. architecture_quality 7.5→8.0. 9 suites / 59 tests (state), 13 suites / 109 tests (core), all green. avg ~8.78.
+
+
 --- Loop 28 (UTC 2026-05-17T03:55:00Z) ---
 
 ## Loop 28 Scorecard

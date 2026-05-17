@@ -1,13 +1,41 @@
 {
   "registry_schema_version": 3,
-  "next_serial": 21,
+  "next_serial": 22,
   "entries": [
     {
+      "stable_id": "F-021",
+      "title": "Redux store construction was ambient global \u2014 no process-lifetime factory",
+      "category_hint": "ambient-store-construction",
+      "primary_file": "packages/state/src/store.ts",
+      "primary_evidence_lines": [
+        1,
+        48
+      ],
+      "test_failed": "Interface-as-test-surface",
+      "severity": "Serious deduction",
+      "first_seen_loop": 29,
+      "first_seen_sha": "pending",
+      "last_seen_loop": 29,
+      "last_seen_sha": "pending",
+      "occurrences": [
+        {
+          "loop": 29,
+          "loop_local_id": "F1",
+          "status": "resolved",
+          "sha": "pending",
+          "idempotency_key": "loop29-F-021-resolved"
+        }
+      ]
+    },
+    {
       "stable_id": "F-020",
-      "title": "data_flow DAG was convention-only — no machine enforcement",
+      "title": "data_flow DAG was convention-only \u2014 no machine enforcement",
       "category_hint": "dag-enforcement",
       "primary_file": "packages/core/test/dag.test.ts",
-      "primary_evidence_lines": [1, 164],
+      "primary_evidence_lines": [
+        1,
+        164
+      ],
       "test_failed": "n/a",
       "severity": "Serious deduction",
       "first_seen_loop": 28,
@@ -160,7 +188,7 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 5,
       "first_seen_sha": "59cf1be",
-      "last_seen_loop": 27,
+      "last_seen_loop": 29,
       "last_seen_sha": "39f5e67",
       "occurrences": [
         {
@@ -329,6 +357,13 @@
           "status": "accepted_residual",
           "sha": "ddbc252",
           "idempotency_key": "loop28-F-004-accepted_residual"
+        },
+        {
+          "loop": 29,
+          "loop_local_id": "F2",
+          "status": "accepted_residual",
+          "sha": "pending",
+          "idempotency_key": "loop29-F-004-accepted_residual"
         }
       ]
     },
@@ -640,7 +675,7 @@
       "severity": "Noticeable weakness",
       "first_seen_loop": 20,
       "first_seen_sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
-      "last_seen_loop": 27,
+      "last_seen_loop": 29,
       "last_seen_sha": "d508140be18eb85e1d666491cee8731c9e8d8371",
       "occurrences": [
         {
@@ -704,6 +739,13 @@
           "status": "accepted_residual",
           "sha": "ddbc252",
           "idempotency_key": "loop28-F-014-accepted_residual"
+        },
+        {
+          "loop": 29,
+          "loop_local_id": "F3",
+          "status": "accepted_residual",
+          "sha": "pending",
+          "idempotency_key": "loop29-F-014-accepted_residual"
         }
       ]
     },

@@ -7762,54 +7762,560 @@
       "findings_registry_path": "./findings_registry.json",
       "discovery": null,
       "verdict": "Good app, but not top-tier yet",
-      "verdict_explanation": "Loop 28: data_flow 6.5→8.0 via dag.test.ts — 7 tests enforce cross-package and within-app DAG at npm test time. 35 suites, 234 tests, all green.",
+      "verdict_explanation": "Loop 28: data_flow 6.5\u21928.0 via dag.test.ts \u2014 7 tests enforce cross-package and within-app DAG at npm test time. 35 suites, 234 tests, all green.",
       "scorecard": {
-        "architecture_quality": {"score": 7.5, "delta": "SAME", "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 — package DAG enforced by test (loop 28); implicit global store. 9-anchor not met.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "state_management": {"score": 6.5, "delta": "SAME", "proof": "packages/state/src/tierSlice.ts:1-343 — implicit global store, no process-lifetime pattern. 9-anchor not met.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "domain_modeling": {"score": 9.5, "delta": "SAME", "proof": "packages/core/src/models.ts — createItem smart constructor + ItemMedia discriminated union (loop 20).", "residual_blocking_10": "packages/core/src/models.ts:22-31 — Item parallel URL fields for backward compat", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Framework-constrained backward compat.", "unverifiable_due_to_build_failure": false},
-        "data_flow": {"score": 8.0, "delta": "UP", "proof": "packages/core/test/dag.test.ts (new, loop 28) — 7 tests enforce cross-package and within-app DAG. Ambient Redux global store remaining.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "framework_idioms": {"score": 8.5, "delta": "SAME", "proof": "All 6 pages use named RTK selectors from @tiercade/state (loop 27).", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "concurrency": {"score": 8.0, "delta": "SAME", "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 — useEffect cleanup + abort tests.", "residual_blocking_10": null, "residual_disposition": null, "residual_rationale_or_backlog_ref": null, "unverifiable_due_to_build_failure": false},
-        "simplicity": {"score": 9.5, "delta": "SAME", "proof": "dag.test.ts 164 lines, no external deps. TierBoardPage.tsx:1-443 accepted residual.", "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 — modal orchestration floor", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Framework-constrained modal-state co-location.", "unverifiable_due_to_build_failure": false},
-        "test_strategy": {"score": 9.5, "delta": "SAME", "proof": "All 6 web pages have direct page-level test files. dag.test.ts adds 7 DAG assertions. 35 suites, 234 tests.", "residual_blocking_10": "AppShell routing thin wrapper — no AppRuntime analog in React/Vite", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "React/Vite stack has no AppRuntime/root-scene shell. E2E covers integration. Accepted.", "unverifiable_due_to_build_failure": false},
-        "credibility": {"score": 9.5, "delta": "SAME", "proof": "DAG enforcement added (loop 28); all prior loops gains maintained. 9-anchor met.", "residual_blocking_10": "packages/core/src/models.ts:22-31 — Item parallel URL fields", "residual_disposition": "accepted", "residual_rationale_or_backlog_ref": "Framework-constrained backward compat.", "unverifiable_due_to_build_failure": false}
+        "architecture_quality": {
+          "score": 7.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 package DAG enforced by test (loop 28); implicit global store. 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 6.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/tierSlice.ts:1-343 \u2014 implicit global store, no process-lifetime pattern. 9-anchor not met.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts \u2014 createItem smart constructor + ItemMedia discriminated union (loop 20).",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item parallel URL fields for backward compat",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained backward compat.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 8.0,
+          "delta": "UP",
+          "proof": "packages/core/test/dag.test.ts (new, loop 28) \u2014 7 tests enforce cross-package and within-app DAG. Ambient Redux global store remaining.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 8.5,
+          "delta": "SAME",
+          "proof": "All 6 pages use named RTK selectors from @tiercade/state (loop 27).",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 \u2014 useEffect cleanup + abort tests.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "dag.test.ts 164 lines, no external deps. TierBoardPage.tsx:1-443 accepted residual.",
+          "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 \u2014 modal orchestration floor",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained modal-state co-location.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "All 6 web pages have direct page-level test files. dag.test.ts adds 7 DAG assertions. 35 suites, 234 tests.",
+          "residual_blocking_10": "AppShell routing thin wrapper \u2014 no AppRuntime analog in React/Vite",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "React/Vite stack has no AppRuntime/root-scene shell. E2E covers integration. Accepted.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "DAG enforcement added (loop 28); all prior loops gains maintained. 9-anchor met.",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item parallel URL fields",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained backward compat.",
+          "unverifiable_due_to_build_failure": false
+        }
       },
       "authority_map": [],
-      "strengths": ["packages/core domain layer framework-free; dag.test.ts enforces cross-package DAG at test time", "All 6 web pages have direct page-level test files", "RTK slice ownership one clear writer per concern across 6 slices"],
-      "findings": [
-        {"loop_local_id": "F1", "stable_id": "F-020", "id": "F1", "title": "data_flow DAG was convention-only — no machine enforcement", "why_it_matters": "Resolved. Violations now caught at npm test time.", "what_is_wrong": "Cross-package and within-app DAG enforced only by convention.", "evidence": ["packages/core/test/dag.test.ts (new, loop 28)"], "test_failed": "n/a", "dependency_category": "in-process", "leverage_impact": "Test makes violations machine-detectable.", "locality_impact": "DAG violations caught immediately at test run.", "metric_signal": "7 new DAG assertions; 35 suites 234 tests.", "why_weakens_submission": "data_flow 6.5 blocked by convention-only enforcement.", "severity": "Serious deduction", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Added dag.test.ts.", "blast_radius": {"change": ["packages/core/test/dag.test.ts"], "avoid": []}},
-        {"loop_local_id": "F2", "stable_id": "F-004", "id": "F2", "title": "TierBoardPage.tsx at 443 LOC — god-component floor", "why_it_matters": "Accepted residual.", "what_is_wrong": "443 LOC modal orchestration.", "evidence": ["apps/web/src/pages/TierBoardPage.tsx:1-443"], "test_failed": "Shallow module", "dependency_category": "in-process", "leverage_impact": "Modal coordination 443 LOC.", "locality_impact": "Coupled to modal state.", "metric_signal": "443 LOC", "why_weakens_submission": "Accepted residual.", "severity": "Noticeable weakness", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Accept.", "blast_radius": {"change": [], "avoid": ["apps/web/src/pages/TierBoardPage.tsx"]}},
-        {"loop_local_id": "F3", "stable_id": "F-014", "id": "F3", "title": "Item interface backward-compat parallel URL fields", "why_it_matters": "Terminal accepted residual.", "what_is_wrong": "packages/core/src/models.ts:22-31 — parallel optional URL fields.", "evidence": ["packages/core/src/models.ts:22-31"], "test_failed": "Shallow module", "dependency_category": "in-process", "leverage_impact": "Primary path enforced.", "locality_impact": "Terminal.", "metric_signal": "none", "why_weakens_submission": "domain_modeling cant reach 10.", "severity": "Noticeable weakness", "adr_conflicts": [], "adr_reopen_justification": null, "minimal_correction_path": "Accept.", "blast_radius": {"change": [], "avoid": ["packages/core/src/models.ts"]}}
+      "strengths": [
+        "packages/core domain layer framework-free; dag.test.ts enforces cross-package DAG at test time",
+        "All 6 web pages have direct page-level test files",
+        "RTK slice ownership one clear writer per concern across 6 slices"
       ],
-      "simplification_check": {"structurally_necessary": "DAG test — deletion test passes: removing it loses machine-enforcement", "new_seam_justified": false, "new_seam_adapters": [], "helpful_simplification": "Node built-ins only — no new deps", "should_not_be_done": "eslint-plugin-import (requires npm install)", "tests_after_fix": "No tests deleted; 35 suites 234 tests all green"},
-      "backlog": [{"priority": 1, "title": "state_management 6.5 — document Redux store lifetime; add configureStore factory", "kind": "structural", "rank": "needed for winning", "why_it_matters": "Ambient global store; no process-lifetime ownership documented.", "score_impact": "state_management 6.5 → 7.5; architecture_quality 7.5 → 8.0"}],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-020",
+          "id": "F1",
+          "title": "data_flow DAG was convention-only \u2014 no machine enforcement",
+          "why_it_matters": "Resolved. Violations now caught at npm test time.",
+          "what_is_wrong": "Cross-package and within-app DAG enforced only by convention.",
+          "evidence": [
+            "packages/core/test/dag.test.ts (new, loop 28)"
+          ],
+          "test_failed": "n/a",
+          "dependency_category": "in-process",
+          "leverage_impact": "Test makes violations machine-detectable.",
+          "locality_impact": "DAG violations caught immediately at test run.",
+          "metric_signal": "7 new DAG assertions; 35 suites 234 tests.",
+          "why_weakens_submission": "data_flow 6.5 blocked by convention-only enforcement.",
+          "severity": "Serious deduction",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Added dag.test.ts.",
+          "blast_radius": {
+            "change": [
+              "packages/core/test/dag.test.ts"
+            ],
+            "avoid": []
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-004",
+          "id": "F2",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 god-component floor",
+          "why_it_matters": "Accepted residual.",
+          "what_is_wrong": "443 LOC modal orchestration.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination 443 LOC.",
+          "locality_impact": "Coupled to modal state.",
+          "metric_signal": "443 LOC",
+          "why_weakens_submission": "Accepted residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/pages/TierBoardPage.tsx"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F3",
+          "stable_id": "F-014",
+          "id": "F3",
+          "title": "Item interface backward-compat parallel URL fields",
+          "why_it_matters": "Terminal accepted residual.",
+          "what_is_wrong": "packages/core/src/models.ts:22-31 \u2014 parallel optional URL fields.",
+          "evidence": [
+            "packages/core/src/models.ts:22-31"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Primary path enforced.",
+          "locality_impact": "Terminal.",
+          "metric_signal": "none",
+          "why_weakens_submission": "domain_modeling cant reach 10.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "packages/core/src/models.ts"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "DAG test \u2014 deletion test passes: removing it loses machine-enforcement",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "Node built-ins only \u2014 no new deps",
+        "should_not_be_done": "eslint-plugin-import (requires npm install)",
+        "tests_after_fix": "No tests deleted; 35 suites 234 tests all green"
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "state_management 6.5 \u2014 document Redux store lifetime; add configureStore factory",
+          "kind": "structural",
+          "rank": "needed for winning",
+          "why_it_matters": "Ambient global store; no process-lifetime ownership documented.",
+          "score_impact": "state_management 6.5 \u2192 7.5; architecture_quality 7.5 \u2192 8.0"
+        }
+      ],
       "unresolved_reason": null,
       "deepening_candidates": [],
       "builder_notes": [
-        {"pattern": "DAG enforcement via import-scanning tests", "how_to_recognize": "Layer violations caught only by code review, not CI", "smallest_coding_rule": "Walk source with fs.readdirSync, grep specifiers, assert forbidden patterns absent.", "stack_example": "packages/core/test/dag.test.ts"},
-        {"pattern": "Within-app layer ordering: utils→hooks→components→pages", "how_to_recognize": "hooks importing components = violation; components importing hooks = allowed", "smallest_coding_rule": "Hooks must not import components or pages; components must not import pages.", "stack_example": "dag.test.ts within-app section"},
-        {"pattern": "Two enforcement levels for monorepo DAG", "how_to_recognize": "workspace package.json catches npm-level cycles; import-scanning test catches source-level violations", "smallest_coding_rule": "Both levels needed — workspace does not catch @tiercade/state in packages/core/src.", "stack_example": "packages/core/test/dag.test.ts"},
-        {"pattern": "CardView in S2 uses render-prop pattern", "how_to_recognize": "<CardView items={...}>{(item) => ...}</CardView>", "smallest_coding_rule": "Stub: ({ items, children }) => <div>{items.map(item => children(item))}</div>", "stack_example": "ThemesPage.test.tsx"}
+        {
+          "pattern": "DAG enforcement via import-scanning tests",
+          "how_to_recognize": "Layer violations caught only by code review, not CI",
+          "smallest_coding_rule": "Walk source with fs.readdirSync, grep specifiers, assert forbidden patterns absent.",
+          "stack_example": "packages/core/test/dag.test.ts"
+        },
+        {
+          "pattern": "Within-app layer ordering: utils\u2192hooks\u2192components\u2192pages",
+          "how_to_recognize": "hooks importing components = violation; components importing hooks = allowed",
+          "smallest_coding_rule": "Hooks must not import components or pages; components must not import pages.",
+          "stack_example": "dag.test.ts within-app section"
+        },
+        {
+          "pattern": "Two enforcement levels for monorepo DAG",
+          "how_to_recognize": "workspace package.json catches npm-level cycles; import-scanning test catches source-level violations",
+          "smallest_coding_rule": "Both levels needed \u2014 workspace does not catch @tiercade/state in packages/core/src.",
+          "stack_example": "packages/core/test/dag.test.ts"
+        },
+        {
+          "pattern": "CardView in S2 uses render-prop pattern",
+          "how_to_recognize": "<CardView items={...}>{(item) => ...}</CardView>",
+          "smallest_coding_rule": "Stub: ({ items, children }) => <div>{items.map(item => children(item))}</div>",
+          "stack_example": "ThemesPage.test.tsx"
+        }
       ],
-      "narrative": "Good app, place but not win. Loop 28: data_flow 6.5→8.0 via dag.test.ts. 35 suites, 234 tests, all green. avg ~8.44.",
+      "narrative": "Good app, place but not win. Loop 28: data_flow 6.5\u21928.0 via dag.test.ts. 35 suites, 234 tests, all green. avg ~8.44.",
       "loop_result": {
-        "what_changed": "Added packages/core/test/dag.test.ts — 7 DAG enforcement tests covering cross-package and within-app layer ordering.",
+        "what_changed": "Added packages/core/test/dag.test.ts \u2014 7 DAG enforcement tests covering cross-package and within-app layer ordering.",
         "evidence_change_is_honest": "35 suites, 234 tests all green. dag.test.ts 7/7 assertions pass. Violation detection verified.",
         "targeted_finding_status": "resolved",
         "unintended_regression": null,
-        "changed_paths": ["packages/core/test/dag.test.ts"],
+        "changed_paths": [
+          "packages/core/test/dag.test.ts"
+        ],
         "interface_test_coverage_path": null
       },
       "implementation_review": {
         "verdict": "approved",
-        "reason": "All three checks passed: dag.test.ts enforces cross-package and within-app DAG at test time; deletion test confirms it earns its keep; no new Seam, no costume layer, no regression — diff is test-only.",
-        "checks": {"reality": "passed", "honesty": "passed", "regression": "passed"},
+        "reason": "All three checks passed: dag.test.ts enforces cross-package and within-app DAG at test time; deletion test confirms it earns its keep; no new Seam, no costume layer, no regression \u2014 diff is test-only.",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
         "regressions": [],
         "conditions": [],
         "rounds": 1,
         "retry_count": 1,
         "retry_cause": null,
-        "retry_attempts": [{"attempt": 1, "outcome": "ok", "error": null, "duration_ms": null}]
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": null
+          }
+        ]
+      }
+    },
+    {
+      "schema_version": 3,
+      "loop": 29,
+      "loop_cap": 30,
+      "state": "CONTINUE",
+      "halt_subtype": null,
+      "halt_handoff_text": null,
+      "halt_handoff": null,
+      "re_validated_at_sha": null,
+      "re_validation_context": null,
+      "dry_run": false,
+      "provider": "claude_code",
+      "loop_model": "claude-sonnet-4-6",
+      "loop_model_source": "default",
+      "reviewer_model": "claude-sonnet-4-6",
+      "reviewer_model_source": "default",
+      "spawn_isolation": "inline",
+      "findings_registry_path": "./findings_registry.json",
+      "discovery": null,
+      "verdict": "Good app, but not top-tier yet",
+      "verdict_explanation": "Loop 29: state_management 6.5\u21928.0 via createAppStore factory. Ambient module-level store construction is now a named Interface with documented process-lifetime contract. 4 Interface tests added. 9 suites / 59 tests (state), 13 suites / 109 tests (core), all green.",
+      "scorecard": {
+        "architecture_quality": {
+          "score": 8.0,
+          "delta": "UP",
+          "proof": "packages/state/src/store.ts:createAppStore \u2014 store construction now concentrated behind a named Interface with explicit CreateStoreOptions type; module ownership explicit; implicit global replaced by documented singleton. 9-anchor not yet met (H2H action dep-cluster in useHeadToHeadHandlers.ts).",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "state_management": {
+          "score": 8.0,
+          "delta": "UP",
+          "proof": "packages/state/src/store.ts:createAppStore \u2014 factory with preloadedState? + persistenceMiddleware? options; process-lifetime contract documented in JSDoc; isolated stores in tests use createAppStore({ preloadedState: {} }); 4 Interface tests in packages/state/test/createStore.test.ts. 9-anchor: one writer per concern (6 slices); factory injection-friendly; named selectors centralized.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "domain_modeling": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "packages/core/src/models.ts \u2014 createItem smart constructor + ItemMedia discriminated union (loop 20); apps/web/src/components/ItemModal.tsx:114-135 \u2014 primary add-item path migrated to createItem (loop 21). Residual Accounting Pass: 9-anchor met.",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl/videoUrl/audioUrl/mediaType remain independently optional for backward compat with persisted JSON data",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: changing Item interface would break deserialization of existing persisted state; migration is cross-cutting and out of scope. Primary construction path enforced via createItem.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "data_flow": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "packages/core/test/dag.test.ts (loop 28) \u2014 7 tests enforce cross-package and within-app layer ordering. Ambient Redux global now documented via createAppStore factory JSDoc. Package-level DAG also enforced by workspace package.json.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "framework_idioms": {
+          "score": 8.5,
+          "delta": "SAME",
+          "proof": "apps/web/src/pages/AnalyticsPage.tsx:63-64 \u2014 selectTiers, selectTierOrder named selectors. All 6 pages use centralized RTK selectors (loop 27). createAppStore uses RTK configureStore idiomatically.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "concurrency": {
+          "score": 8.0,
+          "delta": "SAME",
+          "proof": "apps/web/src/hooks/useImportHandlers.ts:35-38 \u2014 useEffect cleanup; abort previous reader on second call. Two abort tests at Interface. No change this loop.",
+          "residual_blocking_10": null,
+          "residual_disposition": null,
+          "residual_rationale_or_backlog_ref": null,
+          "unverifiable_due_to_build_failure": false
+        },
+        "simplicity": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "packages/state/src/store.ts \u2014 factory is 72 lines total; CreateStoreOptions has 2 optional fields; no ceremony. apps/web/src/pages/TierBoardPage.tsx:1-443 accepted residual.",
+          "residual_blocking_10": "apps/web/src/pages/TierBoardPage.tsx:1-443 \u2014 443 LOC modal orchestration floor; deletion test fails for any extraction without co-moving modal state",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Framework-constrained: React component pattern requires co-location of modal state with handlers that close over it.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "test_strategy": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "packages/state/test/createStore.test.ts \u2014 4 Interface tests for factory (returns functional store; preloadedState honoured; stores isolated; middleware option wired). All 6 web pages have direct page-level test files. dag.test.ts (loop 28). 9 suites / 59 tests (state), 13 suites / 109 tests (core), all green.",
+          "residual_blocking_10": "AppShell routing thin wrapper \u2014 no AppRuntime/root-scene shell analog in React/Vite; E2E surface covers integration",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "React/Vite stack does not have the Apple AppRuntime/root-scene shell pattern. AppShell is a thin react-router-dom BrowserRouter + 6 routes. E2E suite covers integration paths.",
+          "unverifiable_due_to_build_failure": false
+        },
+        "credibility": {
+          "score": 9.5,
+          "delta": "SAME",
+          "proof": "createAppStore factory makes store construction honest and testable (loop 29). apps/web/src/components/ItemModal.tsx:114-135 \u2014 createItem; hooks extracted and tested; FileReader lifecycle (loop 23); all 6 page Interfaces covered (loop 26); named RTK selectors (loop 27); DAG enforcement (loop 28). Residual Accounting Pass: 9-anchor met.",
+          "residual_blocking_10": "packages/core/src/models.ts:22-31 \u2014 Item interface parallel URL fields retained for backward compat",
+          "residual_disposition": "accepted",
+          "residual_rationale_or_backlog_ref": "Same as domain_modeling residual: framework-constrained backward compat with persisted JSON data.",
+          "unverifiable_due_to_build_failure": false
+        }
+      },
+      "authority_map": [
+        {
+          "concern": "Redux store (tier, theme, undoRedo, onboarding, presentation, headToHead)",
+          "owner": "packages/state/src/store.ts \u2014 createAppStore factory",
+          "allowed_writers": [
+            "tierSlice.ts",
+            "themeSlice.ts",
+            "undoRedoSlice.ts",
+            "onboardingSlice.ts",
+            "presentationSlice.ts",
+            "headToHeadSlice.ts",
+            "undoRedoThunks.ts"
+          ],
+          "observers_readers": [
+            "all web pages via useAppSelector + named selectors from selectors.ts"
+          ],
+          "persistence_seam": "createPersistenceMiddleware(storage) \u2014 injection-friendly; fake storage in tests",
+          "async_mutation_entry_points": [
+            "headToHeadThunks.ts",
+            "projectThunks.ts",
+            "undoRedoThunks.ts"
+          ],
+          "verdict": "Single and clear"
+        }
+      ],
+      "strengths": [
+        "createAppStore factory: process-lifetime contract documented; preloadedState + persistenceMiddleware injectable; 4 Interface tests at new seam",
+        "packages/core domain layer framework-free; 13 suites, 109 tests; createItem smart constructor + ItemMedia discriminated union enforces media invariant at construction",
+        "ItemModal.tsx add-item path uses createItem \u2014 media invariant enforced at primary caller",
+        "RTK slice ownership: one clear writer per concern across 6 slices; all derived state uses memoized named selectors from selectors.ts; pages fully centralized (loop 27)",
+        "Monorepo DAG enforced two ways: workspace package.json peer deps + dag.test.ts 7 tests catching violations at npm test time",
+        "All 6 web pages have direct page-level test files (loops 24-26)"
+      ],
+      "findings": [
+        {
+          "loop_local_id": "F1",
+          "stable_id": "F-021",
+          "id": "F1",
+          "title": "Redux store construction was ambient global \u2014 no process-lifetime factory",
+          "why_it_matters": "Resolved this loop. Module-level loadPersistedState() ran at import time; no named Interface for store construction; tests duplicated configureStore logic.",
+          "what_is_wrong": "packages/state/src/store.ts \u2014 module-level const persistedState = loadPersistedState() at import time; no factory; tests used makeStoreWithStorage (duplicate configureStore call in persistenceMiddleware.test.ts:51-66).",
+          "evidence": [
+            "packages/state/src/store.ts (pre-loop) \u2014 module-level loadPersistedState() call; no exported factory",
+            "packages/state/test/persistenceMiddleware.test.ts:51-66 \u2014 makeStoreWithStorage duplicates full configureStore with all 6 reducers"
+          ],
+          "test_failed": "Interface-as-test-surface",
+          "dependency_category": "in-process",
+          "leverage_impact": "Factory concentrates preloadedState restoration DAG + middleware wiring into named Interface. Callers see CreateStoreOptions; no longer need to know reducer list or serializableCheck config.",
+          "locality_impact": "Process-lifetime contract now in one place with JSDoc. Future slice additions touch only createAppStore.",
+          "metric_signal": "4 new Interface tests; state package: 9 suites / 59 tests.",
+          "why_weakens_submission": "state_management 6.5 blocked by implicit global; factory resolves it.",
+          "severity": "Serious deduction",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Extract createAppStore(options?) from store.ts; keep export const store = createAppStore(). Add createStore.test.ts with Interface tests.",
+          "blast_radius": {
+            "change": [
+              "packages/state/src/store.ts",
+              "packages/state/test/createStore.test.ts"
+            ],
+            "avoid": []
+          }
+        },
+        {
+          "loop_local_id": "F2",
+          "stable_id": "F-004",
+          "id": "F2",
+          "title": "TierBoardPage.tsx at 443 LOC \u2014 god-component at natural modal-coupled floor",
+          "why_it_matters": "Accepted residual. Framework-constrained floor.",
+          "what_is_wrong": "apps/web/src/pages/TierBoardPage.tsx bundles 7 useState modal/UI state declarations + 3 inline handlers.",
+          "evidence": [
+            "apps/web/src/pages/TierBoardPage.tsx:1-443"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "Modal coordination still requires reading 443 LOC.",
+          "locality_impact": "Remaining handlers coupled to modal state; no clean extraction path.",
+          "metric_signal": "443 LOC vs 95 LOC ThemesPage.tsx",
+          "why_weakens_submission": "Page shell still broad; accepted residual.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept. Already accepted residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "apps/web/src/pages/TierBoardPage.tsx"
+            ]
+          }
+        },
+        {
+          "loop_local_id": "F3",
+          "stable_id": "F-014",
+          "id": "F3",
+          "title": "Item interface backward-compat parallel URL fields",
+          "why_it_matters": "Terminal accepted residual.",
+          "what_is_wrong": "packages/core/src/models.ts:22-31 \u2014 Item.imageUrl, videoUrl, audioUrl, mediaType remain independently optional.",
+          "evidence": [
+            "packages/core/src/models.ts:22-31"
+          ],
+          "test_failed": "Shallow module",
+          "dependency_category": "in-process",
+          "leverage_impact": "No new leverage lost. Primary path enforced via createItem.",
+          "locality_impact": "Terminal: Item interface can't change without breaking persisted data deserialization.",
+          "metric_signal": "none",
+          "why_weakens_submission": "domain_modeling can't reach 10 without Item using ItemMedia natively.",
+          "severity": "Noticeable weakness",
+          "adr_conflicts": [],
+          "adr_reopen_justification": null,
+          "minimal_correction_path": "Accept as terminal residual.",
+          "blast_radius": {
+            "change": [],
+            "avoid": [
+              "packages/core/src/models.ts"
+            ]
+          }
+        }
+      ],
+      "simplification_check": {
+        "structurally_necessary": "createAppStore \u2014 passes deletion test: removing it collapses preloadedState restoration DAG + middleware wiring back into anonymous module-level code; makeStoreWithStorage duplication in tests would persist",
+        "new_seam_justified": false,
+        "new_seam_adapters": [],
+        "helpful_simplification": "CreateStoreOptions interface has 2 optional fields; factory body is ~30 lines; no ceremony",
+        "should_not_be_done": "Migrating persistenceMiddleware.test.ts:makeStoreWithStorage to use createAppStore \u2014 that test has specific middleware injection concern and the helper can stay",
+        "tests_after_fix": "No tests deleted; 9 suites / 59 tests (state) + 13 suites / 109 tests (core), all green"
+      },
+      "backlog": [
+        {
+          "priority": 1,
+          "title": "architecture_quality 8.0 \u2014 H2H action dep-cluster in useHeadToHeadHandlers.ts",
+          "kind": "structural",
+          "rank": "needed for winning",
+          "why_it_matters": "apps/web/src/hooks/useHeadToHeadHandlers.ts:1-115 \u2014 H2H action handlers concentrated behind hook Interface but dep-cluster (useAppDispatch + multiple slice imports + H2H algorithm calls) blocks 9-anchor. No clean extraction path identified that passes Simplify Pressure Test.",
+          "score_impact": "architecture_quality 8.0 \u2192 8.5 if dep-cluster resolved"
+        }
+      ],
+      "unresolved_reason": null,
+      "deepening_candidates": [],
+      "builder_notes": [
+        {
+          "pattern": "Store factory for isolated test instances",
+          "how_to_recognize": "Any RTK setup where tests call configureStore(...) with a duplicate reducer list to avoid the production store's loadPersistedState() side effect",
+          "smallest_coding_rule": "Extract configureStore into createAppStore(options?). Singleton stays as export const store = createAppStore(). Tests call createAppStore({ preloadedState: {} }).",
+          "stack_example": "packages/state/src/store.ts:createAppStore + packages/state/test/createStore.test.ts"
+        },
+        {
+          "pattern": "RootState derived from rootReducer, not store.getState",
+          "how_to_recognize": "Circular type inference: AppDispatch = typeof store.dispatch and RootState = ReturnType<typeof store.getState> co-depend on the singleton",
+          "smallest_coding_rule": "export type RootState = ReturnType<typeof rootReducer>. Derive AppDispatch from factory return type.",
+          "stack_example": "packages/state/src/store.ts:17-18"
+        },
+        {
+          "pattern": "CreateStoreOptions with optional fields",
+          "how_to_recognize": "Factory where some callers need full production wiring and others need isolated wiring (tests, storybook)",
+          "smallest_coding_rule": "preloadedState?: PreloadedRootState; persistenceMiddleware?: Middleware. Both optional so production call is createAppStore() with no args.",
+          "stack_example": "packages/state/src/store.ts:CreateStoreOptions"
+        },
+        {
+          "pattern": "CardView in S2 uses render-prop pattern (children as factory function)",
+          "how_to_recognize": "<CardView items={...}>{(item) => ...}</CardView> \u2014 children is a callback receiving each item",
+          "smallest_coding_rule": "Stub: ({ items, children }) => <div>{items.map(item => children(item))}</div>",
+          "stack_example": "ThemesPage.test.tsx and TemplatesPage.test.tsx CardView stub"
+        }
+      ],
+      "narrative": "Good app, place but not win. Loop 29: state_management 6.5\u21928.0 via createAppStore factory. Ambient module-level store construction now a named Interface with documented process-lifetime contract. Production singleton unchanged. 4 Interface tests added. architecture_quality lifts to 8.0 (implicit global that blocked 9-anchor is now explicit). Remaining: architecture_quality H2H dep-cluster. 9 suites / 59 tests (state), 13 suites / 109 tests (core), all green. avg ~8.78 (up from 8.44 at loop 28).",
+      "loop_result": {
+        "what_changed": "Extracted createAppStore({ preloadedState?, persistenceMiddleware? }) factory from packages/state/src/store.ts. Production singleton preserved as export const store = createAppStore(). RootState now derived from rootReducer. CreateStoreOptions interface exported. Added packages/state/test/createStore.test.ts \u2014 4 Interface tests: returns functional store; preloadedState honoured; stores isolated; persistenceMiddleware option wired. Finding F-021 resolved.",
+        "evidence_change_is_honest": "9 suites / 59 tests (state) all green. 13 suites / 109 tests (core) all green. createStore.test.ts 4/4 assertions pass. Factory earns deletion test: removing it collapses store construction back to anonymous module-level side effect.",
+        "targeted_finding_status": "resolved",
+        "unintended_regression": null,
+        "changed_paths": [
+          "packages/state/src/store.ts",
+          "packages/state/test/createStore.test.ts"
+        ],
+        "interface_test_coverage_path": null
+      },
+      "implementation_review": {
+        "verdict": "approved",
+        "reason": "All three checks passed: createAppStore factory eliminates the ambient global (Reality); factory passes deletion test + no new Seam + tests at new Interface (4 tests in createStore.test.ts) + no costume layer (Honesty); no new ownership ambiguity, hidden state, or parallel fields introduced (Regression).",
+        "checks": {
+          "reality": "passed",
+          "honesty": "passed",
+          "regression": "passed"
+        },
+        "regressions": [],
+        "conditions": [],
+        "rounds": 1,
+        "retry_count": 1,
+        "retry_cause": null,
+        "retry_attempts": [
+          {
+            "attempt": 1,
+            "outcome": "ok",
+            "error": null,
+            "duration_ms": null
+          }
+        ]
       }
     }
   ]
