@@ -1,6 +1,7 @@
 import type { Middleware } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
 import type { UndoRedoState, TierSnapshot } from "./undoRedoSlice";
+import type { OnboardingState } from "./onboardingSlice";
 
 const STORAGE_KEY = "tiercade-state";
 const DEBOUNCE_MS = 500;
@@ -45,6 +46,7 @@ export function createPersistenceMiddleware(storage: Storage | undefined = _glob
           tier: state.tier,
           theme: state.theme,
           undoRedo: trimmedUndoRedo,
+          onboarding: state.onboarding,
           // Don't persist headToHead - session-specific state
           savedAt: Date.now(),
           version: 2, // Bump version for undo/redo support
@@ -66,6 +68,7 @@ export interface PersistedState {
   tier: RootState["tier"];
   theme: RootState["theme"];
   undoRedo?: UndoRedoState;
+  onboarding?: OnboardingState;
   savedAt: number;
   version: number;
 }

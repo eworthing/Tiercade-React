@@ -1,0 +1,137 @@
+{
+  "schema_version": 3,
+  "loop": 1,
+  "loop_cap": 10,
+  "state": "CONTINUE",
+  "halt_subtype": null,
+  "halt_handoff_text": null,
+  "halt_handoff": null,
+  "re_validated_at_sha": null,
+  "re_validation_context": null,
+  "dry_run": false,
+  "provider": "claude_code",
+  "loop_model": "claude-sonnet-4-6",
+  "loop_model_source": "default",
+  "reviewer_model": "claude-sonnet-4-6",
+  "reviewer_model_source": "default",
+  "spawn_isolation": "subagent",
+  "findings_registry_path": "./findings_registry.json",
+  "discovery": {
+    "source_roots": [
+      "packages/core/src/",
+      "packages/state/src/",
+      "packages/ui/src/",
+      "packages/theme/src/",
+      "apps/web/src/",
+      "apps/native/src/"
+    ],
+    "test_command": "npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks",
+    "build_command": null,
+    "lens": "Generic",
+    "adrs": [],
+    "domain_terms": [
+      "Item", "Items", "TierConfig", "tierOrder", "unranked",
+      "moveItem", "reorderWithin", "HeadToHeadLogic", "quickRankLogic",
+      "modelResolver", "tierSlice", "headToHeadSlice", "themeSlice",
+      "undoRedoSlice", "onboardingSlice", "presentationSlice"
+    ],
+    "test_scope": "full",
+    "test_filter": null,
+    "working_tree_dirty_paths": []
+  },
+  "verdict": "Good app, but not top-tier yet",
+  "verdict_explanation": "The Redux module graph and core algorithm port (Wilson-score H2H, warm-start pairings) are genuinely deep and well-tested. However, the onboardingSlice committed localStorage I/O directly inside reducer bodies — a Redux invariant violation that pulled ownership out of the persistence seam established by createPersistenceMiddleware. F1 and F2 resolved in loop 1. F3 (Item multi-URL) remains open.",
+  "scorecard": {
+    "architecture_quality": { "score": 8.5, "delta": "SAME", "proof": "onboardingSlice.ts:72-97 — reducer bodies called localStorage.* directly (resolved F1). Module graph clean post-fix." },
+    "state_management": { "score": 8.5, "delta": "SAME", "proof": "loadInitialState() ambient dependency resolved (F1). dynamic require() resolved (F2). Scores reflect pre-fix baseline; expected UP next critic pass." },
+    "domain_modeling": { "score": 8.5, "delta": "SAME", "proof": "models.ts:17-28 — Item interface retains three independent URL fields alongside ItemMedia discriminated union. F3 open." },
+    "data_flow": { "score": 8.5, "delta": "SAME", "proof": "onboardingSlice back-channel resolved (F1). All other flows explicit; unidirectional dependency graph." },
+    "framework_practices": { "score": 8.5, "delta": "SAME", "proof": "require() in ESM thunk resolved (F2). Reducer side effects resolved (F1). Scores reflect pre-fix baseline." },
+    "concurrency": { "score": 9.5, "delta": "SAME", "proof": "No actor isolation concerns. debounce with clearTimeout. No floating promises. Synchronous require() (now resolved) was not a concurrency hazard." },
+    "simplicity": { "score": 8.5, "delta": "SAME", "proof": "clearDeferredPairs unused import resolved (F2). require() ceremony resolved (F2). headToHead.ts ~1356 lines passes deletion test." },
+    "test_strategy": { "score": 8.5, "delta": "SAME", "proof": "238 pre-loop tests, 34 suites. onboardingSlice persistence paths now tested (new test added). 239 post-loop." },
+    "credibility": { "score": 8.0, "delta": "SAME", "proof": "dynamic require() and reducer-body I/O (honesty leaks) resolved. F3 still open. Scores reflect pre-fix baseline." }
+  },
+  "authority_map": [
+    { "concern": "Tier items + order", "owner": "tierSlice", "writers": ["tierSlice.actions.*"], "readers": ["selectors.ts", "TierBoardPage", "HeadToHeadPage"], "persistence_seam": "createPersistenceMiddleware", "async_entry_points": [] },
+    { "concern": "H2H session", "owner": "headToHeadSlice", "writers": ["headToHeadThunks.*"], "readers": ["HeadToHeadPage", "useHeadToHeadHandlers"], "persistence_seam": "none (session-only)", "async_entry_points": ["startHeadToHead", "finishHeadToHead"] },
+    { "concern": "Undo/redo history", "owner": "undoRedoSlice", "writers": ["undoRedoThunks.captureSnapshot", "performUndo", "performRedo"], "readers": ["AppShell", "TierBoardPage"], "persistence_seam": "createPersistenceMiddleware (trimmed to 20)", "async_entry_points": [] },
+    { "concern": "Onboarding", "owner": "onboardingSlice", "writers": ["completeOnboarding", "skipOnboarding", "resetOnboarding"], "readers": ["AppShell", "OnboardingWizard"], "persistence_seam": "createPersistenceMiddleware (post-loop-1 fix)", "async_entry_points": [] },
+    { "concern": "Persistence I/O", "owner": "createPersistenceMiddleware", "writers": ["createPersistenceMiddleware (debounced save)"], "readers": ["loadPersistedState", "createAppStore"], "persistence_seam": "local-substitutable (injectable Storage)", "async_entry_points": [] }
+  ],
+  "strengths": [
+    "Wilson-score CI with warm-start pairings (headToHead.ts) — real algorithm depth, not scaffolding",
+    "createPersistenceMiddleware injectable Storage seam — testable without global mocks, post-loop-1 now covers onboarding",
+    "createSelector memoization throughout selectors.ts — no inline selector functions",
+    "createAppStore factory with preloadedState + persistenceMiddleware overrides — test isolation without touching globals"
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "stable_id": "F-001",
+      "title": "onboardingSlice reducer-body localStorage I/O",
+      "severity": "Serious deduction",
+      "primary_file": "packages/state/src/onboardingSlice.ts",
+      "primary_lines": "13-97",
+      "status": "resolved",
+      "resolution_loop": 1,
+      "dimensions_affected": ["architecture_quality", "state_management", "data_flow", "framework_practices", "test_strategy", "credibility"]
+    },
+    {
+      "id": "F2",
+      "stable_id": "F-002",
+      "title": "dynamic require() for vote; unused clearDeferredPairs import",
+      "severity": "Noticeable weakness",
+      "primary_file": "packages/state/src/headToHeadThunks.ts",
+      "primary_lines": "105,17",
+      "status": "resolved",
+      "resolution_loop": 1,
+      "dimensions_affected": ["simplicity", "credibility", "framework_practices"]
+    },
+    {
+      "id": "F3",
+      "stable_id": "F-003",
+      "title": "Item allows impossible multi-URL combinations",
+      "severity": "Noticeable weakness",
+      "primary_file": "packages/core/src/models.ts",
+      "primary_lines": "17-28",
+      "status": "open",
+      "resolution_loop": null,
+      "dimensions_affected": ["domain_modeling"]
+    }
+  ],
+  "simplification_check": {
+    "structurally_necessary": "F1 fix collapses dual persistence ownership into single middleware seam. Passes deletion test for loadInitialState().",
+    "new_seam_justified": "No new seam created — existing createPersistenceMiddleware seam absorbs onboarding. Two-adapter proof holds.",
+    "helpful_simplification": "F2 fix (require() → import) is subtractive one-liner with zero behavior impact.",
+    "should_not_do": "Do not add OnboardingPersistenceMiddleware. Do not restructure Item as a class."
+  },
+  "backlog": [
+    { "rank": 1, "finding": "F-003", "title": "Enforce Item media invariant at type level", "severity": "Noticeable weakness", "note": "Replace parallel URL fields with ItemMedia union field; update reader sites in ui/ and web/" }
+  ],
+  "unresolved_reason": "F3 (domain modeling) open; domain_modeling score 8.5; credibility score 8.0 — below 9.5 threshold",
+  "deepening_candidates": [],
+  "builder_notes": [
+    "Reducer body I/O: any localStorage.*, fetch(), setTimeout() inside createSlice.reducers.* body is the smell. Move to middleware or thunks.",
+    "Dynamic require() smell: require() inside a .ts function body that already has import statements at the top — add to top-level import instead.",
+    "Discriminated union invariant only as strong as the type that enforces it — if Item itself allows impossible state, createItem is policy not type constraint."
+  ],
+  "narrative": "Place — not top-tier yet. The H2H algorithm, injectable-storage middleware, and memoized selector graph are genuinely strong structural choices. Post-loop-1: onboarding persistence violation (F1) and dynamic require() (F2) resolved. Domain modeling residual (F3) remains. Next critic pass expected to show UP on architecture, state management, framework practices, test strategy, credibility after F1+F2 resolution is scored fresh.",
+  "loop_1_result": {
+    "finding_resolved": "F-001",
+    "findings_incidentally_resolved": ["F-002"],
+    "files_changed": [
+      "packages/state/src/onboardingSlice.ts",
+      "packages/state/src/persistenceMiddleware.ts",
+      "packages/state/src/store.ts",
+      "packages/state/test/persistenceMiddleware.test.ts",
+      "packages/state/src/headToHeadThunks.ts"
+    ],
+    "tests_pre": 238,
+    "tests_post": 239,
+    "suites_pre": 34,
+    "suites_post": 36,
+    "replace_dont_layer": true,
+    "new_seam_added": false
+  }
+}

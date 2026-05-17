@@ -1,0 +1,54 @@
+{
+  "schema_version": 3,
+  "entries": [
+    {
+      "stable_id": "F-001",
+      "title": "onboardingSlice reducer-body localStorage I/O",
+      "severity": "Serious deduction",
+      "status": "resolved",
+      "first_seen_loop": 1,
+      "first_seen_sha": "6fcc574103b72f152802cc77adab1b025ffcb39e",
+      "resolution_loop": 1,
+      "primary_file": "packages/state/src/onboardingSlice.ts",
+      "primary_lines": "13-97",
+      "occurrences": [
+        "packages/state/src/onboardingSlice.ts:24 — loadInitialState() localStorage.getItem at module load",
+        "packages/state/src/onboardingSlice.ts:72 — completeOnboarding reducer localStorage.setItem",
+        "packages/state/src/onboardingSlice.ts:84 — skipOnboarding reducer localStorage.setItem",
+        "packages/state/src/onboardingSlice.ts:96 — resetOnboarding reducer localStorage.removeItem"
+      ],
+      "fuzzy_match_hints": ["localStorage inside reducer", "reducer body side effect", "loadInitialState module load"]
+    },
+    {
+      "stable_id": "F-002",
+      "title": "dynamic require() for vote; unused clearDeferredPairs import",
+      "severity": "Noticeable weakness",
+      "status": "resolved",
+      "first_seen_loop": 1,
+      "first_seen_sha": "6fcc574103b72f152802cc77adab1b025ffcb39e",
+      "resolution_loop": 1,
+      "primary_file": "packages/state/src/headToHeadThunks.ts",
+      "primary_lines": "105,17",
+      "occurrences": [
+        "packages/state/src/headToHeadThunks.ts:105 — require(\"@tiercade/core\") inside ESM thunk body",
+        "packages/state/src/headToHeadThunks.ts:17 — clearDeferredPairs imported but never used"
+      ],
+      "fuzzy_match_hints": ["require() in ESM", "dynamic require inside thunk", "unused import clearDeferredPairs"]
+    },
+    {
+      "stable_id": "F-003",
+      "title": "Item allows impossible multi-URL combinations",
+      "severity": "Noticeable weakness",
+      "status": "open",
+      "first_seen_loop": 1,
+      "first_seen_sha": "6fcc574103b72f152802cc77adab1b025ffcb39e",
+      "resolution_loop": null,
+      "primary_file": "packages/core/src/models.ts",
+      "primary_lines": "17-28",
+      "occurrences": [
+        "packages/core/src/models.ts:17-28 — Item interface has imageUrl, videoUrl, audioUrl, mediaType as independent optionals alongside ItemMedia discriminated union"
+      ],
+      "fuzzy_match_hints": ["Item imageUrl videoUrl audioUrl parallel optional fields", "discriminated union not enforced at type level", "impossible combination representable"]
+    }
+  ]
+}

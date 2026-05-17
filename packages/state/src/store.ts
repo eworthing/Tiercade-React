@@ -3,7 +3,7 @@ import { tierReducer, type TierState } from "./tierSlice";
 import { headToHeadReducer } from "./headToHeadSlice";
 import { themeReducer, type ThemeState } from "./themeSlice";
 import { undoRedoReducer, type UndoRedoState } from "./undoRedoSlice";
-import { onboardingReducer } from "./onboardingSlice";
+import { onboardingReducer, type OnboardingState } from "./onboardingSlice";
 import { presentationReducer } from "./presentationSlice";
 import { persistenceMiddleware as defaultPersistenceMiddleware, loadPersistedState } from "./persistenceMiddleware";
 
@@ -60,6 +60,7 @@ export function createAppStore(options: CreateStoreOptions = {}): ReturnType<typ
     if (persistedState?.tier) restored.tier = persistedState.tier as TierState;
     if (persistedState?.theme) restored.theme = persistedState.theme as ThemeState;
     if (persistedState?.undoRedo) restored.undoRedo = persistedState.undoRedo as UndoRedoState;
+    if (persistedState?.onboarding) restored.onboarding = persistedState.onboarding as OnboardingState;
     preloadedState = restored;
   }
 

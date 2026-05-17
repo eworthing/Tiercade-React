@@ -30,6 +30,7 @@ import {
   hasPersistedState,
   clearPersistedState,
 } from "../src/persistenceMiddleware";
+import { completeOnboarding } from "../src/onboardingSlice";
 import type { Items } from "@tiercade/core";
 
 const STORAGE_KEY = "tiercade-state";
@@ -102,6 +103,16 @@ describe("createPersistenceMiddleware (debounce save)", () => {
     expect(spy).toHaveBeenCalledTimes(1);
     const saved = JSON.parse(fakeStorage.getItem(STORAGE_KEY)!);
     expect(saved.tier.tiers).toEqual(tiersB);
+  });
+
+  it("persists onboarding state — completeOnboarding is reflected in saved JSON", () => {
+    const fakeStorage = makeFakeStorage();
+    const store = makeStoreWithStorage(fakeStorage);
+    store.dispatch(completeOnboarding());
+    jest.advanceTimersByTime(500);
+    const saved = JSON.parse(fakeStorage.getItem(STORAGE_KEY)!);
+    expect(saved.onboarding).toBeDefined();
+    expect(saved.onboarding.hasCompletedOnboarding).toBe(true);
   });
 });
 
