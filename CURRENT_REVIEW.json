@@ -1,11 +1,36 @@
 {
   "schema_version": 3,
-  "loop": 3,
+  "loop": 4,
   "loop_cap": 10,
-  "state": "CONTINUE",
+  "state": "HALT_SUCCESS",
   "halt_subtype": null,
   "halt_handoff_text": null,
-  "halt_handoff": null,
+  "halt_handoff": {
+    "text": "Loop 4 ended at HALT_SUCCESS — every scorecard category is at 10 or 9.5+ with an accepted residual. The codebase meets the contest target.\n\nFinal scorecard:\n  - Architecture quality: 9.5 (accepted residual)\n  - State management: 9.5 (accepted residual)\n  - Domain modeling: 9.5 (accepted residual)\n  - Data flow: 9.5 (accepted residual)\n  - Framework idioms: 9.5 (accepted residual)\n  - Concurrency: 10\n  - Simplicity: 9.5 (accepted residual)\n  - Test strategy: 9.5 (accepted residual)\n  - Credibility: 9.5 (accepted residual)\n\nAccepted residuals (won't be revisited unless you ask):\n  - architecture_quality: HeadToHeadPage.tsx remains a page-level orchestrator of substantive size.\n  - state_management: Undo history remains capped at 20 snapshots by product design.\n  - domain_modeling: Item.status remains a user-defined string label.\n  - data_flow: urlSharing.ts keeps a lossy compact share format for URL-length reasons.\n  - framework_idioms: ItemModal.tsx keeps a controlled-input mediaType cast.\n  - simplicity: headToHead.ts remains long because the algorithm is substantive.\n  - test_strategy: no dedicated Playwright path targets ItemMedia rendering specifically.\n  - credibility: useItemForm.ts keeps a UI-local mediaType string default.\n\nFindings resolved this run:\n  - F-004 (loop 3): Bundled theme catalog duplicated across Redux state and package constants — Redux now owns only selectedThemeId; selectors derive the bundled catalog from @tiercade/theme.\n\nTests: 243/243 pass across 36 suites.\n\nNext step options:\n  (a) Tag the loop-3 commit (baa7392) as the new baseline and move on.\n  (b) Spot-check one accepted residual — say \"verify <category>\" and I'll re-read the cited source.\n  (c) Reset and run again from current source — type \"/contest-refactor --reset\" if the branch changes materially.",
+    "expected_actions": [
+      {
+        "action_id": "accept-halt",
+        "description": "User accepts HALT_SUCCESS; no further commits expected against current source.",
+        "match_keywords": [],
+        "match_paths": [],
+        "match_kind": "no_drift_expected"
+      },
+      {
+        "action_id": "tag-commit",
+        "description": "Tag the loop-3 refactor commit as the new baseline.",
+        "match_keywords": ["tag"],
+        "match_paths": [],
+        "match_kind": "any_of"
+      },
+      {
+        "action_id": "spot-check-residual",
+        "description": "User asks to verify one accepted residual from the scorecard.",
+        "match_keywords": ["verify", "spot-check"],
+        "match_paths": [],
+        "match_kind": "any_of"
+      }
+    ]
+  },
   "re_validated_at_sha": null,
   "re_validation_context": null,
   "dry_run": false,
@@ -17,239 +42,126 @@
   "spawn_isolation": "inline",
   "findings_registry_path": "./findings_registry.json",
   "discovery": null,
-  "verdict": "Good app, but not top-tier yet",
-  "verdict_explanation": "A fresh critic pass on the drifted branch found one real structural issue: the bundled theme catalog was split across Redux state, persisted storage, and package-level constants even though only the selected theme ID is mutable. This loop removed that false ownership and now requires one more critic pass to re-score the branch from current source.",
+  "verdict": "Strong contender",
+  "verdict_explanation": "Loop 4 re-ran the critic from the loop-3 commit and the duplicated theme-authority finding did not persist in current source. Every dimension is now at 10 or 9.5 with an accepted residual, and the full contest gate passed again from current HEAD.",
   "scorecard": {
     "architecture_quality": {
-      "score": 9,
-      "delta": "DOWN",
-      "proof": "Pre-loop-3 theme ownership was split across packages/state/src/themeSlice.ts, packages/state/src/selectors.ts, apps/web/src/hooks/useTierDisplay.ts, and apps/web/src/pages/ThemesPage.tsx.",
-      "residual_blocking_10": null,
-      "residual_disposition": null,
-      "residual_rationale_or_backlog_ref": null,
+      "score": 9.5,
+      "delta": "UP",
+      "proof": "baa7392 removed the duplicated theme catalog from Redux state and left catalog lookup derived from @tiercade/theme.",
+      "residual_blocking_10": "apps/web/src/pages/HeadToHeadPage.tsx page-level orchestrator size",
+      "residual_disposition": "accepted",
+      "residual_rationale_or_backlog_ref": "The page remains within accepted orchestration complexity.",
       "unverifiable_due_to_build_failure": false
     },
     "state_management": {
-      "score": 9,
-      "delta": "DOWN",
-      "proof": "Pre-loop-3 ThemeState stored both selectedThemeId and availableThemes even though reducers only wrote selectedThemeId.",
-      "residual_blocking_10": null,
-      "residual_disposition": null,
-      "residual_rationale_or_backlog_ref": null,
+      "score": 9.5,
+      "delta": "UP",
+      "proof": "packages/state/src/themeSlice.ts:3-9 now stores only selectedThemeId; packages/state/test/persistenceMiddleware.test.ts:89-91 proves only that mutable choice is serialized.",
+      "residual_blocking_10": "packages/state/src/undoRedoSlice.ts MAX_PERSISTED_HISTORY=20 snapshot cap",
+      "residual_disposition": "accepted",
+      "residual_rationale_or_backlog_ref": "Undo history remains capped at 20 snapshots by product design.",
       "unverifiable_due_to_build_failure": false
     },
     "domain_modeling": {
       "score": 9.5,
       "delta": "SAME",
-      "proof": "packages/core/src/models.ts keeps Item.media?: ItemMedia, so impossible multi-URL state remains unrepresentable.",
+      "proof": "packages/core/src/models.ts keeps Item.media?: ItemMedia and impossible multi-URL states remain unrepresentable.",
       "residual_blocking_10": "packages/core/src/models.ts Item.status plain string",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "Item.status remains a user-defined label rather than a closed enum.",
+      "residual_rationale_or_backlog_ref": "Item.status remains a user-defined string label.",
       "unverifiable_due_to_build_failure": false
     },
     "data_flow": {
-      "score": 9,
-      "delta": "DOWN",
-      "proof": "packages/state/src/persistenceMiddleware.ts serialized the duplicated theme catalog and packages/state/src/store.ts restored it into runtime state.",
-      "residual_blocking_10": null,
-      "residual_disposition": null,
-      "residual_rationale_or_backlog_ref": null,
+      "score": 9.5,
+      "delta": "UP",
+      "proof": "packages/state/src/selectors.ts:106-116 derives the bundled catalog from @tiercade/theme, and persistence no longer carries duplicated theme data.",
+      "residual_blocking_10": "apps/web/src/utils/urlSharing.ts lossy compact share format",
+      "residual_disposition": "accepted",
+      "residual_rationale_or_backlog_ref": "The share format intentionally trades fidelity for URL length.",
       "unverifiable_due_to_build_failure": false
     },
     "framework_idioms": {
       "score": 9.5,
       "delta": "SAME",
-      "proof": "Reducers remain pure, selectors are memoized, and the React/Redux integration stays idiomatic across the repo.",
+      "proof": "Reducers remain pure, selectors stay memoized, and the React/Redux integration remains idiomatic.",
       "residual_blocking_10": "apps/web/src/components/ItemModal.tsx mediaType controlled-input cast",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "The form cast stays inside a controlled input path.",
+      "residual_rationale_or_backlog_ref": "The cast stays inside a controlled input path.",
       "unverifiable_due_to_build_failure": false
     },
     "concurrency": {
       "score": 10,
       "delta": "SAME",
-      "proof": "No source-backed concurrency hazard is present; timeout cleanup and async ownership remain explicit.",
+      "proof": "No source-backed concurrency hazard is present, and the runtime still has explicit cleanup.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "simplicity": {
-      "score": 9,
-      "delta": "DOWN",
-      "proof": "The theme catalog traveled through state and persistence despite callers also using @tiercade/theme directly.",
-      "residual_blocking_10": null,
-      "residual_disposition": null,
-      "residual_rationale_or_backlog_ref": null,
+      "score": 9.5,
+      "delta": "UP",
+      "proof": "baa7392 deleted the redundant Redux catalog field instead of layering a new seam or adapter.",
+      "residual_blocking_10": "packages/core/src/headToHead.ts substantive algorithm size",
+      "residual_disposition": "accepted",
+      "residual_rationale_or_backlog_ref": "The file is large because the algorithm is substantive rather than ceremonial.",
       "unverifiable_due_to_build_failure": false
     },
     "test_strategy": {
       "score": 9.5,
       "delta": "SAME",
-      "proof": "The full contest gate passed after the refactor: core 109/109, state 64/64, ui 5/5, hooks 65/65.",
+      "proof": "The full contest gate passed from current HEAD: core 109/109, state 64/64, ui 5/5, hooks 65/65.",
       "residual_blocking_10": "apps/web/e2e/ lacks a dedicated ItemMedia rendering path",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "Unit tests still cover the ItemMedia interface directly.",
+      "residual_rationale_or_backlog_ref": "Unit tests cover the ItemMedia interface directly.",
       "unverifiable_due_to_build_failure": false
     },
     "credibility": {
-      "score": 9,
-      "delta": "DOWN",
-      "proof": "Before this loop, Redux claimed ownership over bundled theme data that runtime readers still sourced directly from @tiercade/theme.",
-      "residual_blocking_10": null,
-      "residual_disposition": null,
-      "residual_rationale_or_backlog_ref": null,
+      "score": 9.5,
+      "delta": "UP",
+      "proof": "The loop-3 refactor aligned theme ownership with the actual runtime authority and preserved the public selector interface.",
+      "residual_blocking_10": "apps/web/src/hooks/useItemForm.ts UI-local mediaType string default",
+      "residual_disposition": "accepted",
+      "residual_rationale_or_backlog_ref": "The remaining concern is UI-local and does not weaken the architecture claim.",
       "unverifiable_due_to_build_failure": false
     }
   },
-  "authority_map": [
-    {
-      "concern": "Theme selection",
-      "owner": "themeSlice.selectedThemeId",
-      "allowed_writers": ["themeSlice.actions.selectTheme", "themeSlice.actions.clearTheme"],
-      "readers": ["TierBoardPage", "ThemesPage", "useTierDisplay", "TierBoardScreen"],
-      "persistence_seam": "createPersistenceMiddleware",
-      "async_mutation_entry_points": [],
-      "verdict": "Single and clear"
-    },
-    {
-      "concern": "Bundled theme catalog",
-      "owner": "split between themeSlice.availableThemes, BUNDLED_THEMES, and findThemeById",
-      "allowed_writers": [],
-      "readers": ["selectCurrentTheme", "ThemesPage", "useTierDisplay"],
-      "persistence_seam": "createPersistenceMiddleware",
-      "async_mutation_entry_points": [],
-      "verdict": "Split and ambiguous"
-    }
-  ],
+  "authority_map": [],
   "strengths": [
-    "headToHead.ts keeps real algorithmic depth behind a bounded interface.",
-    "createPersistenceMiddleware remains an injectable Storage seam with direct tests.",
-    "models.ts still encodes media as a discriminated union.",
-    "packages/core/test/dag.test.ts enforces the import DAG structurally."
+    "headToHead.ts keeps real algorithmic leverage behind a bounded interface.",
+    "createPersistenceMiddleware remains a single injectable persistence seam.",
+    "ItemMedia still encodes media invariants at the type level.",
+    "packages/core/test/dag.test.ts keeps the monorepo layering rules enforced by source."
   ],
-  "findings": [
-    {
-      "loop_local_id": "F1",
-      "stable_id": "F-004",
-      "title": "Bundled theme catalog is duplicated across Redux state and package constants",
-      "why_it_matters": "Static catalog data should have one authority; duplicating it across runtime state and package constants widens the state surface without leverage.",
-      "what_is_wrong": "Pre-loop-3 ThemeState stored availableThemes, persistence serialized it, and runtime readers still bypassed Redux through BUNDLED_THEMES and findThemeById.",
-      "evidence": [
-        "packages/state/src/themeSlice.ts (pre-loop-3) stored availableThemes: BUNDLED_THEMES",
-        "packages/state/src/selectors.ts (pre-loop-3) exported selectAvailableThemes/selectCurrentTheme from Redux state",
-        "packages/state/src/persistenceMiddleware.ts:45-49 persisted state.theme",
-        "packages/state/src/store.ts:60-63 restored persisted theme state",
-        "apps/web/src/pages/ThemesPage.tsx:59 renders BUNDLED_THEMES directly",
-        "apps/web/src/hooks/useTierDisplay.ts:31-33 resolves themes with findThemeById"
-      ],
-      "test_failed": "Deletion test",
-      "dependency_category": "in-process",
-      "leverage_impact": "Callers had to learn which authority to trust for the same bundled catalog.",
-      "locality_impact": "Theme catalog changes spread through slice state, selectors, persistence, and UI readers.",
-      "metric_signal": "none",
-      "why_weakens_submission": "Redux appeared to own bundled theme data that it did not actually control.",
-      "severity": "Noticeable weakness",
-      "adr_conflicts": [],
-      "adr_reopen_justification": null,
-      "minimal_correction_path": "Keep only selectedThemeId in Redux, derive the bundled catalog from @tiercade/theme, and persist only the selected ID.",
-      "blast_radius": {
-        "change": [
-          "packages/state/src/themeSlice.ts",
-          "packages/state/src/selectors.ts",
-          "packages/state/test/selectors.test.ts",
-          "packages/state/test/themeSlice.test.ts",
-          "packages/state/test/persistenceMiddleware.test.ts"
-        ],
-        "avoid": [
-          "apps/*",
-          "packages/core/*",
-          "packages/ui/*"
-        ]
-      },
-      "status": "resolved",
-      "resolution_loop": 3,
-      "dimensions_affected": [
-        "architecture_quality",
-        "state_management",
-        "data_flow",
-        "simplicity",
-        "credibility"
-      ]
-    }
-  ],
+  "findings": [],
   "simplification_check": {
-    "structurally_necessary": "Removes false Redux ownership over bundled theme data and passes the deletion test for the extra slice field.",
+    "structurally_necessary": "Loop 3 removed the only fresh drift-era ownership split.",
     "new_seam_justified": false,
     "new_seam_adapters": [],
-    "helpful_simplification": "The state package now owns only the mutable choice: selectedThemeId.",
-    "should_not_be_done": "Do not add a theme repository or another adapter layer.",
-    "tests_after_fix": "Selector tests assert the bundled catalog/current theme interface directly; persistence test asserts only selectedThemeId is serialized."
+    "helpful_simplification": "Theme selection remains in Redux while the bundled catalog lives only in @tiercade/theme.",
+    "should_not_be_done": "Do not add another theme abstraction just to replace the removed field.",
+    "tests_after_fix": "The full contest gate plus direct selector/persistence tests cover the simplified theme interface."
   },
-  "backlog": [
-    {
-      "priority": 1,
-      "title": "Re-score after collapsing duplicated theme authority",
-      "kind": "structural",
-      "rank": "needed for winning",
-      "why_it_matters": "The refactor resolved the only fresh finding; the next critic pass determines whether the branch returns to contest-grade scores.",
-      "score_impact": "architecture_quality + state_management + data_flow + simplicity + credibility back to 9.5"
-    }
-  ],
+  "backlog": [],
   "unresolved_reason": null,
   "deepening_candidates": [],
   "builder_notes": [
     {
-      "pattern": "Static catalog stored in Redux",
-      "how_to_recognize": "Reducers only mutate the selected ID, but the slice also carries the full bundled catalog.",
-      "smallest_coding_rule": "Keep immutable bundled data in the package that defines it; keep only mutable choices in Redux."
+      "pattern": "Bundled data with fake Redux ownership",
+      "how_to_recognize": "A slice stores immutable catalog data while reducers only mutate the selection.",
+      "smallest_coding_rule": "Keep bundled fixtures with the module that defines them; keep only mutable choices in Redux."
     },
     {
-      "pattern": "Persistence serializes dead catalog data",
-      "how_to_recognize": "Persisted JSON grows even though restore logic could recompute the data from code constants.",
-      "smallest_coding_rule": "Persist only user choices and runtime state, not immutable bundled fixtures."
+      "pattern": "Subtractive refactor preserves interfaces",
+      "how_to_recognize": "Callers need the same selector interface, but the authority behind it can move to a better source.",
+      "smallest_coding_rule": "Delete the shallow field and keep the caller contract stable."
     },
     {
-      "pattern": "Public selector surface survives an internal simplification",
-      "how_to_recognize": "Callers need the same selector contract, but the authority behind it can move to a better source.",
-      "smallest_coding_rule": "Preserve the interface; simplify the ownership behind it."
+      "pattern": "Persist only real runtime state",
+      "how_to_recognize": "Serialized JSON includes immutable data that code can reconstruct from constants.",
+      "smallest_coding_rule": "Persist user choices and runtime state, not bundled catalogs."
     }
   ],
-  "narrative": "Loop 3 fixed the one drift-era structural deduction by collapsing the bundled theme catalog out of Redux state and persistence. The simplification helped: runtime ownership is now more honest, and a follow-up critic pass should be able to score the branch from current source without the old authority split.",
-  "loop_result": {
-    "what_changed": "Removed availableThemes from ThemeState, derived bundled themes through selectors, and tightened persistence/theme tests around selectedThemeId-only persistence.",
-    "evidence_change_is_honest": "Full contest gate passed: test:core 109/109, test:state 64/64, test:ui 5/5, test:hooks 65/65.",
-    "targeted_finding_status": "resolved",
-    "unintended_regression": null,
-    "changed_paths": [
-      "packages/state/src/selectors.ts",
-      "packages/state/src/themeSlice.ts",
-      "packages/state/test/persistenceMiddleware.test.ts",
-      "packages/state/test/selectors.test.ts",
-      "packages/state/test/themeSlice.test.ts"
-    ],
-    "interface_test_coverage_path": null
-  },
-  "implementation_review": {
-    "verdict": "approved",
-    "reason": "All three checks passed; Redux now owns only the selected theme ID while the bundled catalog is derived from @tiercade/theme.",
-    "checks": {
-      "reality": "passed",
-      "honesty": "passed",
-      "regression": "passed"
-    },
-    "regressions": [],
-    "conditions": [],
-    "rounds": 1,
-    "retry_count": 1,
-    "retry_cause": null,
-    "retry_attempts": [
-      {
-        "attempt": 1,
-        "outcome": "ok",
-        "error": null,
-        "duration_ms": null
-      }
-    ]
-  }
+  "narrative": "Win. The loop-3 simplification removed the only fresh structural deduction, runtime ownership is trustworthy again, concurrency remains trustworthy, the tests reduce regressions, and the remaining work would risk overengineering rather than improve the contest score."
 }

@@ -1,115 +1,55 @@
 ### Loop Counter
-Loop 3 of 10 (cap)
+Loop 4 of 10 (cap)
 
 ### System Flag
-[STATE: CONTINUE]
+[STATE: HALT_SUCCESS]
 
 ---
 
 ## Contest Verdict
-Good app, but not top-tier yet
+Strong contender
 
-The branch drifted after the prior HALT_SUCCESS, so this loop re-derived the scorecard from current source instead of trusting the old halt. The biggest structural deduction was that the bundled theme catalog had three authorities at once: Redux state stored it, persistence serialized it, and runtime readers also bypassed state via `@tiercade/theme` helpers and constants.
+Loop 4 re-ran the critic from the loop-3 commit and the duplicated theme-authority finding did not persist in current source. The branch is back at the contest target: every scorecard dimension is 10 or 9.5 with an accepted residual, and the full gate passed again from current HEAD.
 
 ## Scorecard (1-10)
 Format: `[Score] | [Delta: UP/DOWN/SAME vs prev loop] | [Concrete proof: file:line or symbol]`
 
-- Architecture quality: 9.0 | DOWN | `packages/state/src/themeSlice.ts` + `apps/web/src/hooks/useTierDisplay.ts` + `apps/web/src/pages/ThemesPage.tsx` split the same theme catalog across Redux and package-level constants.
-- State management and runtime ownership: 9.0 | DOWN | `packages/state/src/themeSlice.ts:3-10` stored `availableThemes` inside Redux even though reducers only own `selectedThemeId`.
-- Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` keeps `media?: ItemMedia`, so impossible multi-URL states remain unrepresentable. Accepted residual: `Item.status` stays a plain string label.
-- Data flow and dependency design: 9.0 | DOWN | `packages/state/src/persistenceMiddleware.ts:45-49` persisted the static theme catalog; `packages/state/src/store.ts:60-63` restored it back into runtime state.
-- Framework / platform best practices: 9.5 | SAME | Reducers stay pure, selectors remain memoized, and React/Redux usage is idiomatic across the repo. Accepted residual: `apps/web/src/components/ItemModal.tsx` keeps a controlled-input cast for `mediaType`.
-- Concurrency and runtime safety: 10 | SAME | The app still has explicit timeout cleanup and no source-backed concurrency hazard. No behavior-preserving improvement is identifiable from current source.
-- Code simplicity and clarity: 9.0 | DOWN | `selectAvailableThemes` and `selectCurrentTheme` routed through Redux for a static catalog that callers also accessed directly from `@tiercade/theme`.
-- Test strategy and regression resistance: 9.5 | SAME | The full contest gate remains green and direct state-package tests cover persistence, selectors, and slice behavior. Accepted residual: no Playwright path specifically exercises ItemMedia rendering.
-- Overall implementation credibility: 9.0 | DOWN | The duplicated theme authority made the codebase claim Redux ownership over data it did not actually own.
-
-## Authority Map
-**Theme selection**
-- Owner: `themeSlice.selectedThemeId`
-- Allowed writers: `themeSlice.actions.selectTheme`, `themeSlice.actions.clearTheme`
-- Observers / readers: `TierBoardPage`, `ThemesPage`, `useTierDisplay`, native `TierBoardScreen`
-- Persistence seam: `createPersistenceMiddleware`
-- Async mutation entry points: none
-- Verdict: Single and clear
-
-**Bundled theme catalog**
-- Owner: split between `themeSlice.availableThemes`, `BUNDLED_THEMES`, and `findThemeById`
-- Allowed writers: none (static data), but multiple readers bypassed each other
-- Observers / readers: `selectCurrentTheme`, `ThemesPage`, `useTierDisplay`
-- Persistence seam: `createPersistenceMiddleware` serialized the Redux copy
-- Async mutation entry points: none
-- Verdict: Split and ambiguous
+- Architecture quality: 9.5 | UP | `baa7392` removes bundled-theme duplication from `packages/state/src/themeSlice.ts` and keeps catalog lookup derived from `@tiercade/theme`. Accepted residual: `apps/web/src/pages/HeadToHeadPage.tsx` remains a page-level orchestrator of substantive size.
+- State management and runtime ownership: 9.5 | UP | `packages/state/src/themeSlice.ts:3-9` now owns only `selectedThemeId`; `packages/state/test/persistenceMiddleware.test.ts:89-91` proves persistence serializes only that mutable choice. Accepted residual: undo history remains capped at 20 snapshots by product design.
+- Domain modeling: 9.5 | SAME | `packages/core/src/models.ts` keeps `media?: ItemMedia`, so impossible multi-URL states stay unrepresentable. Accepted residual: `Item.status` remains a user-defined string label.
+- Data flow and dependency design: 9.5 | UP | `packages/state/src/selectors.ts:106-116` derives the bundled catalog from `@tiercade/theme`, and `packages/state/src/persistenceMiddleware.ts` no longer carries duplicated theme data. Accepted residual: `apps/web/src/utils/urlSharing.ts` still uses a lossy compact share format for URL length.
+- Framework / platform best practices: 9.5 | SAME | Reducers remain pure, selectors stay memoized, and the React/Redux integration remains idiomatic. Accepted residual: `apps/web/src/components/ItemModal.tsx` keeps a controlled-input cast for `mediaType`.
+- Concurrency and runtime safety: 10 | SAME | The runtime still has explicit cleanup and no source-backed concurrency hazard. No behavior-preserving improvement is identifiable.
+- Code simplicity and clarity: 9.5 | UP | Loop 3 deleted the redundant Redux catalog field instead of layering a new seam; selector callers kept the same interface. Accepted residual: `packages/core/src/headToHead.ts` remains long because the algorithm is substantive, not ceremonial.
+- Test strategy and regression resistance: 9.5 | SAME | The full contest gate passed from current HEAD: core 109/109, state 64/64, ui 5/5, hooks 65/65. Accepted residual: no dedicated Playwright path targets ItemMedia rendering specifically.
+- Overall implementation credibility: 9.5 | UP | The loop-3 refactor aligned the code’s ownership story with the actual runtime authority for themes. Accepted residual: `apps/web/src/hooks/useItemForm.ts` still keeps a UI-local `mediaType` string default.
 
 ## Strengths That Matter
-- `packages/core/src/headToHead.ts` still provides real algorithmic depth behind a bounded interface.
-- `packages/state/src/persistenceMiddleware.ts` remains an injectable Storage seam with direct tests.
-- `packages/core/src/models.ts` keeps the `ItemMedia` discriminated union, so media invariants stay type-level.
-- `packages/core/test/dag.test.ts` still enforces the monorepo import DAG structurally, not by convention.
+- `headToHead.ts` still provides real algorithmic leverage rather than scaffolding.
+- `createPersistenceMiddleware` remains a single injectable persistence seam across slices.
+- `ItemMedia` continues to encode media invariants at the type level.
+- `packages/core/test/dag.test.ts` keeps the monorepo layering rules enforced by source.
 
 ## Findings
-### Finding F1: Bundled theme catalog is duplicated across Redux state and package constants
-
-**Why it matters** — Static catalog data should have one authority. Duplicating it across runtime state, persistence, and package constants widens the state surface without adding leverage.
-
-**What is wrong** — Before this loop's refactor, `themeSlice` stored `availableThemes`, persistence serialized that field, and runtime readers still bypassed Redux by reading `BUNDLED_THEMES` and `findThemeById` directly.
-
-**Evidence**
-- `packages/state/src/themeSlice.ts` (pre-loop-3) stored `availableThemes: BUNDLED_THEMES`
-- `packages/state/src/selectors.ts` (pre-loop-3) read the catalog back out via `selectAvailableThemes`
-- `packages/state/src/persistenceMiddleware.ts:45-49` persisted `state.theme`
-- `packages/state/src/store.ts:60-63` restored persisted theme state
-- `apps/web/src/pages/ThemesPage.tsx:59` rendered `BUNDLED_THEMES` directly
-- `apps/web/src/hooks/useTierDisplay.ts:31-33` resolved themes via `findThemeById`
-
-**Architectural test failed** — Deletion test
-
-**Dependency category** — `in-process`
-
-**Leverage impact** — Callers had to learn which authority to trust for the same bundled catalog.
-
-**Locality impact** — A catalog change leaked across slice state, selectors, persistence, and UI readers.
-
-**Metric signal, if any** — none
-
-**Why this weakens submission** — It makes Redux look like the owner of bundled theme data when it is really only the owner of the selected theme ID.
-
-**Severity** — Noticeable weakness
-
-**ADR conflicts** — none
-
-**Minimal correction path** — Keep only `selectedThemeId` in Redux, derive the bundled catalog from `@tiercade/theme`, and persist only the selected ID.
-
-**Blast radius**
-- changed: `packages/state/src/themeSlice.ts`, `packages/state/src/selectors.ts`, `packages/state/test/selectors.test.ts`, `packages/state/test/themeSlice.test.ts`, `packages/state/test/persistenceMiddleware.test.ts`
-- avoided: `apps/*`, `packages/core/*`, `packages/ui/*`
+None. The fresh critic pass did not find a remaining Noticeable-or-worse issue that passes the Simplify Pressure Test.
 
 ## Simplification Check
-- Structurally necessary: Removes false Redux ownership over bundled theme data and passes the deletion test for the extra slice field.
-- New seam justified: No new seam created.
-- Helpful simplification: State now owns only the mutable choice (`selectedThemeId`) instead of a duplicated static catalog.
-- Should NOT be done: Do not add a theme repository or another theme adapter layer.
-- Tests after fix: Selector tests cover the bundled catalog interface directly; persistence test asserts only the selected theme ID is serialized.
+- Structurally necessary: Loop 3 removed the only fresh drift-era ownership split.
+- New seam justified: No new seam was needed.
+- Helpful simplification: Theme selection remains in Redux while the bundled catalog lives only in `@tiercade/theme`.
+- Should NOT be done: Do not add another theme abstraction just to replace the removed field.
+- Tests after fix: The full contest gate plus direct selector/persistence tests cover the simplified theme interface.
 
 ## Improvement Backlog
-1. Re-score after collapsing duplicated theme authority — structural — needed for winning — proves whether architecture/state/data-flow/credibility lift back to 9.5.
+All findings resolved. Residual accounting leaves only accepted residuals.
 
 ## Deepening Candidates
-None. This loop is subtractive, not a seam-creation refactor.
+None.
 
 ## Builder Notes
-- Static catalog in Redux is a smell when reducers only mutate the selection, not the catalog itself.
-- Persisting immutable bundled data widens restore logic and makes ownership look broader than it is.
-- Preserve public selectors when simplifying internals: move the authority, not the calling code.
+- Bundled data should stay with the module that defines it unless runtime policy truly needs to own it.
+- A slice should own mutable choices, not static catalogs.
+- The best refactor here was subtractive: delete the shallow ownership lie and keep the caller interface intact.
 
 ## Final Judge Narrative
-Still a strong codebase, but not contest-finished at the start of loop 3. Simplification helped: the branch had one shallow ownership lie around themes, and this loop removed it without widening the interface.
-
-## Loop 3 Result
-Removed `availableThemes` from `ThemeState`, made `selectAvailableThemes` derive from `BUNDLED_THEMES`, kept `selectCurrentTheme` as a derived selector, and tightened persistence/theme tests so saved theme state is only `{ selectedThemeId }`. The full contest gate passed (`test:core` 109/109, `test:state` 64/64, `test:ui` 5/5, `test:hooks` 65/65). The targeted finding is **resolved** with no observed regression.
-
-## Loop 3 Implementation Review
-- Verdict: approved (inline reviewer; manually confirmed)
-- Reality: passed — Redux no longer stores the bundled catalog.
-- Honesty: passed — selectors still expose the catalog/current theme through the public state interface.
-- Regression: passed — the full contest gate remained green.
+Win. Simplification helped, runtime ownership is trustworthy again, concurrency remains trustworthy, the tests reduce regressions, and the remaining work would risk overengineering rather than improve the contest score.
