@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "next_serial": 4,
+  "next_serial": 5,
   "entries": [
     {
       "stable_id": "F-001",
@@ -56,6 +56,24 @@
         { "loop": 2, "loop_local_id": "F1", "status": "resolved", "sha": "03e21db" }
       ],
       "fuzzy_match_hints": ["Item imageUrl videoUrl audioUrl parallel optional fields", "discriminated union not enforced at type level", "impossible combination representable"]
+    },
+    {
+      "stable_id": "F-004",
+      "title": "Bundled theme catalog is duplicated across Redux state and package constants",
+      "severity": "Noticeable weakness",
+      "status": "resolved",
+      "category_hint": "state_management",
+      "first_seen_loop": 3,
+      "first_seen_sha": "632bbfe",
+      "last_seen_loop": 3,
+      "resolution_loop": 3,
+      "primary_file": "packages/state/src/themeSlice.ts",
+      "primary_lines": "3-10",
+      "test_failed": false,
+      "occurrences": [
+        { "loop": 3, "loop_local_id": "F1", "status": "resolved", "sha": "632bbfe" }
+      ],
+      "fuzzy_match_hints": ["availableThemes in ThemeState", "bundled theme catalog duplicated in redux", "persisted static theme catalog", "theme catalog split between redux and BUNDLED_THEMES"]
     }
   ]
 }

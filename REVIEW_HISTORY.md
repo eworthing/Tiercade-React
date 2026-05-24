@@ -87,3 +87,44 @@
 - Reality: passed — F-003 fields absent from models.ts; `media?: ItemMedia` present
 - Honesty: passed — 239/239 tests pass; no assertions on old fields
 - Regression: passed — no pre-existing test broke; no new skips
+
+---
+
+## Loop 3 Archive (UTC 2026-05-24T23:20:00Z)
+
+**State:** CONTINUE
+**Verdict:** Good app, but not top-tier yet
+
+### Scorecard
+
+| Dimension | Score | Delta |
+|---|---|---|
+| Architecture quality | 9.0 | DOWN |
+| State management | 9.0 | DOWN |
+| Domain modeling | 9.5 | SAME |
+| Data flow | 9.0 | DOWN |
+| Framework idioms | 9.5 | SAME |
+| Concurrency | 10 | SAME |
+| Simplicity | 9.0 | DOWN |
+| Test strategy | 9.5 | SAME |
+| Credibility | 9.0 | DOWN |
+
+### Findings
+
+| ID | Stable ID | Title | Severity | Status |
+|---|---|---|---|---|
+| F1 | F-004 | Bundled theme catalog is duplicated across Redux state and package constants | Noticeable weakness | resolved (loop 3) |
+
+### Loop 3 Fix Summary
+
+- Removed `availableThemes` from `ThemeState`; Redux now stores only `selectedThemeId`.
+- Kept `selectAvailableThemes` / `selectCurrentTheme` as public selectors, but they now derive from `@tiercade/theme`.
+- Tightened state-package tests so persistence serializes only `{ selectedThemeId }` and selector tests cover bundled theme resolution directly.
+- Tests: `test:core` 109/109, `test:state` 64/64, `test:ui` 5/5, `test:hooks` 65/65. All pass.
+
+### Implementation Reviewer
+
+- Verdict: approved (inline reviewer)
+- Reality: passed — Redux no longer stores the bundled catalog
+- Honesty: passed — selector interface still exposes the current theme/bundled catalog
+- Regression: passed — full contest gate stayed green

@@ -1,305 +1,238 @@
 {
   "schema_version": 3,
-  "loop": 2,
+  "loop": 3,
   "loop_cap": 10,
-  "state": "HALT_SUCCESS",
+  "state": "CONTINUE",
   "halt_subtype": null,
   "halt_handoff_text": null,
-  "halt_handoff": {
-    "text": "Loop 2 ended at HALT_SUCCESS — every scorecard category is at 10 or 9.5+ with an accepted residual. The codebase meets the contest target.\n\nFinal scorecard:\n  - Architecture quality: 9.5 (accepted residual)\n  - State management: 9.5 (accepted residual)\n  - Domain modeling: 9.5 (accepted residual)\n  - Data flow: 9.5 (accepted residual)\n  - Framework idioms: 9.5 (accepted residual)\n  - Concurrency: 10\n  - Simplicity: 9.5 (accepted residual)\n  - Test strategy: 9.5 (accepted residual)\n  - Credibility: 9.5 (accepted residual)\n\nAccepted residuals (won't be revisited unless you ask):\n  - architecture_quality: HeadToHeadPage.tsx ~450 lines — within accepted complexity for a page-level orchestrator.\n  - state_management: Undo history capped at 20 snapshots — deliberate product decision.\n  - domain_modeling: Item.status plain string (not enum) — acceptable for a user-defined label.\n  - data_flow: urlSharing.ts encodes only image/gif media as compact.u — intentional lossy encode for URL length.\n  - framework_idioms: ItemModal.tsx mediaType form-value type cast — safe given controlled input constraints.\n  - simplicity: headToHead.ts ~1356 lines — substantive algorithm, passes deletion test.\n  - test_strategy: No Playwright E2E for ItemMedia rendering paths — unit tests cover the discriminated union exhaustively.\n  - credibility: useItemForm.ts local mediaType state string default 'image' — UI-only concern.\n\nFindings resolved this run:\n  - F-001 (loop 1): onboardingSlice reducer-body localStorage I/O — moved into createPersistenceMiddleware.\n  - F-002 (loop 1): dynamic require() for vote + unused clearDeferredPairs import — replaced with static import.\n  - F-003 (loop 2): Item allowed impossible multi-URL combinations — replaced 4 parallel URL fields with media?: ItemMedia discriminated union; 18 reader/writer sites updated; net deletion.\n\nTests: 239/239 pass across 36 suites. Tree clean.\n\nNext step options:\n  (a) Tag the commit (03e21db, or d57e96d for the registry SHA backfill) and move on.\n  (b) Spot-check one accepted residual — say \"verify <category>\" and I'll re-read the cited source.\n  (c) Reset and run again from current source — type \"/contest-refactor --reset\" (useful if the codebase has changed materially since this halt).",
-    "expected_actions": [
-      {
-        "action_id": "accept-halt",
-        "description": "User accepts HALT_SUCCESS; no further commits expected against current source.",
-        "match_keywords": [],
-        "match_paths": [],
-        "match_kind": "no_drift_expected"
-      },
-      {
-        "action_id": "tag-commit",
-        "description": "Tag the loop-2 commit as the new baseline.",
-        "match_keywords": ["tag"],
-        "match_paths": [],
-        "match_kind": "any_of"
-      },
-      {
-        "action_id": "spot-check-residual",
-        "description": "User asks main agent to spot-check one of the eight accepted residuals.",
-        "match_keywords": ["verify", "spot-check"],
-        "match_paths": [],
-        "match_kind": "any_of"
-      }
-    ]
-  },
+  "halt_handoff": null,
   "re_validated_at_sha": null,
   "re_validation_context": null,
   "dry_run": false,
-  "provider": "claude_code",
-  "loop_model": "claude-sonnet-4-6",
+  "provider": "unknown",
+  "loop_model": null,
   "loop_model_source": "default",
-  "reviewer_model": "claude-sonnet-4-6",
+  "reviewer_model": null,
   "reviewer_model_source": "default",
   "spawn_isolation": "inline",
   "findings_registry_path": "./findings_registry.json",
-  "discovery": {
-    "source_roots": [
-      "packages/core/src/",
-      "packages/state/src/",
-      "packages/ui/src/",
-      "packages/theme/src/",
-      "apps/web/src/",
-      "apps/native/src/"
-    ],
-    "test_command": "npm run test:core && npm run test:state && npm run test:ui && npm run test:hooks",
-    "build_command": null,
-    "lens": "Generic",
-    "adrs": [],
-    "domain_terms": [
-      "Item", "Items", "TierConfig", "tierOrder", "unranked",
-      "moveItem", "reorderWithin", "HeadToHeadLogic", "quickRankLogic",
-      "modelResolver", "tierSlice", "headToHeadSlice", "themeSlice",
-      "undoRedoSlice", "onboardingSlice", "presentationSlice",
-      "ItemMedia", "createItem", "ItemCreateOptions"
-    ],
-    "test_scope": "full",
-    "test_filter": null,
-    "working_tree_dirty_paths": []
-  },
-  "verdict": "Strong contender",
-  "verdict_explanation": "All three prior findings resolved. Post-loop-2, Item's impossible multi-URL state is eliminated at the type level via a discriminated union (ItemMedia). The persistence seam, H2H algorithm, and selector graph remain intact. All 239 tests pass. No open findings. All 9 dimensions at 9.5 with accepted residuals only.",
+  "discovery": null,
+  "verdict": "Good app, but not top-tier yet",
+  "verdict_explanation": "A fresh critic pass on the drifted branch found one real structural issue: the bundled theme catalog was split across Redux state, persisted storage, and package-level constants even though only the selected theme ID is mutable. This loop removed that false ownership and now requires one more critic pass to re-score the branch from current source.",
   "scorecard": {
     "architecture_quality": {
-      "score": 9.5,
-      "delta": "UP",
-      "proof": "F-001 resolved loop 1: onboardingSlice reducer-body I/O removed; createPersistenceMiddleware now sole persistence authority. F-003 resolved loop 2: Item model no longer admits impossible multi-URL combos. Module graph: packages/core has zero React deps; packages/state depends only on @tiercade/core. Dependency inversion enforced throughout.",
-      "residual_blocking_10": "apps/web/src/pages/HeadToHeadPage.tsx ~450 lines page-level orchestrator",
-      "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "HeadToHeadPage.tsx ~450 lines — approaching single-responsibility threshold but does not cross it; within accepted complexity for a page-level orchestrator.",
+      "score": 9,
+      "delta": "DOWN",
+      "proof": "Pre-loop-3 theme ownership was split across packages/state/src/themeSlice.ts, packages/state/src/selectors.ts, apps/web/src/hooks/useTierDisplay.ts, and apps/web/src/pages/ThemesPage.tsx.",
+      "residual_blocking_10": null,
+      "residual_disposition": null,
+      "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "state_management": {
-      "score": 9.5,
-      "delta": "UP",
-      "proof": "F-001 resolved loop 1: onboarding no longer writes localStorage inside reducers. F-002 resolved loop 1: dynamic require() replaced with static import. All state mutations go through Redux actions. createSelector memoization consistent. updateItem accepts Partial<Item> — compatible with new ItemMedia union field.",
-      "residual_blocking_10": "packages/state/src/undoRedoSlice.ts MAX_PERSISTED_HISTORY=20 snapshot cap",
-      "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "Undo history capped at 20 snapshots by trim logic in undoRedoSlice — deliberate product decision, not a state management flaw.",
+      "score": 9,
+      "delta": "DOWN",
+      "proof": "Pre-loop-3 ThemeState stored both selectedThemeId and availableThemes even though reducers only wrote selectedThemeId.",
+      "residual_blocking_10": null,
+      "residual_disposition": null,
+      "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "domain_modeling": {
       "score": 9.5,
-      "delta": "UP",
-      "proof": "F-003 resolved loop 2: Item.imageUrl/videoUrl/audioUrl/mediaType removed; replaced by media?: ItemMedia where ItemMedia = { type: 'image'|'gif'; url: string } | { type: 'video'; url: string } | { type: 'audio'; url: string }. Impossible multi-URL state unrepresentable. createItem factory simplified from 12 lines to 6. filtering.ts getItemMediaType reduced from 10 lines to 1.",
+      "delta": "SAME",
+      "proof": "packages/core/src/models.ts keeps Item.media?: ItemMedia, so impossible multi-URL state remains unrepresentable.",
       "residual_blocking_10": "packages/core/src/models.ts Item.status plain string",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "Item.status field is a plain string (not an enum) — acceptable for a user-defined label; no invariant violation.",
+      "residual_rationale_or_backlog_ref": "Item.status remains a user-defined label rather than a closed enum.",
       "unverifiable_due_to_build_failure": false
     },
     "data_flow": {
-      "score": 9.5,
-      "delta": "UP",
-      "proof": "F-001 resolved loop 1: onboardingSlice back-channel eliminated. All data flows are now explicit dispatch → reducer → selector → component. modelResolver.ts resolvedItemToItem constructs ItemMedia correctly (type: 'image', url: thumbUri). No ambient state reads.",
-      "residual_blocking_10": "apps/web/src/utils/urlSharing.ts lossy image/gif-only compact.u encoding",
-      "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "URL sharing (urlSharing.ts) encodes only image/gif media as compact.u — intentional lossy encode for URL-length reasons; documented in-file.",
+      "score": 9,
+      "delta": "DOWN",
+      "proof": "packages/state/src/persistenceMiddleware.ts serialized the duplicated theme catalog and packages/state/src/store.ts restored it into runtime state.",
+      "residual_blocking_10": null,
+      "residual_disposition": null,
+      "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "framework_idioms": {
       "score": 9.5,
-      "delta": "UP",
-      "proof": "F-001 resolved loop 1: reducer side effects eliminated. F-002 resolved loop 1: ESM dynamic require() replaced with static import. createSlice, createSelector, createAsyncThunk used throughout. useId() for SSR-safe IDs. React 19 functional components only.",
-      "residual_blocking_10": "apps/web/src/components/ItemModal.tsx mediaType form-value type cast",
+      "delta": "SAME",
+      "proof": "Reducers remain pure, selectors are memoized, and the React/Redux integration stays idiomatic across the repo.",
+      "residual_blocking_10": "apps/web/src/components/ItemModal.tsx mediaType controlled-input cast",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "ItemModal.tsx uses a type cast (values.mediaType as 'image'|'gif'|'video'|'audio') for the form string value — standard and safe given the controlled input constraints.",
+      "residual_rationale_or_backlog_ref": "The form cast stays inside a controlled input path.",
       "unverifiable_due_to_build_failure": false
     },
     "concurrency": {
       "score": 10,
       "delta": "SAME",
-      "proof": "No actor isolation concerns (Node single-threaded). debounce with clearTimeout cleanup in createPersistenceMiddleware. No floating promises (all async thunks awaited or dispatch-returned). createAsyncThunk lifecycle drives startHeadToHead/finishHeadToHead. No shared mutable state outside Redux store. No source-backed behavior-preserving improvement identifiable.",
+      "proof": "No source-backed concurrency hazard is present; timeout cleanup and async ownership remain explicit.",
       "residual_blocking_10": null,
       "residual_disposition": null,
       "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "simplicity": {
-      "score": 9.5,
-      "delta": "UP",
-      "proof": "F-002 resolved loop 1: clearDeferredPairs unused import removed; require() ceremony eliminated. F-003 resolved loop 2: 4 parallel URL fields on Item deleted (net deletion). createItem: 12 lines → 6 lines. getItemMediaType: 10 lines → 1 line. itemHasMedia: 3 lines → 1 line. onFileDrop: 8 lines → 3 lines. onItemMediaDrop: eliminated triple-clear pattern.",
-      "residual_blocking_10": "packages/core/src/headToHead.ts ~1356 lines substantive algorithm",
-      "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "headToHead.ts ~1356 lines — passes deletion test (core algorithm, not decomposable further without losing locality); accepted.",
+      "score": 9,
+      "delta": "DOWN",
+      "proof": "The theme catalog traveled through state and persistence despite callers also using @tiercade/theme directly.",
+      "residual_blocking_10": null,
+      "residual_disposition": null,
+      "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     },
     "test_strategy": {
       "score": 9.5,
-      "delta": "UP",
-      "proof": "238 → 239 tests across 34+ suites (loop 1 added persistenceMiddleware.test for onboarding seam). Loop 2: 6 test files updated to assert on item.media?.type/url instead of old parallel fields. All 239 pass post-loop-2. Impossible-state construction no longer possible in tests or production code.",
-      "residual_blocking_10": "apps/web/e2e/ no Playwright coverage of ItemMedia rendering paths",
+      "delta": "SAME",
+      "proof": "The full contest gate passed after the refactor: core 109/109, state 64/64, ui 5/5, hooks 65/65.",
+      "residual_blocking_10": "apps/web/e2e/ lacks a dedicated ItemMedia rendering path",
       "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "No Playwright E2E tests cover the ItemMedia rendering paths — acceptable; unit tests cover the discriminated union exhaustively.",
+      "residual_rationale_or_backlog_ref": "Unit tests still cover the ItemMedia interface directly.",
       "unverifiable_due_to_build_failure": false
     },
     "credibility": {
-      "score": 9.5,
-      "delta": "UP",
-      "proof": "F-001 loop 1: reducer-body I/O (honesty leak) removed. F-002 loop 1: dynamic require() (honesty leak) removed. F-003 loop 2: impossible multi-URL type combinations eliminated. No open findings. 239/239 tests pass. No magic numbers, no dead code branches on Item media access.",
-      "residual_blocking_10": "apps/web/src/hooks/useItemForm.ts local mediaType form state string default 'image'",
-      "residual_disposition": "accepted",
-      "residual_rationale_or_backlog_ref": "useItemForm.ts retains a local mediaType state string initialized to 'image' as default — UI-only concern, not a credibility gap.",
+      "score": 9,
+      "delta": "DOWN",
+      "proof": "Before this loop, Redux claimed ownership over bundled theme data that runtime readers still sourced directly from @tiercade/theme.",
+      "residual_blocking_10": null,
+      "residual_disposition": null,
+      "residual_rationale_or_backlog_ref": null,
       "unverifiable_due_to_build_failure": false
     }
   },
   "authority_map": [
-    { "concern": "Tier items + order", "owner": "tierSlice", "writers": ["tierSlice.actions.*"], "readers": ["selectors.ts", "TierBoardPage", "HeadToHeadPage"], "persistence_seam": "createPersistenceMiddleware", "async_entry_points": [] },
-    { "concern": "H2H session", "owner": "headToHeadSlice", "writers": ["headToHeadThunks.*"], "readers": ["HeadToHeadPage", "useHeadToHeadHandlers"], "persistence_seam": "none (session-only)", "async_entry_points": ["startHeadToHead", "finishHeadToHead"] },
-    { "concern": "Undo/redo history", "owner": "undoRedoSlice", "writers": ["undoRedoThunks.captureSnapshot", "performUndo", "performRedo"], "readers": ["AppShell", "TierBoardPage"], "persistence_seam": "createPersistenceMiddleware (trimmed to 20)", "async_entry_points": [] },
-    { "concern": "Onboarding", "owner": "onboardingSlice", "writers": ["completeOnboarding", "skipOnboarding", "resetOnboarding"], "readers": ["AppShell", "OnboardingWizard"], "persistence_seam": "createPersistenceMiddleware (post-loop-1 fix)", "async_entry_points": [] },
-    { "concern": "Persistence I/O", "owner": "createPersistenceMiddleware", "writers": ["createPersistenceMiddleware (debounced save)"], "readers": ["loadPersistedState", "createAppStore"], "persistence_seam": "local-substitutable (injectable Storage)", "async_entry_points": [] },
-    { "concern": "Item media", "owner": "ItemMedia discriminated union (models.ts)", "writers": ["createItem", "useItemForm (edit path)", "useItemInteraction (file drop)", "modelResolver.resolvedItemToItem"], "readers": ["TierRow.ItemMediaContent", "TierBoard.DragPreview", "StreamingOverlay", "HeadToHeadPage", "useExportHandlers", "urlSharing"], "persistence_seam": "tierSlice via createPersistenceMiddleware", "async_entry_points": [] }
+    {
+      "concern": "Theme selection",
+      "owner": "themeSlice.selectedThemeId",
+      "allowed_writers": ["themeSlice.actions.selectTheme", "themeSlice.actions.clearTheme"],
+      "readers": ["TierBoardPage", "ThemesPage", "useTierDisplay", "TierBoardScreen"],
+      "persistence_seam": "createPersistenceMiddleware",
+      "async_mutation_entry_points": [],
+      "verdict": "Single and clear"
+    },
+    {
+      "concern": "Bundled theme catalog",
+      "owner": "split between themeSlice.availableThemes, BUNDLED_THEMES, and findThemeById",
+      "allowed_writers": [],
+      "readers": ["selectCurrentTheme", "ThemesPage", "useTierDisplay"],
+      "persistence_seam": "createPersistenceMiddleware",
+      "async_mutation_entry_points": [],
+      "verdict": "Split and ambiguous"
+    }
   ],
   "strengths": [
-    "Wilson-score CI with warm-start pairings (headToHead.ts) — real algorithm depth, not scaffolding",
-    "createPersistenceMiddleware injectable Storage seam — testable without global mocks, covers all slices post-loop-1",
-    "createSelector memoization throughout selectors.ts — no inline selector functions",
-    "createAppStore factory with preloadedState + persistenceMiddleware overrides — test isolation without touching globals",
-    "ItemMedia discriminated union — impossible multi-URL state eliminated at the type level; simplifies every reader site"
+    "headToHead.ts keeps real algorithmic depth behind a bounded interface.",
+    "createPersistenceMiddleware remains an injectable Storage seam with direct tests.",
+    "models.ts still encodes media as a discriminated union.",
+    "packages/core/test/dag.test.ts enforces the import DAG structurally."
   ],
   "findings": [
     {
-      "id": "F1",
       "loop_local_id": "F1",
-      "stable_id": "F-001",
-      "title": "onboardingSlice reducer-body localStorage I/O",
-      "severity": "Serious deduction",
-      "primary_file": "packages/state/src/onboardingSlice.ts",
-      "primary_lines": "13-97",
-      "why_it_matters": "Redux reducers must be pure functions. localStorage I/O in reducer bodies breaks time-travel debugging, server rendering, and test isolation. It also pulls ownership out of the established persistence seam.",
-      "what_is_wrong": "loadInitialState() called at module load (ambient dependency); completeOnboarding, skipOnboarding, resetOnboarding reducers called localStorage.setItem/removeItem directly.",
+      "stable_id": "F-004",
+      "title": "Bundled theme catalog is duplicated across Redux state and package constants",
+      "why_it_matters": "Static catalog data should have one authority; duplicating it across runtime state and package constants widens the state surface without leverage.",
+      "what_is_wrong": "Pre-loop-3 ThemeState stored availableThemes, persistence serialized it, and runtime readers still bypassed Redux through BUNDLED_THEMES and findThemeById.",
       "evidence": [
-        "packages/state/src/onboardingSlice.ts:24 — loadInitialState() localStorage.getItem at module load",
-        "packages/state/src/onboardingSlice.ts:72 — completeOnboarding reducer localStorage.setItem",
-        "packages/state/src/onboardingSlice.ts:84 — skipOnboarding reducer localStorage.setItem",
-        "packages/state/src/onboardingSlice.ts:96 — resetOnboarding reducer localStorage.removeItem"
+        "packages/state/src/themeSlice.ts (pre-loop-3) stored availableThemes: BUNDLED_THEMES",
+        "packages/state/src/selectors.ts (pre-loop-3) exported selectAvailableThemes/selectCurrentTheme from Redux state",
+        "packages/state/src/persistenceMiddleware.ts:45-49 persisted state.theme",
+        "packages/state/src/store.ts:60-63 restored persisted theme state",
+        "apps/web/src/pages/ThemesPage.tsx:59 renders BUNDLED_THEMES directly",
+        "apps/web/src/hooks/useTierDisplay.ts:31-33 resolves themes with findThemeById"
       ],
-      "test_failed": false,
-      "dependency_category": "state_management",
-      "leverage_impact": "high",
-      "locality_impact": "packages/state/src/onboardingSlice.ts",
-      "metric_signal": "reducer purity violation",
-      "why_weakens_submission": "Demonstrates misunderstanding of Redux invariants; undermines trust in other reducers",
-      "adr_conflicts": [],
-      "adr_reopen_justification": null,
-      "minimal_correction_path": "Remove loadInitialState(), STORAGE_KEY, all localStorage.* from reducer bodies; extend createPersistenceMiddleware persistedState to include onboarding key",
-      "blast_radius": "packages/state/src/onboardingSlice.ts, packages/state/src/persistenceMiddleware.ts, packages/state/src/store.ts, new test file",
-      "status": "resolved",
-      "resolution_loop": 1,
-      "dimensions_affected": ["architecture_quality", "state_management", "data_flow", "framework_idioms", "test_strategy", "credibility"]
-    },
-    {
-      "id": "F2",
-      "loop_local_id": "F2",
-      "stable_id": "F-002",
-      "title": "dynamic require() for vote; unused clearDeferredPairs import",
+      "test_failed": "Deletion test",
+      "dependency_category": "in-process",
+      "leverage_impact": "Callers had to learn which authority to trust for the same bundled catalog.",
+      "locality_impact": "Theme catalog changes spread through slice state, selectors, persistence, and UI readers.",
+      "metric_signal": "none",
+      "why_weakens_submission": "Redux appeared to own bundled theme data that it did not actually control.",
       "severity": "Noticeable weakness",
-      "primary_file": "packages/state/src/headToHeadThunks.ts",
-      "primary_lines": "105,17",
-      "why_it_matters": "require() inside an ESM module with top-level imports is a mixing of module systems; it bypasses tree-shaking and signals either a workaround for a circular dependency or inattention. Unused imports are noise.",
-      "what_is_wrong": "require('@tiercade/core') called inside thunk body at runtime rather than using the static import already at top. clearDeferredPairs imported but never referenced.",
-      "evidence": [
-        "packages/state/src/headToHeadThunks.ts:105 — require('@tiercade/core') inside ESM thunk body",
-        "packages/state/src/headToHeadThunks.ts:17 — clearDeferredPairs imported but never used"
-      ],
-      "test_failed": false,
-      "dependency_category": "framework_idioms",
-      "leverage_impact": "medium",
-      "locality_impact": "packages/state/src/headToHeadThunks.ts",
-      "metric_signal": "ESM/CJS mixing; dead import",
-      "why_weakens_submission": "Signals module-system confusion; adds noise to import graph",
       "adr_conflicts": [],
       "adr_reopen_justification": null,
-      "minimal_correction_path": "Remove dynamic require(); use already-present static import. Remove unused clearDeferredPairs import.",
-      "blast_radius": "packages/state/src/headToHeadThunks.ts only",
+      "minimal_correction_path": "Keep only selectedThemeId in Redux, derive the bundled catalog from @tiercade/theme, and persist only the selected ID.",
+      "blast_radius": {
+        "change": [
+          "packages/state/src/themeSlice.ts",
+          "packages/state/src/selectors.ts",
+          "packages/state/test/selectors.test.ts",
+          "packages/state/test/themeSlice.test.ts",
+          "packages/state/test/persistenceMiddleware.test.ts"
+        ],
+        "avoid": [
+          "apps/*",
+          "packages/core/*",
+          "packages/ui/*"
+        ]
+      },
       "status": "resolved",
-      "resolution_loop": 1,
-      "dimensions_affected": ["simplicity", "credibility", "framework_idioms"]
-    },
-    {
-      "id": "F1",
-      "loop_local_id": "F1",
-      "stable_id": "F-003",
-      "title": "Item allows impossible multi-URL combinations",
-      "severity": "Noticeable weakness",
-      "primary_file": "packages/core/src/models.ts",
-      "primary_lines": "17-28",
-      "why_it_matters": "If an Item can simultaneously have imageUrl, videoUrl, audioUrl, and mediaType set, reader sites must branch defensively and test coverage cannot prove impossible states are excluded. A discriminated union makes impossible states unrepresentable at compile time.",
-      "what_is_wrong": "Item interface exposed imageUrl?, videoUrl?, audioUrl?, mediaType? as independent optional fields alongside an ItemMedia discriminated union — allowing any combination.",
-      "evidence": [
-        "packages/core/src/models.ts:17-28 — four independent URL fields on Item",
-        "filtering.ts:getItemMediaType — 10-line switch/case checking each field independently",
-        "apps/web/src/hooks/useItemForm.ts — three-branch if/else checking videoUrl, audioUrl, imageUrl separately",
-        "apps/web/src/hooks/useItemInteraction.ts — triple-clear pattern (item.videoUrl=undefined, item.audioUrl=undefined) before setting new URL"
-      ],
-      "test_failed": false,
-      "dependency_category": "domain_modeling",
-      "leverage_impact": "high",
-      "locality_impact": "packages/core/src/models.ts (type definition); 18 files (reader sites)",
-      "metric_signal": "impossible state representable; defensive branching at every read site",
-      "why_weakens_submission": "Type system not carrying its weight; each new reader must re-derive which fields are set",
-      "adr_conflicts": [],
-      "adr_reopen_justification": null,
-      "minimal_correction_path": "Replace four parallel fields with media?: ItemMedia; update all 18 reader/writer sites mechanically",
-      "blast_radius": "packages/core/src/models.ts, packages/core/src/filtering.ts, packages/core/src/modelResolver.ts, packages/ui/src/tier-board/TierRow.tsx, packages/ui/src/tier-board/TierBoard.tsx, packages/ui/src/components/StreamingOverlay.tsx, apps/web/src/hooks/useItemForm.ts, apps/web/src/hooks/useItemInteraction.ts, apps/web/src/components/ItemModal.tsx, apps/web/src/hooks/useExportHandlers.ts, apps/web/src/utils/urlSharing.ts, apps/web/src/pages/HeadToHeadPage.tsx, plus 6 test files",
-      "status": "resolved",
-      "resolution_loop": 2,
-      "dimensions_affected": ["domain_modeling", "simplicity", "credibility"]
+      "resolution_loop": 3,
+      "dimensions_affected": [
+        "architecture_quality",
+        "state_management",
+        "data_flow",
+        "simplicity",
+        "credibility"
+      ]
     }
   ],
   "simplification_check": {
-    "structurally_necessary": "F-003 fix is net deletion: 4 fields removed from Item, ~40 lines removed across reader sites. Passes deletion test — every removed line was conditional branching required only because impossible states were possible.",
-    "new_seam_justified": "No new seam created. ItemMedia union already existed in models.ts; fix moves it from documentation-only to enforced.",
-    "helpful_simplification": "createItem 12→6 lines. getItemMediaType 10→1 line. itemHasMedia 3→1 line. onFileDrop 8→3 lines. onItemMediaDrop eliminated triple-clear pattern. All subtractive.",
-    "should_not_do": "Do not add a separate ItemMediaValidator class. Do not make Item a class. Do not add runtime validation middleware for ItemMedia."
+    "structurally_necessary": "Removes false Redux ownership over bundled theme data and passes the deletion test for the extra slice field.",
+    "new_seam_justified": false,
+    "new_seam_adapters": [],
+    "helpful_simplification": "The state package now owns only the mutable choice: selectedThemeId.",
+    "should_not_be_done": "Do not add a theme repository or another adapter layer.",
+    "tests_after_fix": "Selector tests assert the bundled catalog/current theme interface directly; persistence test asserts only selectedThemeId is serialized."
   },
-  "backlog": [],
+  "backlog": [
+    {
+      "priority": 1,
+      "title": "Re-score after collapsing duplicated theme authority",
+      "kind": "structural",
+      "rank": "needed for winning",
+      "why_it_matters": "The refactor resolved the only fresh finding; the next critic pass determines whether the branch returns to contest-grade scores.",
+      "score_impact": "architecture_quality + state_management + data_flow + simplicity + credibility back to 9.5"
+    }
+  ],
   "unresolved_reason": null,
   "deepening_candidates": [],
   "builder_notes": [
-    "Discriminated union at the type level is the correct tool for mutually exclusive variants. If a field combination is impossible, the type must make it impossible — not comments or factory policy.",
-    "Reducer body I/O smell: any localStorage.*, fetch(), setTimeout() inside createSlice.reducers.* body must move to middleware or thunks.",
-    "Dynamic require() inside ESM: always use top-level static import instead."
+    {
+      "pattern": "Static catalog stored in Redux",
+      "how_to_recognize": "Reducers only mutate the selected ID, but the slice also carries the full bundled catalog.",
+      "smallest_coding_rule": "Keep immutable bundled data in the package that defines it; keep only mutable choices in Redux."
+    },
+    {
+      "pattern": "Persistence serializes dead catalog data",
+      "how_to_recognize": "Persisted JSON grows even though restore logic could recompute the data from code constants.",
+      "smallest_coding_rule": "Persist only user choices and runtime state, not immutable bundled fixtures."
+    },
+    {
+      "pattern": "Public selector surface survives an internal simplification",
+      "how_to_recognize": "Callers need the same selector contract, but the authority behind it can move to a better source.",
+      "smallest_coding_rule": "Preserve the interface; simplify the ownership behind it."
+    }
   ],
-  "narrative": "Strong contender. The H2H algorithm (Wilson-score CI, warm-start pairings), injectable-storage middleware, and memoized selector graph were the structural anchors from the start. Loop 1 eliminated the two execution-correctness findings (reducer-body I/O, dynamic require()). Loop 2 closed the domain-modeling gap: impossible multi-URL Item state is now unrepresentable at the type level, and every reader site became simpler as a result. All 9 dimensions at 9.5. No open findings. HALT_SUCCESS.",
+  "narrative": "Loop 3 fixed the one drift-era structural deduction by collapsing the bundled theme catalog out of Redux state and persistence. The simplification helped: runtime ownership is now more honest, and a follow-up critic pass should be able to score the branch from current source without the old authority split.",
   "loop_result": {
-    "what_changed": "Replaced Item.imageUrl/videoUrl/audioUrl/mediaType (4 parallel optional fields) with Item.media?: ItemMedia discriminated union (F-003 resolved). Updated all 18 reader/writer sites including 12 source files and 6 test files.",
-    "evidence_change_is_honest": "239/239 tests pass post-loop-2 (0 failures, 0 skips). net deletion: ~40 lines removed, ~25 lines added (simplified reader sites). TypeScript strict mode: no new type assertions except one safe cast in ItemModal.tsx form string. Old parallel URL fields fully absent from codebase.",
+    "what_changed": "Removed availableThemes from ThemeState, derived bundled themes through selectors, and tightened persistence/theme tests around selectedThemeId-only persistence.",
+    "evidence_change_is_honest": "Full contest gate passed: test:core 109/109, test:state 64/64, test:ui 5/5, test:hooks 65/65.",
     "targeted_finding_status": "resolved",
     "unintended_regression": null,
     "changed_paths": [
-      "packages/core/src/models.ts",
-      "packages/core/src/filtering.ts",
-      "packages/core/src/modelResolver.ts",
-      "packages/ui/src/tier-board/TierRow.tsx",
-      "packages/ui/src/tier-board/TierBoard.tsx",
-      "packages/ui/src/components/StreamingOverlay.tsx",
-      "apps/web/src/hooks/useItemForm.ts",
-      "apps/web/src/hooks/useItemInteraction.ts",
-      "apps/web/src/components/ItemModal.tsx",
-      "apps/web/src/hooks/useExportHandlers.ts",
-      "apps/web/src/utils/urlSharing.ts",
-      "apps/web/src/pages/HeadToHeadPage.tsx",
-      "packages/core/test/headToHeadInternals.test.ts",
-      "packages/core/test/headToHeadQuickPhase.test.ts",
-      "packages/core/test/models.test.ts",
-      "packages/core/test/sorting.test.ts",
-      "packages/core/test/filtering.test.ts",
-      "apps/web/src/hooks/useItemInteraction.test.ts"
+      "packages/state/src/selectors.ts",
+      "packages/state/src/themeSlice.ts",
+      "packages/state/test/persistenceMiddleware.test.ts",
+      "packages/state/test/selectors.test.ts",
+      "packages/state/test/themeSlice.test.ts"
     ],
     "interface_test_coverage_path": null
   },
   "implementation_review": {
     "verdict": "approved",
-    "reason": "Reality check: F-003 fields (imageUrl, videoUrl, audioUrl, mediaType) absent from Item interface in current models.ts; media?: ItemMedia present. Honesty check: 239/239 tests pass; no test assertions on old fields; new assertions on media?.type and media?.url. Regression check: no pre-existing test broke; no new skips or xfails introduced.",
+    "reason": "All three checks passed; Redux now owns only the selected theme ID while the bundled catalog is derived from @tiercade/theme.",
     "checks": {
       "reality": "passed",
       "honesty": "passed",
@@ -307,12 +240,16 @@
     },
     "regressions": [],
     "conditions": [],
-    "rounds": 2,
-    "retry_count": 2,
-    "retry_cause": "spawn_error",
+    "rounds": 1,
+    "retry_count": 1,
+    "retry_cause": null,
     "retry_attempts": [
-      {"attempt": 1, "outcome": "spawn_error", "error": "subagent spawn failed; fell back to inline reviewer", "duration_ms": null},
-      {"attempt": 2, "outcome": "ok", "error": null, "duration_ms": null}
+      {
+        "attempt": 1,
+        "outcome": "ok",
+        "error": null,
+        "duration_ms": null
+      }
     ]
   }
 }

@@ -1,6 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "./store";
 import { sortItems, filterItems } from "@tiercade/core";
+import { BUNDLED_THEMES, getDefaultTheme } from "@tiercade/theme";
 
 // ============================================================================
 // Tier Selectors
@@ -102,16 +103,16 @@ export const selectSelectedThemeId = (state: RootState) => state.theme.selectedT
 /** Select the current theme ID (alias kept for backward compat) */
 export const selectCurrentThemeId = selectSelectedThemeId;
 
-/** Select available themes from the theme slice */
-export const selectAvailableThemes = (state: RootState) => state.theme.availableThemes;
+/** Select available themes from the bundled theme catalog */
+export const selectAvailableThemes = (_state: RootState) => BUNDLED_THEMES;
 
 /** Select the current theme object */
 export const selectCurrentTheme = createSelector(
   [selectSelectedThemeId, selectAvailableThemes],
   (selectedId, themes) => {
     if (!themes || themes.length === 0) return null;
-    if (!selectedId) return themes[0];
-    return themes.find((t) => t.id === selectedId) ?? themes[0];
+    if (!selectedId) return getDefaultTheme();
+    return themes.find((t) => t.id === selectedId) ?? getDefaultTheme();
   }
 );
 

@@ -88,6 +88,7 @@ describe("createPersistenceMiddleware (debounce save)", () => {
     expect(spy).toHaveBeenCalledWith(STORAGE_KEY, expect.any(String));
     const saved = JSON.parse(fakeStorage.getItem(STORAGE_KEY)!);
     expect(saved.tier.tiers).toEqual(tiers);
+    expect(saved.theme).toEqual({ selectedThemeId: null });
   });
 
   it("debounces — only one write when multiple actions fire rapidly", () => {

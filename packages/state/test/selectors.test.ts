@@ -5,12 +5,13 @@
  * selector output. No thunk middleware involved — selectors are pure functions
  * of state. Tests also confirm the two latent bugs fixed this loop:
  *   - selectLastActionName used `.actionName` (wrong); now uses `.action`
- *   - selectAvailableThemes/selectCurrentTheme referenced a missing ThemeState
- *     field; replaced with selectCurrentThemeId.
+ *   - theme selectors derive the catalog from `@tiercade/theme` rather than
+ *     storing static bundled theme data inside Redux state.
  */
 
 import { describe, expect, it } from "@jest/globals";
 import { configureStore } from "@reduxjs/toolkit";
+import { BUNDLED_THEMES, DEFAULT_THEME_ID } from "@tiercade/theme";
 import { tierReducer, setTiers, setSelection } from "../src/tierSlice";
 import { undoRedoReducer, pushHistory } from "../src/undoRedoSlice";
 import { themeReducer, selectTheme } from "../src/themeSlice";
@@ -27,6 +28,8 @@ import {
   selectCanRedo,
   selectLastActionName,
   selectHasActiveFilters,
+  selectAvailableThemes,
+  selectCurrentTheme,
   selectCurrentThemeId,
 } from "../src/selectors";
 import type { RootState } from "../src/store";
@@ -100,6 +103,26 @@ describe("selectCurrentThemeId", () => {
     store.dispatch(selectTheme("dark"));
     const state = store.getState() as RootState;
     expect(selectCurrentThemeId(state)).toBe("dark");
+  });
+});
+
+describe("theme catalog selectors", () => {
+  it("selectAvailableThemes returns the bundled theme catalog", () => {
+    const state = makeStore().getState() as RootState;
+    expect(selectAvailableThemes(state)).toBe(BUNDLED_THEMES);
+  });
+
+  it("selectCurrentTheme returns the default bundled theme when none is selected", () => {
+    const state = makeStore().getState() as RootState;
+    expect(selectCurrentTheme(state)?.id).toBe(DEFAULT_THEME_ID);
+  });
+
+  it("selectCurrentTheme resolves the selected bundled theme", () => {
+    const store = makeStore();
+    const selectedTheme = BUNDLED_THEMES[1] ?? BUNDLED_THEMES[0];
+    store.dispatch(selectTheme(selectedTheme.id));
+    const state = store.getState() as RootState;
+    expect(selectCurrentTheme(state)?.id).toBe(selectedTheme.id);
   });
 });
 
